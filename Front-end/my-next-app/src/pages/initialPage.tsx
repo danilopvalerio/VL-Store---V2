@@ -1,0 +1,56 @@
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import styles from '../styles/Login.module.css';
+
+const LoginPage: React.FC = () => {
+  const router = useRouter();
+
+  const pushLoginPage = () => {
+    router.push('/authPage');
+  };
+
+  const pushRegisterPage = () => {
+    router.push('RegisterPage');
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Login</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </Head>
+      <div className={`d-flex justify-content-between flex-column ${styles.container}`}>
+        <header className="w-100">
+          <div className={styles.headerPanel}>
+            <img className={styles.logo} src="/react.png" alt="Logo" />
+          </div>
+        </header>
+
+        <main className={`mx-auto w-75  ${styles.loginBlock}`}>  
+          <div className={`shadow  ${styles.column}`}>
+            <div className={`text-white text-center p-4${styles.welcomePanel}`}>
+              <h4>VL Store</h4>
+              <p>
+                Seja bem vindo ao VL Store, a plataforma de gerenciamento empresarial da VL Company
+              </p>
+            </div>
+
+            <div className={`p-4 ${styles.formPanel}`}>
+              <h3 className="text-center mb-4">Login</h3>
+                 <div className="d-grid gap-2 mt-3">
+                    <button onClick={pushLoginPage} className={`btn btn-primary ${styles.btnPrimary}`}>
+                    Entrar com email e senha
+                  </button>
+                    <button onClick={pushRegisterPage} className={`btn text-white text-center ${styles.btnSecondary}`}>
+                    Cadastrar
+                    </button>
+                </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+};
+
+export default LoginPage;
