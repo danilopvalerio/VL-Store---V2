@@ -1,0 +1,43 @@
+.container {
+  min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+}
+.headerPanel {
+  background-color: #343a40;
+  padding: 1rem;
+}
+.logo {
+  height: 40px;
+}
+.loginBlock {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.column {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  width: 100%;
+  max-width: 500px;
+  background:  #343a40;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.welcomePanel {
+  background-color: #343a40;
+}
+.formPanel {
+  background-color: #f8f9fa;
+}
+.btnPrimary {
+  background-color: #184A71 !important;
+
+}
+.btnSecondary {
+  background-color: #53A89A !important;
+
+}
