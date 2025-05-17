@@ -14,6 +14,9 @@
 .logo {
   height: 40px;
 }
+.logoLogin {
+  height: 100px;
+}
 .loginBlock {
   flex: 1;
   display: flex;
@@ -35,6 +38,8 @@
 }
 .formPanel {
   background-color: #f8f9fa;
+  justify-content: center;
+  align-items: center;
 }
 .btnPrimary {
   background-color: #184A71 !important;

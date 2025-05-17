@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import styles from '../styles/Login.module.css';
 import Link from 'next/link';
+import { IMaskInput } from 'react-imask';
 
 const RegisterPage: React.FC = () => {
   const router = useRouter();
@@ -16,8 +17,8 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !password) {
-      setError('Usuário e senha são obrigatórios.');
+    if (!storeName || !username || !password || !!cpf || !telephone) {
+      setError('Um ou mais campos não foram preenchidos.');
       return;
     }
     try {
@@ -106,12 +107,12 @@ const RegisterPage: React.FC = () => {
                   </div>
 
                   <div className="mb-3">
-                    <input
-                      type="text"
+                    <IMaskInput
+                      mask={"(00) 00000-0000"}
+                      value={telephone}
+                      onAccept={(value: string) => setTelephone(value)}
                       className="form-control"
                       placeholder="Digite o seu telefone com DDD"
-                      value={telephone}
-                      onChange={(e) => setTelephone(e.target.value)}
                     />
                   </div>
 

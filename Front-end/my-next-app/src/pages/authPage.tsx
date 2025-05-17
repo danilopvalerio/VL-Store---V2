@@ -47,10 +47,11 @@ const AuthPage: React.FC = () => {
       <div className={`d-flex justify-content-between flex-column ${styles.container}`}>
         <header className="w-100">
           <div className={styles.headerPanel}>
-            <img onClick={pushInitialPage} className={styles.logo} src="/react.png" alt="Logo" />
+            <img onClick={pushInitialPage} className={styles.logo} src="/vlStore.svg" alt="Logo" />
           </div>
         </header>
 
+        {/* Mesma lógica da initialPage*/}
         <main className={`mx-auto w-75  ${styles.loginBlock}`}>  
           <div className={`shadow  ${styles.column}`}>
             <div className={`text-white text-center p-4${styles.welcomePanel}`}>
@@ -60,6 +61,7 @@ const AuthPage: React.FC = () => {
               </p>
             </div>
 
+            {/* Formulário com as informações de login */}
             <div className={`p-4 ${styles.formPanel}`}>
               {error && <div className="alert alert-danger">{error}</div>}
               <form onSubmit={handleLogin}>
@@ -85,7 +87,7 @@ const AuthPage: React.FC = () => {
                     />
                   </div>
                   </>
-
+                {/* Opção para entrar como visitante  */}
                  <div className="d-grid gap-2 mt-3">
                     <button onClick={handleVisitor} className={`btn btn-primary ${styles.btnPrimary}`}>
                     Entrar como visitante
