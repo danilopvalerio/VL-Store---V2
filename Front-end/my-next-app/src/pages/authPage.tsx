@@ -9,7 +9,6 @@ const AuthPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [showLoginForm, setShowLoginForm] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +34,10 @@ const AuthPage: React.FC = () => {
     router.push('/menuPage');
   };
 
+    const pushInitialPage = () => {
+    router.push('initialPage');
+  }
+
   return (
     <>
       <Head>
@@ -44,7 +47,7 @@ const AuthPage: React.FC = () => {
       <div className={`d-flex justify-content-between flex-column ${styles.container}`}>
         <header className="w-100">
           <div className={styles.headerPanel}>
-            <img className={styles.logo} src="/react.png" alt="Logo" />
+            <img onClick={pushInitialPage} className={styles.logo} src="/react.png" alt="Logo" />
           </div>
         </header>
 
@@ -58,12 +61,11 @@ const AuthPage: React.FC = () => {
             </div>
 
             <div className={`p-4 ${styles.formPanel}`}>
-              <h3 className="text-center mb-4">Login</h3>
               {error && <div className="alert alert-danger">{error}</div>}
               <form onSubmit={handleLogin}>
-                {showLoginForm && (
                 <>
                   <div className="mb-3">
+                    <img height="100px" src="/react.png" alt="Logo" />
                     <input
                       type="text"
                       className="form-control"
@@ -83,35 +85,20 @@ const AuthPage: React.FC = () => {
                     />
                   </div>
                   </>
-                  )}
 
                  <div className="d-grid gap-2 mt-3">
-                  {showLoginForm === false ? (
-                    <button onClick={() => setShowLoginForm(true) } className={`btn btn-primary ${styles.btnPrimary}`}>
-                    Entrar com email e senha
-                  </button>
-                  ) : null}
-                  
-                  {showLoginForm === false ? (
                     <button onClick={handleVisitor} className={`btn btn-primary ${styles.btnPrimary}`}>
                     Entrar como visitante
-                  </button>
-                  ) : null}
-
-                  {showLoginForm === true ? (
+                    </button>
+                  
                     <button onClick={handleLogin} className={`btn btn-primary ${styles.btnPrimary}`}>Entrar</button>
-                  ) : null}
-
-                  {showLoginForm === true ? (
-                    <button onClick={() => setShowLoginForm(false)} className={`btn btn-secondary ${styles.btnSecondary}`}>voltar</button>
-                  ) : null}
-                  
-                  
+                 
                 </div>
 
                 <p className="w-100 text-center mt-3">
                   Esqueceu sua senha? <Link href="/recover">Recuperar senha</Link>
                 </p>
+                <Link className="w-100 text-center mt-3" href="/initialPage"><p>voltar para a página inicial</p></Link>
               </form>
             </div>
           </div>

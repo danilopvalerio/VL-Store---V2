@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import styles from '../styles/Login.module.css';
+import Link from 'next/link';
 
 const RegisterPage: React.FC = () => {
   const router = useRouter();
@@ -46,7 +47,7 @@ const RegisterPage: React.FC = () => {
       <div className={`d-flex justify-content-between flex-column ${styles.container}`}>
         <header className="w-100">
           <div className={styles.headerPanel}>
-            <img className={styles.logo} src="/react.png" alt="Logo" />
+            <img onClick={pushInitialPage} className={styles.logo} src="/react.png" alt="Logo" />
           </div>
         </header>
 
@@ -63,7 +64,6 @@ const RegisterPage: React.FC = () => {
               <h3 className="text-center mb-4">Cadastro</h3>
               {error && <div className="alert alert-danger">{error}</div>}
               <form onSubmit={handleSubmit}>
-                {showRegisterForm && (
                 <>
                   <div className="mb-3">
                     <input
@@ -116,31 +116,20 @@ const RegisterPage: React.FC = () => {
                   </div>
 
                   </>
-                  )}
 
                  <div className="d-grid gap-2 mt-3">
-                  {showRegisterForm === false ? (
-                    <button onClick={() => setShowRegisterForm(true) } className={`btn btn-primary ${styles.btnPrimary}`}>
-                    Realizar cadastro
-                  </button>
-                  ) : null}
 
-                  {showRegisterForm === false ? (
-                    <button onClick={pushInitialPage} className={`btn btn-primary ${styles.btnPrimary}`}>
-                    Página inicial
-                  </button>
-                  ) : null}
 
-                  {showRegisterForm === true ? (
                     <button onClick={handleSubmit} className={`btn btn-primary ${styles.btnPrimary}`}>Cadastrar</button>
-                  ) : null}
 
                   {showRegisterForm === true ? (
                     <button onClick={() => setShowRegisterForm(false)} className={`btn btn-secondary ${styles.btnSecondary}`}>voltar</button>
                   ) : null}
                   
-                  
+                  <Link className="w-100 text-center pt-1" href="/initialPage"><p>voltar para a página inicial</p></Link>
                 </div>
+
+                
               </form>
             </div>
           </div>

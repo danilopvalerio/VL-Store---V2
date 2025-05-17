@@ -36,9 +36,10 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div className={`p-4 ${styles.formPanel}`}>
-              <h3 className="text-center mb-4">Login</h3>
-                 <div className="d-grid gap-2 mt-3">
-                    <button onClick={pushLoginPage} className={`btn btn-primary ${styles.btnPrimary}`}>
+                 <div className="d-grid gap-3 mt-3">
+                  <img height="100px" src="/react.png" alt="Logo" />
+
+                  <button onClick={pushLoginPage} className={`btn btn-primary ${styles.btnPrimary}`}>
                     Entrar com email e senha
                   </button>
                     <button onClick={pushRegisterPage} className={`btn text-white text-center ${styles.btnSecondary}`}>
