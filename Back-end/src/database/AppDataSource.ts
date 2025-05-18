@@ -7,7 +7,7 @@ export const AppDataSource = new DataSource({
   username: "postgres",
   password: "K3l5p!",
   database: "vlstore",
-  synchronize: true,
+  synchronize: false, // Como as tabelas foram criadas manualmente com SQL, impedi o TypeORM de criá-las
   logging: false,
   entities: ["src/models/*.ts"],
   migrations: ["src/migrations/*.ts"],
