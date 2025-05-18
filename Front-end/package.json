@@ -1,5 +1,5 @@
 {
-  "name": "my-next-app",
+  "name": "vl-store-2",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,23 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "bootstrap": "^5.3.6",
-    "my-next-app": "file:",
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-imask": "^7.6.1",
-    "react-input-mask": "^2.0.4"
+    "vl-store-2": "file:"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
-    "tailwindcss": "^4",
     "typescript": "^5"
   }
 }
