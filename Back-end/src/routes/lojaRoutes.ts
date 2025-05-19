@@ -1,17 +1,33 @@
-import { Router } from "express";
+import express from "express";
 import LojaController from "../controllers/LojaController";
-import { Request, Response } from "express";
 
-const router = Router();
-
+const router = express.Router();
 const lojaController = new LojaController();
 
-router.get("/lojas", (req: Request, res: Response) =>
-  lojaController.findAll(req, res)
-);
+// Wrapper para tratamento assíncrono
+const asyncHandler =
+  (fn: Function) =>
+  (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
 
-router.post("/lojas", (req: Request, res: Response) =>
-  lojaController.createLoja(req, res)
+// Rotas CRUD
+router.get("/lojas", asyncHandler(lojaController.findAll.bind(lojaController)));
+router.post(
+  "/lojas",
+  asyncHandler(lojaController.createLoja.bind(lojaController))
+);
+router.get(
+  "/lojas/:id",
+  asyncHandler(lojaController.findById.bind(lojaController))
+);
+router.patch(
+  "/lojas/:id",
+  asyncHandler(lojaController.update.bind(lojaController))
+);
+router.delete(
+  "/lojas/:id",
+  asyncHandler(lojaController.delete.bind(lojaController))
 );
 
 export default router;

@@ -51,4 +51,60 @@ export default class LojaController {
       res.status(400).json({ error: error });
     }
   }
+
+  async findById(req: Request, res: Response) {
+    const { id } = req.params;
+
+    try {
+      const loja = await this.lojaRepositorio.findOneBy({ id_loja: id });
+
+      if (!loja) {
+        return res.status(404).json({ message: "Loja não encontrada." });
+      }
+
+      res.status(200).json(loja);
+    } catch (error) {
+      res.status(400).json({ error: error });
+    }
+  }
+
+  async update(req: Request, res: Response) {
+    const { id } = req.params;
+    const dadosAtualizados = req.body;
+
+    try {
+      const loja = await this.lojaRepositorio.findOneBy({ id_loja: id });
+
+      if (!loja) {
+        return res.status(404).json({ message: "Loja não encontrada." });
+      }
+
+      this.lojaRepositorio.merge(loja, dadosAtualizados);
+      const lojaAtualizada = await this.lojaRepositorio.save(loja);
+
+      res.status(200).json(lojaAtualizada);
+    } catch (error) {
+      res.status(400).json({ error: error });
+    }
+  }
+
+  async delete(req: Request, res: Response) {
+    const { id } = req.params;
+
+    try {
+      const loja = await this.lojaRepositorio.findOneBy({ id_loja: id });
+
+      if (!loja) {
+        return res.status(404).json({ message: "Loja não encontrada." });
+      }
+
+      await this.lojaRepositorio.remove(loja);
+
+      res
+        .status(200)
+        .json({ mensagem: "Loja removida com sucesso.", lojaRemovida: loja });
+    } catch (error) {
+      res.status(400).json({ error: error });
+    }
+  }
 }
