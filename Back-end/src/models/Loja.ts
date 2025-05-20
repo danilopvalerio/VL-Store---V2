@@ -23,6 +23,12 @@ export default class Loja {
   @Column({ nullable: false, unique: true })
   telefone: string;
 
+  // @Column({ name: "criado_por", nullable: true })
+  // criadoPor?: string;
+  //
+  // @Column({ name: "atualizado_por", nullable: true })
+  // atualizadoPor?: string;
+
   constructor(
     nome: string,
     senha: string,
