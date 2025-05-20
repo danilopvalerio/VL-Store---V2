@@ -1,3 +1,9 @@
 **/node_modules/
 
 .env
+/.idea/compiler.xml
+/.idea/jsLinters/eslint.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml
+/.idea/VL-Store---V2.iml
