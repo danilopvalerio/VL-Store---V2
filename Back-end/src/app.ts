@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { AppDataSource } from './database/AppDataSource';
+import { Request, Response, NextFunction } from 'express';
 
 
 dotenv.config();
@@ -18,6 +19,13 @@ class App {
 
     private config(): void {
         this.app.use(express.json());
+
+        // Middleware de tratamento de erros
+        this.app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+            console.error(err.stack);
+            res.status(500).json({ error: 'Erro interno no servidor' });
+        });
+
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(cors());
     }
@@ -30,7 +38,6 @@ class App {
             console.error('Database connection error:', error);
         }
     }
-
 
 }
 

@@ -14,6 +14,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware básico
 app.use(express.json());
 
+
 // Rotas básicas
 app.get("/", (req, res) => {
   res.send("Backend do VL Store está funcionando!");

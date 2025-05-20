@@ -36,26 +36,12 @@ export default class LojaController {
       errors.push('CPF/CNPJ inválido');
     }
 
-    if (!dados.telefone || !validator.isMobilePhone(dados.telefone, 'pt-BR')) {
-      errors.push('Telefone inválido');
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
+    return { isValid: errors.length === 0, errors };
   }
 
-  async createLoja(req: AuthRequest, res: Response) {
-    const dadosLoja = req.body;
-
-    // Verifica se o corpo da requisição está vazio
-    if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(400).json({ error: "Corpo da requisição vazio" });
-    }
-
+  async createLoja(req: Request, res: Response) {
     // Validação dos dados
-    const validacao = this.validarDadosLoja(dadosLoja);
+    const validacao = this.validarDadosLoja(req.body);
     if (!validacao.isValid) {
       return res.status(400).json({ errors: validacao.errors });
     }
@@ -63,40 +49,34 @@ export default class LojaController {
     try {
       // Verifica se email já existe
       const emailExiste = await this.lojaRepositorio.findOne({
-        where: { email: dadosLoja.email }
+        where: { email: req.body.email }
       });
       if (emailExiste) {
         return res.status(400).json({ error: 'Email já está em uso' });
       }
 
-      // Criptografa a senha
-      const senhaHash = await bcrypt.hash(dadosLoja.senha, 10);
-
       // Verifica se CPF/CNPJ já existe
       const cpfCnpjExiste = await this.lojaRepositorio.findOne({
-        where: { cpf_cnpj_proprietario_loja: dadosLoja.cpf_cnpj_proprietario_loja }
+        where: { cpf_cnpj_proprietario_loja: req.body.cpf_cnpj_proprietario_loja }
       });
       if (cpfCnpjExiste) {
         return res.status(400).json({ error: 'CPF/CNPJ já cadastrado' });
       }
 
+      // Criptografa a senha
+      const senhaHash = await bcrypt.hash(req.body.senha, 10);
+
       // Cria a loja
       const loja = new Loja(
-          dadosLoja.nome,
+          req.body.nome,
           senhaHash,
-          dadosLoja.email,
-          dadosLoja.cpf_cnpj_proprietario_loja,
-          dadosLoja.data_nasc_proprietario,
-          dadosLoja.telefone
+          req.body.email,
+          req.body.cpf_cnpj_proprietario_loja,
+          req.body.data_nasc_proprietario,
+          req.body.telefone
       );
 
-      // Registra quem criou (se autenticado)
-      // if (req.usuario) {
-      //   loja.criadoPor = req.usuario.id;
-      // }
-
       const savedLoja = await this.lojaRepositorio.save(loja);
-      res.status(201).json(savedLoja);
 
       // Remove a senha do retorno
       const { senha: _, ...lojaSemSenha } = savedLoja;
@@ -106,31 +86,6 @@ export default class LojaController {
       console.error('Erro ao criar loja:', error);
       res.status(500).json({ error: 'Erro interno ao criar loja' });
     }
-
-    // const {
-    //   nome,
-    //   senha,
-    //   email,
-    //   cpf_cnpj_proprietario_loja,
-    //   data_nasc_proprietario,
-    //   telefone,
-    // } = req.body;
-    //
-    // const loja = new Loja(
-    //   nome,
-    //   senha,
-    //   email,
-    //   cpf_cnpj_proprietario_loja,
-    //   data_nasc_proprietario,
-    //   telefone
-    // );
-    // // A partir daqui, fazer as validações, validar
-    // // se todos os campos obrigatórios foram preenchidos
-    // // e se o e-mail tem formato válido. Verificar se o
-    // // CPF/CNPJ é válido (quantidade de dígitos, somente dígitos)
-    // //  e único no sistema. Garantir que a senha atenda critérios
-    // // mínimos de segurança (como tamanho e complexidade), etc.
-    //
   }
 
   async findAll(req: Request, res: Response) {
