@@ -78,7 +78,7 @@ export default class LojaController {
         req.body.cpf_cnpj_proprietario_loja,
         req.body.data_nasc_proprietario,
         req.body.telefone,
-        req.body.role || 'user'
+        req.body.role || 'user',
       );
 
       const savedLoja = await this.lojaRepositorio.save(loja);

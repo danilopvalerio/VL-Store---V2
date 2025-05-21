@@ -20,7 +20,7 @@ class App {
     this.app.use(express.json());
 
     // Middleware de tratamento de erros
-    this.app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    this.app.use((err: Error, req: Request, res: Response) => {
       console.error(err.stack);
       res.status(500).json({ error: 'Erro interno no servidor' });
     });

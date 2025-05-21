@@ -33,7 +33,7 @@ export default class Loja {
     cpf_cnpj_proprietario_loja: string,
     data_nasc_proprietario: Date,
     telefone: string,
-    role: string = 'user'
+    role: string = 'user',
   ) {
     this.nome = nome;
     this.senha = senha;

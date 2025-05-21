@@ -26,9 +26,9 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
     req.user = decoded;
     next();
   } catch (erro) {
+    res.status(403).json({ message: 'Token inválido.' });
     console.error('Erro na autenticação:', erro);
     throw new Error('Falha na autenticação');
-    res.status(403).json({ message: 'Token inválido.' });
   }
 };
 

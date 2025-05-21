@@ -33,7 +33,8 @@ app.use(
     verify: (req, res, buf) => {
       try {
         JSON.parse(buf.toString());
-      } catch (e) {
+      } catch (erro) {
+        console.error('Erro com JSON:', erro);
         throw new Error('JSON inválido');
       }
     },
