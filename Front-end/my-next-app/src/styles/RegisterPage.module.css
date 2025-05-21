@@ -1,0 +1,134 @@
+/* styles/StoreRegistration.module.css */
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fa;
+}
+
+.headerPanel {
+  background-color: #343a40;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  height: 40px;
+}
+
+.logoLogin {
+  height: 100px;
+}
+
+.loginBlock {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  width: 100%;
+  max-width: 500px;
+  background: #343a40;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.welcomePanel {
+  background-color: #343a40;
+  color: white;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.formPanel {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 0 0 8px 8px;
+}
+
+.btnPrimary {
+  background-color: #184A71 !important;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.btnSecondary {
+  background-color: #53A89A !important;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Adições para melhorar estilo do formulário */
+.formPanel form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.formPanel :global(.form-group) {
+  margin-bottom: 1rem;
+}
+
+.formPanel :global(.form-control) {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+.formPanel :global(.form-buttons) {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.formPanel :global(.success-message) {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.formPanel :global(.error-message) {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.formPanel :global(.login-link) {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.formPanel :global(.login-link a) {
+  color: #184A71;
+  text-decoration: none;
+}
+
+.formPanel :global(.login-link a:hover) {
+  text-decoration: underline;
+}
+
+.formPanel :global(small) {
+  color: #6c757d;
+  display: block;
+  margin-top: 0.25rem;
+}

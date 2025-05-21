@@ -1,9 +1,15 @@
 import express from "express";
 import { AppDataSource } from "./src/database/AppDataSource";
 import lojaRoutes from "./src/routes/lojaRoutes";
+import cors from 'cors';
 
 // Criando objeto APP express para criar o servidor WEB do back-end
 const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
 
 // Porta utilizada para rodar o servidor
 const PORT = 9700;
