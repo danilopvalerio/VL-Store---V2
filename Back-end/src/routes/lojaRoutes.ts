@@ -1,49 +1,44 @@
-import express from "express";
-import LojaController from "../controllers/LojaController";
-import { autenticar, autorizar } from "../middlewares/authMiddleware";
+import express from 'express';
+import LojaController from '../controllers/LojaController';
+import { authenticateJWT, autorizar } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 const lojaController = new LojaController();
 
-// Middleware para tratamento assíncrono
 const asyncHandler =
-  (fn: Function) =>
-  (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  (fn: any) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 
-// Rotas CRUD protegidas
+// Rota de login
+router.post('/login', asyncHandler(lojaController.login.bind(lojaController)));
+
+// Rotas CRUD
+router.get('/lojas', authenticateJWT, asyncHandler(lojaController.findAll.bind(lojaController)));
+
+// Rota de criação pública
+router.post('/lojas', asyncHandler(lojaController.createLoja.bind(lojaController)));
+
+// Rotas protegidas
 router.get(
-    "/lojas",
-    autenticar,
-    asyncHandler(lojaController.findAll.bind(lojaController))
+  '/lojas/:id',
+  authenticateJWT,
+  asyncHandler(lojaController.findById.bind(lojaController)), // Corrigido de findAll para findById
 );
 
-router.post(
-    "/lojas",
-    autenticar,
-    autorizar('admin'), // somente admin pode criar lojas
-    asyncHandler(lojaController.createLoja.bind(lojaController))
-);
-
-router.get(
-  "/lojas/:id",
-    autenticar,
-    asyncHandler(lojaController.findById.bind(lojaController))
-);
-
+// Rotas admin
 router.patch(
-  "/lojas/:id",
-    autenticar,
-    autorizar('admin'), // Somente admin pode atualizar
-  asyncHandler(lojaController.update.bind(lojaController))
+  '/lojas/:id',
+  authenticateJWT,
+  autorizar('admin'),
+  asyncHandler(lojaController.update.bind(lojaController)),
 );
 
 router.delete(
-  "/lojas/:id",
-    autenticar,
-    autorizar('admin'), // Somente admin pode deletar
-    // asyncHandler(lojaController.delete.bind(lojaController))
+  '/lojas/:id',
+  authenticateJWT,
+  autorizar('admin'),
+  asyncHandler(lojaController.delete.bind(lojaController)),
 );
 
 export default router;

@@ -1,54 +1,44 @@
-// src/middlewares/authMiddleware.ts
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { AuthService } from '../services';
 
-// Interface estendida para o Request
 export interface AuthRequest extends Request {
-    usuario?: {
-        id: string;
-        tipo: string;
-    };
+  user?: any;
 }
 
-// Middleware de autenticação corrigido
-export const autenticar = (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-): void => {
-    const authHeader = req.headers.authorization;
+// Função authenticateJWT atualizada para usar AuthService
+export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
-        res.status(401).json({ message: 'Token não fornecido' });
-        return;
+  if (!authHeader) {
+    res.status(401).json({ message: 'Token não fornecido.' });
+    return;
+  }
+
+  const token = authHeader.split(' ')[1];
+  const authService = new AuthService();
+
+  try {
+    const decoded = authService.verificarToken(token);
+    if (!decoded) {
+      res.status(403).json({ message: 'Token inválido.' });
+      return;
     }
-
-    const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0] !== 'Bearer') {
-        res.status(401).json({ message: 'Formato de token inválido' });
-        return;
-    }
-
-    const token = parts[1];
-
-    jwt.verify(token, process.env.JWT_SECRET as string, (err, decoded) => {
-        if (err) {
-            res.status(401).json({ message: 'Token inválido ou expirado' });
-            return;
-        }
-
-        req.usuario = decoded as { id: string; tipo: string };
-        next();
-    });
+    req.user = decoded;
+    next();
+  } catch (erro) {
+    console.error('Erro na autenticação:', erro);
+    throw new Error('Falha na autenticação');
+    res.status(403).json({ message: 'Token inválido.' });
+  }
 };
 
 // Middleware de autorização corrigido
-export const autorizar = (...tiposPermitidos: string[]) => {
-    return (req: AuthRequest, res: Response, next: NextFunction): void => {
-        if (!req.usuario || !tiposPermitidos.includes(req.usuario.tipo)) {
-            res.status(403).json({ message: 'Acesso não autorizado' });
-            return;
-        }
-        next();
-    };
+export const autorizar = (roleRequerida: string) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (!req.user || req.user.role !== roleRequerida) {
+      res.status(403).json({ message: 'Acesso não autorizado.' });
+      return;
+    }
+    next();
+  };
 };
