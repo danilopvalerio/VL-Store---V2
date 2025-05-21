@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { AppDataSource } from './database/AppDataSource';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import lojaRoutes from './routes/lojaRoutes';
 
 dotenv.config();
@@ -20,16 +20,18 @@ class App {
   }
 
   private config(): void {
-    this.app.use(express.json({
-      verify: (req, res, buf) => {
-        try {
-          JSON.parse(buf.toString());
-        } catch (erro) {
-          console.error('Erro com JSON:', erro);
-          throw new Error('JSON inválido');
-        }
-      },
-    }));
+    this.app.use(
+      express.json({
+        verify: (req, res, buf) => {
+          try {
+            JSON.parse(buf.toString());
+          } catch (erro) {
+            console.error('Erro com JSON:', erro);
+            throw new Error('JSON inválido');
+          }
+        },
+      }),
+    );
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cors());
   }
@@ -41,7 +43,7 @@ class App {
         success: true,
         message: 'Backend do VL Store está funcionando!',
         version: '1.0.0',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -51,13 +53,13 @@ class App {
 
   private errorHandling(): void {
     // Middleware de tratamento de erros (deve ser definido após as rotas)
-    this.app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    this.app.use((err: Error, req: Request, res: Response) => {
       console.error('Erro na aplicação:', err);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
         error: 'Erro interno no servidor',
         message: err.message,
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
       });
     });
   }
