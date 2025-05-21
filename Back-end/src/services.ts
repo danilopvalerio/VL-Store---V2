@@ -1,5 +1,5 @@
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import Loja from './models/Loja';
+import { JWTUtil } from './utils/jwt';
 
 type TokenPayload = {
   id_loja: string;
@@ -9,17 +9,6 @@ type TokenPayload = {
 };
 
 export class AuthService {
-  private readonly secret: Secret;
-  private readonly expiresIn: string;
-
-  constructor() {
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET environment variable is not defined');
-    }
-    this.secret = process.env.JWT_SECRET;
-    this.expiresIn = '1d'; // Corrigido de 'id' para '1d' (1 dia)
-  }
-
   public gerarToken(loja: Loja): string {
     try {
       if (!loja.id_loja || !loja.email || !loja.nome) {
@@ -33,13 +22,7 @@ export class AuthService {
         role: loja.role || 'user',
       };
 
-      return jwt.sign(
-        payload,
-        this.secret as string,
-        {
-          expiresIn: this.expiresIn,
-        } as SignOptions,
-      );
+      return JWTUtil.gerarToken(payload);
     } catch (error) {
       console.error('Erro ao gerar token:', error);
       throw new Error('Falha ao gerar token');
@@ -48,9 +31,9 @@ export class AuthService {
 
   public verificarToken(token: string): TokenPayload | null {
     try {
-      const decoded = jwt.verify(token, this.secret) as any;
+      const decoded = JWTUtil.verificarToken(token);
 
-      // Validate that the decoded token has all required fields
+      // Validar que o token decodificado possui todos os campos necessários
       if (
         !decoded ||
         typeof decoded !== 'object' ||

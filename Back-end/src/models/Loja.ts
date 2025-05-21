@@ -24,7 +24,7 @@ export default class Loja {
   telefone: string;
 
   @Column({ nullable: false, default: 'user' })
-  role: string | undefined;
+  role: string;
 
   constructor(
     nome: string,

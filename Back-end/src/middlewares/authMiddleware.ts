@@ -1,44 +1,94 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services';
 
+type TokenPayload = {
+  id_loja: string;
+  email: string;
+  nome: string;
+  role: string;
+};
+
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: TokenPayload;
 }
 
-// Função authenticateJWT atualizada para usar AuthService
 export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    res.status(401).json({ message: 'Token não fornecido.' });
-    return;
-  }
-
-  const token = authHeader.split(' ')[1];
-  const authService = new AuthService();
-
   try {
-    const decoded = authService.verificarToken(token);
-    if (!decoded) {
-      res.status(403).json({ message: 'Token inválido.' });
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      res.status(401).json({
+        success: false,
+        error: 'Não autorizado',
+        message: 'Token de autenticação não fornecido',
+      });
       return;
     }
+
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+      res.status(401).json({
+        success: false,
+        error: 'Formato inválido',
+        message: 'Token deve estar no formato: Bearer <token>',
+      });
+      return;
+    }
+
+    const token = parts[1];
+    const authService = new AuthService();
+    const decoded = authService.verificarToken(token);
+
+    if (!decoded) {
+      res.status(403).json({
+        success: false,
+        error: 'Acesso proibido',
+        message: 'Token inválido ou expirado',
+      });
+      return;
+    }
+
     req.user = decoded;
     next();
   } catch (erro) {
-    res.status(403).json({ message: 'Token inválido.' });
     console.error('Erro na autenticação:', erro);
-    throw new Error('Falha na autenticação');
+    res.status(500).json({
+      success: false,
+      error: 'Erro de autenticação',
+      message: erro instanceof Error ? erro.message : 'Falha no processo de autenticação',
+    });
   }
 };
 
-// Middleware de autorização corrigido
 export const autorizar = (roleRequerida: string) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
-    if (!req.user || req.user.role !== roleRequerida) {
-      res.status(403).json({ message: 'Acesso não autorizado.' });
-      return;
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'Não autenticado',
+          message: 'Autenticação necessária para acessar este recurso',
+        });
+        return;
+      }
+
+      if (req.user.role !== roleRequerida) {
+        res.status(403).json({
+          success: false,
+          error: 'Acesso proibido',
+          message: `Permissão insuficiente. Necessário nível de acesso: ${roleRequerida}`,
+        });
+        return;
+      }
+
+      next();
+    } catch (erro) {
+      console.error('Erro na autorização:', erro);
+      res.status(500).json({
+        success: false,
+        error: 'Erro de autorização',
+        message: erro instanceof Error ? erro.message : 'Falha no processo de autorização',
+      });
     }
-    next();
   };
 };
