@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import styles from '../styles/RegisterPage.module.css';
+import styles from '../ui/styles/RegisterPage.module.css';
 import { IMaskInput } from 'react-imask';
 
 import { StoreRegistration as StoreRegistrationData } from '../domain/interfaces/store-registration-interface';

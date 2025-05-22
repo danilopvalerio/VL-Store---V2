@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import styles from '../styles/Login.module.css';
+import styles from '../ui/styles/Login.module.css';
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
