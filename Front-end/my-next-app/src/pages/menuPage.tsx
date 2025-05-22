@@ -1,6 +1,6 @@
-import Head from 'next/head';
-import styles from '../styles/Menu.module.css';
-import { useRouter } from 'next/router';
+import Head from "next/head";
+import styles from "../ui/styles/Menu.module.css";
+import { useRouter } from "next/router";
 
 const MenuPage: React.FC = () => {
   const router = useRouter();
@@ -23,29 +23,46 @@ const MenuPage: React.FC = () => {
         </header>
 
         <main className={styles.menu}>
-          <div className={styles.card} onClick={() => handleNavigation('/dashboard')}>
+          <div
+            className={styles.card}
+            onClick={() => handleNavigation("/dashboard")}
+          >
             <h3>Dashboard</h3>
             <p>Visualize informações gerais do sistema</p>
           </div>
 
-          <div className={styles.card} onClick={() => handleNavigation('/products')}>
+          <div
+            className={styles.card}
+            onClick={() => handleNavigation("/products")}
+          >
             <h3>Produtos</h3>
             <p>Gerencie o cadastro de produtos</p>
           </div>
 
-          <div className={styles.card} onClick={() => handleNavigation('/orders')}>
+          <div
+            className={styles.card}
+            onClick={() => handleNavigation("/orders")}
+          >
             <h3>Pedidos</h3>
             <p>Acompanhe os pedidos realizados</p>
           </div>
 
-          <div className={styles.card} onClick={() => handleNavigation('/profile')}>
+          <div
+            className={styles.card}
+            onClick={() => handleNavigation("/profile")}
+          >
             <h3>Perfil</h3>
             <p>Atualize seus dados de usuário</p>
           </div>
         </main>
 
         <footer className={styles.footer}>
-          <button className="btn btn-secondary" onClick={() => router.push('/loginPage')}>Sair</button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => router.push("/authPage")}
+          >
+            Sair
+          </button>
         </footer>
       </div>
     </>
