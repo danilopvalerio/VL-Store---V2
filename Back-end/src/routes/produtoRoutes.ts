@@ -32,7 +32,10 @@ const asyncHandler =
 router.post('/produtos', asyncHandler(produtoController.createProduto.bind(produtoController)));
 
 // Listar todos os produtos
-router.get('/produtos', asyncHandler(produtoController.findAll.bind(produtoController)));
+router.get(
+  '/produtos/loja/:id_loja',
+  asyncHandler(produtoController.findAll.bind(produtoController)),
+);
 
 // Buscar produto pela referência
 router.get(
@@ -68,7 +71,7 @@ router.get(
 );
 
 router.get(
-  '/produtos/paginado',
+  '/produtos/loja/:id_loja/paginado',
   asyncHandler(produtoController.findAllPaginado.bind(produtoController)),
 );
 

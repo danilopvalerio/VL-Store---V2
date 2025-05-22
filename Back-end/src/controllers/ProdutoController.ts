@@ -32,9 +32,20 @@ export default class ProdutoController {
     }
   }
 
-  async findAll(_req: Request, res: Response) {
+  async findAll(req: Request, res: Response) {
     try {
-      const produtos = await this.produtoRepositorio.find({ relations: ['variacoes'] });
+      const id_loja = req.params.id_loja;
+      if (!id_loja) {
+        return res.status(400).json({
+          success: false,
+          error: 'Parâmetro id_loja é obrigatório na URL',
+        });
+      }
+
+      const produtos = await this.produtoRepositorio.find({
+        where: { loja: { id_loja: id_loja } },
+        relations: ['variacoes'],
+      });
 
       res.status(200).json({
         success: true,
@@ -318,11 +329,22 @@ export default class ProdutoController {
 
   // Busca os produtos paginados - Default: pagina 1 - limite 9
   async findAllPaginado(req: Request, res: Response) {
-    const { page = 1, limit = 9 } = req.query;
+    const { page = '1', limit = '9' } = req.query;
+    const id_loja = req.params.id_loja;
+
+    if (!id_loja) {
+      return res.status(400).json({
+        success: false,
+        error: 'Parâmetro id_loja é obrigatório na URL',
+      });
+    }
+
     const skip = (Number(page) - 1) * Number(limit);
 
     try {
       const [produtos, total] = await this.produtoRepositorio.findAndCount({
+        where: { loja: { id_loja } },
+        relations: ['variacoes'],
         skip,
         take: Number(limit),
       });
