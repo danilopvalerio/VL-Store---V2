@@ -61,7 +61,7 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
   }
 };
 
-export const autorizar = (roleRequerida: UserRole) => {
+export const autorizar = (...rolesPermitidos: UserRole[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     try {
       if (!req.user) {
@@ -73,11 +73,11 @@ export const autorizar = (roleRequerida: UserRole) => {
         return;
       }
 
-      if (req.user.role !== roleRequerida) {
+      if (!rolesPermitidos.includes(req.user.role as UserRole)) {
         res.status(403).json({
           success: false,
           error: 'Acesso proibido',
-          message: `Permissão insuficiente. Necessário nível de acesso: ${roleRequerida}`,
+          message: `Permissão insuficiente. Necessário nível de acesso: ${rolesPermitidos}`,
         });
         return;
       }

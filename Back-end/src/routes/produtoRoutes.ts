@@ -32,19 +32,23 @@ const asyncHandler =
 // Criar produto
 router.post('/produtos',
     authenticateJWT,
-    autorizar(UserRole.FUNCIONARIO),
+    autorizar(UserRole.ADMIN),
     asyncHandler(produtoController.createProduto.bind(produtoController)));
 
 // Listar todos os produtos
 router.get(
   '/produtos/loja/:id_loja',
-  asyncHandler(produtoController.findAll.bind(produtoController)),
+    authenticateJWT,
+    autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
+    asyncHandler(produtoController.findAll.bind(produtoController)),
 );
 
 // Buscar produto pela referência
 router.get(
   '/produtos/loja/:id_loja/referencia/:referencia',
-  asyncHandler(produtoController.findByReferencia.bind(produtoController)),
+    authenticateJWT,
+    autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
+    asyncHandler(produtoController.findByReferencia.bind(produtoController)),
 );
 
 // Deletar Produto
@@ -59,7 +63,7 @@ router.delete(
 router.patch(
   '/produtos/loja/:id_loja/referencia/:referencia',
     authenticateJWT,
-    autorizar(UserRole.FUNCIONARIO),
+    autorizar(UserRole.ADMIN),
     asyncHandler(produtoController.update.bind(produtoController)),
 );
 
@@ -69,7 +73,7 @@ router.patch(
 router.post(
   '/produtos/variacao/loja/:id_loja/referencia/:referencia',
     authenticateJWT,
-    autorizar(UserRole.FUNCIONARIO),
+    autorizar(UserRole.ADMIN),
     asyncHandler(produtoController.addVariacao.bind(produtoController)),
 );
 
@@ -77,12 +81,16 @@ router.post(
 
 router.get(
   '/produtos/loja/:id_loja/busca',
-  asyncHandler(produtoController.searchByDescricaoOuNome.bind(produtoController)),
+    authenticateJWT,
+    autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
+    asyncHandler(produtoController.searchByDescricaoOuNome.bind(produtoController)),
 );
 
 router.get(
   '/produtos/loja/:id_loja/paginado',
-  asyncHandler(produtoController.findAllPaginado.bind(produtoController)),
+    authenticateJWT,
+    autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
+    asyncHandler(produtoController.findAllPaginado.bind(produtoController)),
 );
 
 export default router;
