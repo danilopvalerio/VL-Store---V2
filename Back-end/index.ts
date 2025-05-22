@@ -30,15 +30,43 @@ app.get('/', (req, res) => {
 })
 
 //Aqui iniciamos a conexão com o database e depois o servidor back-end
-AppDataSource.initialize().then(() => {
-  console.log('Conexão com o banco de dados estabelecida!');
-  
-  app.use('/api', lojaRoutes);
-  app.use('/api', produtoRoutes);
+// AppDataSource.initialize().then(() => {
+//   console.log('Conexão com o banco de dados estabelecida!');
+//
+//   app.use('/api', lojaRoutes);
+//   app.use('/api', produtoRoutes);
+//
+//   app.listen(PORT, () => {
+//     console.log(`Servidor rodando na porta ${PORT}`);
+//     console.log(`Acesse: http://localhost:${PORT}`);
+//     console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
+//   });
+// });
 
-  app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-    console.log(`Acesse: http://localhost:${PORT}`);
-    console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
-  });
-});
+async function initializeServer() {
+  try {
+    // Tentativa de conexão com o banco de dados
+    await AppDataSource.initialize();
+    console.log('Conexão com o banco de dados estabelecida!');
+    
+    // Configuração das rotas
+    app.use('/api', lojaRoutes);
+    app.use('/api', produtoRoutes);
+    
+    // Inicialização do servidor
+    app.listen(PORT, () => {
+      console.log(`Servidor rodando na porta ${PORT}`);
+      console.log(`Acesse: http://localhost:${PORT}`);
+      console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    });
+    
+  } catch (error) {
+    console.error('Falha ao conectar com o banco de dados:', error);
+    
+    // Encerra o processo com falha (código 1 indica erro)
+    process.exit(1);
+  }
+}
+
+// Inicializa o servidor
+initializeServer();
