@@ -1,7 +1,9 @@
+// @ts-ignore
 import express from 'express';
 import { AppDataSource } from './src/database/AppDataSource';
 import lojaRoutes from './src/routes/lojaRoutes';
 import produtoRoutes from './src/routes/produtoRoutes';
+// @ts-ignore
 import cors from 'cors';
 
 // Criando objeto APP express para criar o servidor WEB do back-end
@@ -19,10 +21,18 @@ const PORT = process.env.PORT;
 
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Backend do VL Store está funcionando!',
+    timestamp: new Date().toISOString(),
+  });
+})
+
 //Aqui iniciamos a conexão com o database e depois o servidor back-end
 AppDataSource.initialize().then(() => {
   console.log('Conexão com o banco de dados estabelecida!');
-
+  
   app.use('/api', lojaRoutes);
   app.use('/api', produtoRoutes);
 
