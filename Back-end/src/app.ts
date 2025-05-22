@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { AppDataSource } from './database/AppDataSource';
 import { Request, Response } from 'express';
 import lojaRoutes from './routes/lojaRoutes';
+import produtoRoutes from './routes/produtoRoutes';
 
 dotenv.config();
 
@@ -49,11 +50,12 @@ class App {
 
     // Rotas da aplicação
     this.app.use('/api', lojaRoutes);
+    this.app.use('/api', produtoRoutes);
   }
 
   private errorHandling(): void {
     // Middleware de tratamento de erros (deve ser definido após as rotas)
-    this.app.use((err: Error, req: Request, res: Response) => {
+    this.app.use((err: Error, req: Request, res: Response, next: Function) => {
       console.error('Erro na aplicação:', err);
       res.status(500).json({
         success: false,

@@ -19,7 +19,7 @@ const asyncHandler =
 
 router.post('/login', asyncHandler(lojaController.login.bind(lojaController)));
 
-router.get('/lojas', authenticateJWT, asyncHandler(lojaController.findAll.bind(lojaController)));
+router.get('/lojas', asyncHandler(lojaController.findAll.bind(lojaController)));
 
 router.post('/lojas', asyncHandler(lojaController.createLoja.bind(lojaController)));
 
@@ -38,6 +38,14 @@ router.patch(
 
 router.delete(
   '/lojas/:id',
+  authenticateJWT,
+  autorizar('user'),
+  asyncHandler(lojaController.delete.bind(lojaController)),
+);
+
+// Método temporário para deletar lojas - dev - sem token
+router.delete(
+  '/lojas-dev/:id',
   authenticateJWT,
   autorizar('user'),
   asyncHandler(lojaController.delete.bind(lojaController)),
