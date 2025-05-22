@@ -1,12 +1,9 @@
-// Arquivo: AuthPage.tsx (versão CORRIGIDA)
 import { useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import styles from '../ui/styles/Login.module.css';
 import axios from 'axios';
-// Se for usar axios, importe-o:
-// import axios from 'axios';
 
 const AuthPage: React.FC = () => {
   const router = useRouter();
