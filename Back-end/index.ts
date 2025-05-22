@@ -12,7 +12,7 @@ app.use(cors({
 }));
 
 // Porta utilizada para rodar o servidor
-const PORT = 9700;
+const PORT = process.env.PORT;
 
 //Aqui iniciamos a conexão com o database e depois o servidor back-end
 AppDataSource.initialize().then(() => {
@@ -21,6 +21,10 @@ AppDataSource.initialize().then(() => {
   app.use("/api", lojaRoutes);
 
   app.listen(PORT, () => {
-    console.log("Servidor online");
+    console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Acesse: http://localhost:${PORT}`);
+  console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
   });
 });
+
+

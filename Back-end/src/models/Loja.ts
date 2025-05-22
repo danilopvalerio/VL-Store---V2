@@ -1,8 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity("loja")
+@Entity('loja')
 export default class Loja {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id_loja!: string;
 
   @Column({ nullable: false })
@@ -23,13 +23,17 @@ export default class Loja {
   @Column({ nullable: false, unique: true })
   telefone: string;
 
+  @Column({ nullable: false, default: 'user' })
+  role: string;
+
   constructor(
     nome: string,
     senha: string,
     email: string,
     cpf_cnpj_proprietario_loja: string,
     data_nasc_proprietario: Date,
-    telefone: string
+    telefone: string,
+    role: string = 'user',
   ) {
     this.nome = nome;
     this.senha = senha;
@@ -37,5 +41,6 @@ export default class Loja {
     this.cpf_cnpj_proprietario_loja = cpf_cnpj_proprietario_loja;
     this.data_nasc_proprietario = data_nasc_proprietario;
     this.telefone = telefone;
+    this.role = role;
   }
 }
