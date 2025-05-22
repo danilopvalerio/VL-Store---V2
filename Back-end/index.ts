@@ -17,15 +17,17 @@ app.use(
 // Porta utilizada para rodar o servidor
 const PORT = process.env.PORT;
 
+app.use(express.json());
+
 //Aqui iniciamos a conexão com o database e depois o servidor back-end
 AppDataSource.initialize().then(() => {
   console.log('Conexão com o banco de dados estabelecida!');
-  app.use(express.json());
+
   app.use('/api', lojaRoutes);
   app.use('/api', produtoRoutes);
 
   app.listen(PORT, () => {
-    console.log(`Servidor rodando na psssorta ${PORT}`);
+    console.log(`Servidor rodando na porta ${PORT}`);
     console.log(`Acesse: http://localhost:${PORT}`);
     console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
   });

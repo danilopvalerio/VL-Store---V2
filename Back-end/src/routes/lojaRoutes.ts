@@ -17,7 +17,11 @@ const asyncHandler =
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 
+//----- Login
+
 router.post('/login', asyncHandler(lojaController.login.bind(lojaController)));
+
+//----- CRUD
 
 router.get('/lojas', asyncHandler(lojaController.findAll.bind(lojaController)));
 
@@ -25,16 +29,11 @@ router.post('/lojas', asyncHandler(lojaController.createLoja.bind(lojaController
 
 router.get(
   '/lojas/:id',
-  authenticateJWT,
+  // authenticateJWT,
   asyncHandler(lojaController.findById.bind(lojaController)),
 );
 
-router.patch(
-  '/lojas/:id',
-  authenticateJWT,
-  autorizar('user'),
-  asyncHandler(lojaController.update.bind(lojaController)),
-);
+router.patch('/lojas/:id', asyncHandler(lojaController.update.bind(lojaController)));
 
 router.delete(
   '/lojas/:id',

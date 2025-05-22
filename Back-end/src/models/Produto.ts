@@ -29,7 +29,7 @@ export class Produto {
   @Column({ nullable: true })
   genero?: string;
 
-  @ManyToOne(() => Loja)
+  @ManyToOne(() => Loja, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_loja' })
   loja!: Loja;
 

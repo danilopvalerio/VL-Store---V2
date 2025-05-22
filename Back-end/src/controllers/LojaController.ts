@@ -339,8 +339,76 @@ export default class LojaController {
   }
 
   async login(req: Request, res: Response) {
-    return res.status(201).json({
-      body: req.body,
-    });
+    const { email, senha } = req.body;
+
+    try {
+      // Validar dados de entrada
+      if (!email || !senha) {
+        return res.status(400).json({
+          success: false,
+          error: 'Dados incompletos',
+          message: 'Email e senha são obrigatórios',
+        });
+      }
+
+      // Validar formato do email
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Formato inválido',
+          message: 'O formato do email é inválido',
+        });
+      }
+
+      // Busca a loja pelo email
+      const loja = await this.lojaRepositorio.findOne({
+        where: { email },
+      });
+
+      if (!loja) {
+        // Não revelar que o email não existe por segurança
+        return res.status(401).json({
+          success: false,
+          error: 'Autenticação falhou, não achou o email',
+          message: 'Email ou senha inválidos',
+        });
+      }
+
+      // Verifica a senha
+      const senhaCorreta = await bcrypt.compare(senha, loja.senha);
+      if (!senhaCorreta) {
+        return res.status(401).json({
+          success: false,
+          error: 'Autenticação falhou',
+          message: 'Email ou senha inválidos',
+        });
+      }
+
+      // Gera o token JWT
+      const token = this.authService.gerarToken(loja);
+
+      // Retorna o token e os dados da loja (sem a senha)
+      const { senha: _, ...lojaSemSenha } = loja;
+
+      // Log de login bem-sucedido (para fins de auditoria)
+      console.log(`Login bem-sucedido para o usuário: ${email} (ID: ${loja.id_loja})`);
+
+      res.status(200).json({
+        success: true,
+        message: 'Login realizado com sucesso',
+        data: {
+          loja: lojaSemSenha,
+          token,
+        },
+      });
+    } catch (error) {
+      res.status(400).json({ error: error });
+      console.error('Erro no login:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro no processo de login',
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
+      });
+    }
   }
 }
