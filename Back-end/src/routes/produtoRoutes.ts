@@ -27,23 +27,37 @@ const asyncHandler =
 // );
 
 // --- PRODUTOS --- Colocar autenticação depois com JWT
+
+// Criar produto
 router.post('/produtos', asyncHandler(produtoController.createProduto.bind(produtoController)));
 
+// Listar todos os produtos
 router.get('/produtos', asyncHandler(produtoController.findAll.bind(produtoController)));
 
+// Buscar produto pela referência
 router.get(
   '/produtos/loja/:id_loja/referencia/:referencia',
   asyncHandler(produtoController.findByReferencia.bind(produtoController)),
 );
 
+// Deletar Produto
 router.delete(
   '/produtos/loja/:id_loja/referencia/:referencia',
   asyncHandler(produtoController.delete.bind(produtoController)),
 );
 
+// Atualizar produto
 router.patch(
   '/produtos/loja/:id_loja/referencia/:referencia',
   asyncHandler(produtoController.update.bind(produtoController)),
+);
+
+// --- VARIAÇÕES DE PRODUTOS
+
+//Adicionar variação
+router.post(
+  '/produtos/variacao/loja/:id_loja/referencia/:referencia',
+  asyncHandler(produtoController.addVariacao.bind(produtoController)),
 );
 
 // --- FILTROS DE PRODUTOS ---
@@ -51,6 +65,11 @@ router.patch(
 router.get(
   '/produtos/loja/:id_loja/busca',
   asyncHandler(produtoController.searchByDescricaoOuNome.bind(produtoController)),
+);
+
+router.get(
+  '/produtos/paginado',
+  asyncHandler(produtoController.findAllPaginado.bind(produtoController)),
 );
 
 export default router;

@@ -25,7 +25,7 @@ AppDataSource.initialize().then(() => {
   app.use('/api', produtoRoutes);
 
   app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(`Servidor rodando na psssorta ${PORT}`);
     console.log(`Acesse: http://localhost:${PORT}`);
     console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
   });

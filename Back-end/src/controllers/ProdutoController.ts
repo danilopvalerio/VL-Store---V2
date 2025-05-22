@@ -315,4 +315,32 @@ export default class ProdutoController {
       });
     }
   }
+
+  // Busca os produtos paginados - Default: pagina 1 - limite 9
+  async findAllPaginado(req: Request, res: Response) {
+    const { page = 1, limit = 9 } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    try {
+      const [produtos, total] = await this.produtoRepositorio.findAndCount({
+        skip,
+        take: Number(limit),
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: produtos,
+        page: Number(page),
+        totalPages: Math.ceil(total / Number(limit)),
+        totalItems: total,
+      });
+    } catch (error) {
+      console.error('Erro ao buscar produtos paginados:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao buscar produtos',
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
+      });
+    }
+  }
 }
