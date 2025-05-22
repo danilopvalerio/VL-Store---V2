@@ -1,6 +1,7 @@
 import express from 'express';
 import LojaController from '../controllers/LojaController';
 import { authenticateJWT, autorizar, AuthRequest } from '../middlewares/authMiddleware';
+import { UserRole } from '../types/user.types';
 
 const router = express.Router();
 const lojaController = new LojaController();
@@ -23,9 +24,11 @@ router.post('/login', asyncHandler(lojaController.login.bind(lojaController)));
 
 //----- CRUD
 
-router.get('/lojas', asyncHandler(lojaController.findAll.bind(lojaController)));
+router.get('/lojas',
+    asyncHandler(lojaController.findAll.bind(lojaController)));
 
-router.post('/lojas', asyncHandler(lojaController.createLoja.bind(lojaController)));
+router.post('/lojas',
+    asyncHandler(lojaController.createLoja.bind(lojaController)));
 
 router.get(
   '/lojas/:id',
@@ -38,7 +41,7 @@ router.patch('/lojas/:id', asyncHandler(lojaController.update.bind(lojaControlle
 router.delete(
   '/lojas/:id',
   authenticateJWT,
-  autorizar('user'),
+  autorizar(UserRole.ADMIN),
   asyncHandler(lojaController.delete.bind(lojaController)),
 );
 
@@ -46,18 +49,10 @@ router.delete(
 router.delete(
   '/lojas-dev/:id',
   authenticateJWT,
-  autorizar('user'),
+  autorizar(UserRole.ADMIN),
   asyncHandler(lojaController.delete.bind(lojaController)),
 );
 
-router.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    status: 'API funcionando normalmente',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-  });
-});
 
 router.get(
   '/me',

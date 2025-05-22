@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { UserRole } from '../types/user.types';
 
 @Entity('loja')
 export default class Loja {
@@ -22,10 +23,14 @@ export default class Loja {
 
   @Column({ nullable: false, unique: true })
   telefone: string;
-
-  @Column({ nullable: false, default: 'user' })
-  role: string;
-
+  
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.ADMIN // Use o enum aqui
+  })
+  role: UserRole; // Altere o tipo para UserRole
+  
   constructor(
     nome: string,
     senha: string,
@@ -33,7 +38,7 @@ export default class Loja {
     cpf_cnpj_proprietario_loja: string,
     data_nasc_proprietario: Date,
     telefone: string,
-    role: string = 'user',
+    role: UserRole = UserRole.ADMIN
   ) {
     this.nome = nome;
     this.senha = senha;

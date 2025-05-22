@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import validator from 'validator';
 import { AuthService } from '../services';
+import { UserRole } from '../types/user.types';
 
 // Interface para os dados de criação da loja
 interface LojaCriacaoDTO {
@@ -14,7 +15,7 @@ interface LojaCriacaoDTO {
   cpf_cnpj_proprietario_loja: string;
   data_nasc_proprietario: Date;
   telefone: string;
-  role?: string;
+  role?: UserRole;
 }
 
 export default class LojaController {
@@ -120,7 +121,7 @@ export default class LojaController {
         req.body.cpf_cnpj_proprietario_loja,
         req.body.data_nasc_proprietario,
         req.body.telefone,
-        req.body.role || 'user',
+        req.body.role || UserRole.ADMIN,
       );
 
       const savedLoja = await this.lojaRepositorio.save(loja);

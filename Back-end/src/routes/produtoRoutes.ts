@@ -1,6 +1,7 @@
 import express from 'express';
 import ProdutoController from '../controllers/ProdutoController';
 import { authenticateJWT, autorizar } from '../middlewares/authMiddleware';
+import { UserRole } from "../types/user.types";
 
 const router = express.Router();
 const produtoController = new ProdutoController();
@@ -29,7 +30,10 @@ const asyncHandler =
 // --- PRODUTOS --- Colocar autenticação depois com JWT
 
 // Criar produto
-router.post('/produtos', asyncHandler(produtoController.createProduto.bind(produtoController)));
+router.post('/produtos',
+    authenticateJWT,
+    autorizar(UserRole.FUNCIONARIO),
+    asyncHandler(produtoController.createProduto.bind(produtoController)));
 
 // Listar todos os produtos
 router.get(
@@ -46,13 +50,17 @@ router.get(
 // Deletar Produto
 router.delete(
   '/produtos/loja/:id_loja/referencia/:referencia',
-  asyncHandler(produtoController.delete.bind(produtoController)),
+    authenticateJWT,
+    autorizar(UserRole.ADMIN),
+    asyncHandler(produtoController.delete.bind(produtoController)),
 );
 
 // Atualizar produto
 router.patch(
   '/produtos/loja/:id_loja/referencia/:referencia',
-  asyncHandler(produtoController.update.bind(produtoController)),
+    authenticateJWT,
+    autorizar(UserRole.FUNCIONARIO),
+    asyncHandler(produtoController.update.bind(produtoController)),
 );
 
 // --- VARIAÇÕES DE PRODUTOS
@@ -60,7 +68,9 @@ router.patch(
 //Adicionar variação
 router.post(
   '/produtos/variacao/loja/:id_loja/referencia/:referencia',
-  asyncHandler(produtoController.addVariacao.bind(produtoController)),
+    authenticateJWT,
+    autorizar(UserRole.FUNCIONARIO),
+    asyncHandler(produtoController.addVariacao.bind(produtoController)),
 );
 
 // --- FILTROS DE PRODUTOS ---

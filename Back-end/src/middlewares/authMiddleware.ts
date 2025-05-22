@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services';
+import { UserRole } from '../types/user.types';
 
 type TokenPayload = {
   id_loja: string;
@@ -60,7 +61,7 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
   }
 };
 
-export const autorizar = (roleRequerida: string) => {
+export const autorizar = (roleRequerida: UserRole) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     try {
       if (!req.user) {
