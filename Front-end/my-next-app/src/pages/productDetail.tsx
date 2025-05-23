@@ -97,74 +97,111 @@ const productDetail = () => {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { name, value } = e.target;
-    const newValue =
-      name === "quant_variacao" || name === "valor" ? Number(value) : value;
+    const updated = [...variations];
 
-    const updatedVariations = [...variations];
-    updatedVariations[index] = {
-      ...updatedVariations[index],
-      [name]: newValue,
-    };
-    setVariations(updatedVariations);
+    if (name === "valor") {
+      // Para o campo valor, mantemos como texto (string)
+      updated[index] = {
+        ...updated[index],
+        [name]: value, // Armazena como texto
+      };
+    } else {
+      // Para outros campos, mantemos a lógica original
+      updated[index] = {
+        ...updated[index],
+        [name]: name === "descricao_variacao" ? value : parseFloat(value) || 0,
+      };
+    }
 
-    const variation = updatedVariations[index];
+    setVariations(updated);
 
-    try {
-      if (variation.id_variacao) {
-        // Atualizar variação existente
-        await axios.patch(
-          `http://localhost:9700/api/produtos/variacao/${variation.id_variacao}`,
-          { [name]: newValue },
-          { headers: getAuthHeaders() }
-        );
-      } else {
-        // Criar nova variação
-        const response = await axios.post(
-          `http://localhost:9700/api/produtos/variacao/loja/${productData.id_loja}/referencia/${productData.referencia}`,
-          variation,
-          { headers: getAuthHeaders() }
-        );
+    // Restante da lógica de persistência...
+    const variation = updated[index];
+    const valorNumerico =
+      parseFloat(variation.valor.toString().replace(",", ".")) || 0;
 
-        // Atualiza o ID da variação no estado
-        updatedVariations[index].id_variacao = response.data.data.id_variacao;
-        setVariations(updatedVariations);
+    const hasValidData =
+      variation.descricao_variacao.trim() !== "" && valorNumerico > 0;
+
+    if (variation.id_variacao) {
+      // Variação já existe no banco, atualiza
+      const url = `http://localhost:9700/api/variacoes/${variation.id_variacao}`;
+      const body = {
+        [name]:
+          name === "valor" ? valorNumerico : variation[name as keyof Variation],
+      };
+
+      try {
+        await axios.patch(url, body, { headers: getAuthHeaders() });
+      } catch (err) {
+        console.error("Erro ao atualizar variação:", err);
+        setError("Erro ao atualizar variação");
+        setTimeout(() => setError(""), 3000);
       }
-    } catch (err) {
-      console.error("Erro ao atualizar variação:", err);
-      setError("Erro ao atualizar variação");
-      setTimeout(() => setError(""), 3000);
+    } else if (hasValidData) {
+      // Variação nova com dados válidos, cria no banco
+      const url = `http://localhost:9700/api/produtos/referencia/${productData.referencia}/loja/${productData.id_loja}/variacoes`;
+      const body = {
+        descricao_variacao: variation.descricao_variacao,
+        quant_variacao: variation.quant_variacao,
+        valor: valorNumerico,
+      };
+
+      try {
+        const response = await axios.post(url, body, {
+          headers: getAuthHeaders(),
+        });
+
+        // Atualiza a variação local com o ID retornado do banco
+        const updatedWithId = [...updated];
+        updatedWithId[index] = {
+          ...variation,
+          id_variacao: response.data.id_variacao,
+          valor: valorNumerico, // Atualiza com o valor numérico
+        };
+        setVariations(updatedWithId);
+      } catch (err) {
+        console.error("Erro ao criar variação:", err);
+        setError("Erro ao criar variação");
+        setTimeout(() => setError(""), 3000);
+      }
     }
   };
 
   const addVariation = () => {
-    setVariations([
-      ...variations,
-      { descricao_variacao: "", quant_variacao: 0, valor: 0 },
-    ]);
+    // Apenas adiciona uma nova variação vazia localmente
+    const newVariation = {
+      descricao_variacao: "",
+      quant_variacao: 0,
+      valor: 0,
+    };
+
+    console.log("Adicionando variação local:", newVariation);
+    setVariations([...variations, newVariation]);
   };
 
   const removeVariation = async (index: number) => {
-    if (variations.length <= 1) return;
+    const variation = variations[index];
 
-    const variationToRemove = variations[index];
-    const updatedVariations = [...variations];
-    updatedVariations.splice(index, 1);
-    setVariations(updatedVariations);
-
-    if (variationToRemove.id_variacao) {
+    if (variation.id_variacao) {
+      // Se a variação existe no banco, remove do banco primeiro
       try {
         await axios.delete(
-          `http://localhost:9700/api/produtos/variacao/${variationToRemove.id_variacao}`,
+          `http://localhost:9700/api/variacoes/${variation.id_variacao}`,
           { headers: getAuthHeaders() }
         );
       } catch (err) {
-        console.error("Erro ao remover variação:", err);
-        setError("Erro ao remover variação");
+        console.error("Erro ao excluir variação:", err);
+        setError("Erro ao excluir variação");
         setTimeout(() => setError(""), 3000);
-        // Reverte a remoção se der erro
-        setVariations(variations);
+        return;
       }
     }
+
+    // Remove localmente
+    const updated = [...variations];
+    updated.splice(index, 1);
+    setVariations(updated);
   };
 
   const deleteProduct = async () => {
@@ -199,13 +236,14 @@ const productDetail = () => {
                 <h5 className="text-center mb-2">Informações gerais</h5>
 
                 <label className="product-label">Referência*:</label>
+
                 <input
                   className="mb-3 produto-input"
                   name="referencia"
                   placeholder="Ex: REF0008"
                   value={productData.referencia}
-                  onChange={handleChange}
-                  required
+                  readOnly
+                  style={{ backgroundColor: "#f8f9fa", cursor: "not-allowed" }}
                 />
 
                 <label className="product-label">Nome do Produto*:</label>
@@ -283,16 +321,6 @@ const productDetail = () => {
 
                     <div className="col-6 col-md-2">
                       <p className="col-12 m-2 text-center">Valor* (R$)</p>
-                      <input
-                        type="number"
-                        className="col-12 produto-input"
-                        placeholder="Ex: 79.90"
-                        name="valor"
-                        step="0.01"
-                        value={variation.valor || ""}
-                        onChange={(e) => handleVariationChange(index, e)}
-                        min="0"
-                      />
                     </div>
 
                     <button
@@ -329,16 +357,9 @@ const productDetail = () => {
             <button
               type="button"
               className="down-btn btn col-12 col-md-3 primaria"
+              onClick={deleteProduct}
             >
-              Deletar
-            </button>
-
-            <button
-              type="submit"
-              className="down-btn btn col-12 col-md-3 primaria"
-              disabled={loading}
-            >
-              {loading ? "Salvando..." : "Salvar Produto"}
+              Deletar Produto
             </button>
           </div>
         </form>

@@ -71,28 +71,28 @@ router.patch(
 
 // --- VARIAÇÕES DE PRODUTOS
 
-//Adicionar variação
+// Adicionar variação (POST /produtos/:referencia/loja/:id_loja/variacoes)
 router.post(
-  '/produtos/variacao/loja/:id_loja/referencia/:referencia',
+  '/produtos/referencia/:referencia/loja/:id_loja/variacoes',
   authenticateJWT,
   autorizar(UserRole.ADMIN),
   asyncHandler(produtoController.addVariacao.bind(produtoController)),
 );
 
-//Atualizar variação
+// Atualizar variação (PATCH /variacoes/:id_variacao)
 router.patch(
-  '/produtos/variacao/loja/:id_loja/referencia/:referencia/:variacao',
+  '/variacoes/:id_variacao',
   authenticateJWT,
   autorizar(UserRole.ADMIN),
   asyncHandler(produtoController.updateVariacao.bind(produtoController)),
 );
 
-//Deletar variação
-router.patch(
-  '/produtos/variacao/loja/:id_loja/referencia/:referencia/:variacao',
+// Deletar variação (DELETE /variacoes/:id_variacao)
+router.delete(
+  '/variacoes/:id_variacao',
   authenticateJWT,
   autorizar(UserRole.ADMIN),
-  asyncHandler(produtoController.updateVariacao.bind(produtoController)),
+  asyncHandler(produtoController.deleteVariacao.bind(produtoController)),
 );
 
 // --- FILTROS DE PRODUTOS ---

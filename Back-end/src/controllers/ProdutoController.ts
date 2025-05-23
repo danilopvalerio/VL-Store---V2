@@ -204,8 +204,17 @@ export default class ProdutoController {
 
   async updateVariacao(req: Request, res: Response) {
     const { id_variacao } = req.params;
+    const dadosAtualizados = req.body;
 
     try {
+      if (!id_variacao) {
+        return res.status(400).json({
+          success: false,
+          error: 'Parâmetro ausente',
+          message: 'ID da variação é obrigatório',
+        });
+      }
+
       const variacao = await this.variacaoRepositorio.findOneBy({ id_variacao });
 
       if (!variacao) {
@@ -216,7 +225,8 @@ export default class ProdutoController {
         });
       }
 
-      this.variacaoRepositorio.merge(variacao, req.body);
+      // Faz o merge dos dados atualizados com a variação existente
+      this.variacaoRepositorio.merge(variacao, dadosAtualizados);
       const variacaoAtualizada = await this.variacaoRepositorio.save(variacao);
 
       res.status(200).json({
@@ -225,7 +235,7 @@ export default class ProdutoController {
         data: variacaoAtualizada,
       });
     } catch (error) {
-      console.error('Erro ao atualizar variação:', error);
+      console.error(`Erro ao atualizar variação ${id_variacao}:`, error);
       res.status(500).json({
         success: false,
         error: 'Erro ao atualizar variação',
