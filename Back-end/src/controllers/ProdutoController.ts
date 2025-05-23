@@ -202,6 +202,38 @@ export default class ProdutoController {
     }
   }
 
+  async updateVariacao(req: Request, res: Response) {
+    const { id_variacao } = req.params;
+
+    try {
+      const variacao = await this.variacaoRepositorio.findOneBy({ id_variacao });
+
+      if (!variacao) {
+        return res.status(404).json({
+          success: false,
+          error: 'Variação não encontrada',
+          message: 'Variação com o ID informado não foi encontrada',
+        });
+      }
+
+      this.variacaoRepositorio.merge(variacao, req.body);
+      const variacaoAtualizada = await this.variacaoRepositorio.save(variacao);
+
+      res.status(200).json({
+        success: true,
+        message: 'Variação atualizada com sucesso',
+        data: variacaoAtualizada,
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar variação:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao atualizar variação',
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
+      });
+    }
+  }
+
   async addVariacao(req: Request, res: Response) {
     const { referencia, id_loja } = req.params;
 
@@ -233,38 +265,6 @@ export default class ProdutoController {
       res.status(500).json({
         success: false,
         error: 'Erro ao adicionar variação',
-        message: error instanceof Error ? error.message : 'Erro desconhecido',
-      });
-    }
-  }
-
-  async updateVariacao(req: Request, res: Response) {
-    const { id_variacao } = req.params;
-
-    try {
-      const variacao = await this.variacaoRepositorio.findOneBy({ id_variacao });
-
-      if (!variacao) {
-        return res.status(404).json({
-          success: false,
-          error: 'Variação não encontrada',
-          message: 'Variação com o ID informado não foi encontrada',
-        });
-      }
-
-      this.variacaoRepositorio.merge(variacao, req.body);
-      const variacaoAtualizada = await this.variacaoRepositorio.save(variacao);
-
-      res.status(200).json({
-        success: true,
-        message: 'Variação atualizada com sucesso',
-        data: variacaoAtualizada,
-      });
-    } catch (error) {
-      console.error('Erro ao atualizar variação:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Erro ao atualizar variação',
         message: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
