@@ -37,9 +37,9 @@
 .product-card {
   background-color: rgba(255, 255, 255, 0.086);
   overflow: hidden;
-  height: 350px;
+  height: 230px;
   min-width: 200px;
-  max-width: 350px;
+  width: 260px;
 }
 
 .product-card img {

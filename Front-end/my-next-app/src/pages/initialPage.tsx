@@ -1,9 +1,18 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import "../../public/css/general.css";
 
 const InitialPage: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    // Simula carregamento de recursos
+
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   const pushLoginPage = () => {
     router.push("/loginPage");
@@ -18,6 +27,8 @@ const InitialPage: React.FC = () => {
       <Head>
         <title>Bem-vindo - VL Store</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="preload" href="/css/general.css" as="style" />
+        <link rel="preload" href="/css/menu.css" as="style" />
       </Head>
 
       <header className="w-100">
@@ -30,7 +41,7 @@ const InitialPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="mx-auto login-register-block fine-transparent-border white-light d-flex justify-content-center align-items-center overflow-hidden w-75">
+      <div className="mx-auto fine-transparent-border white-light d-flex justify-content-center align-items-center overflow-hidden rounded-5">
         <div className="row w-100 shadow overflow-hidden">
           {/* Painel de Informações */}
           <div className="col-md-6 text-white d-flex flex-column justify-content-center align-items-center text-center p-4 quartenary">

@@ -14,6 +14,27 @@ export default class ProdutoController {
 
   async createProduto(req: Request, res: Response) {
     try {
+      const { referencia, id_loja } = req.body;
+
+      if (!referencia || !id_loja) {
+        return res.status(400).json({
+          success: false,
+          error: 'Parâmetros ausentes',
+          message: 'Referência e ID da loja são obrigatórios para criar um produto',
+        });
+      }
+
+      // Verificar se produto já existe com essa referencia e id_loja
+      const produtoExistente = await this.produtoRepositorio.findOneBy({ referencia, id_loja });
+
+      if (produtoExistente) {
+        return res.status(409).json({
+          success: false,
+          error: 'Produto já existe',
+          message: 'Já existe um produto com essa referência nessa loja',
+        });
+      }
+
       const produto = this.produtoRepositorio.create(req.body);
       const produtoSalvo = await this.produtoRepositorio.save(produto);
 

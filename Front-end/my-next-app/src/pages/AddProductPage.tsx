@@ -1,8 +1,13 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
+import axios from "axios";
 import "../../public/css/products.css";
 import "../../public/css/general.css";
 
 const AddProduct = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
   const [productData, setProductData] = useState({
     referencia: "",
     nome: "",
@@ -14,6 +19,13 @@ const AddProduct = () => {
   const [variations, setVariations] = useState([
     { descricao_variacao: "", quant_variacao: 0, valor: 0 },
   ]);
+
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  const pushBackToProducts = () => {
+    router.push("/productsPage");
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -42,6 +54,7 @@ const AddProduct = () => {
   };
 
   const removeVariation = (index: number) => {
+    if (variations.length <= 1) return;
     const updatedVariations = [...variations];
     updatedVariations.splice(index, 1);
     setVariations(updatedVariations);
@@ -49,45 +62,111 @@ const AddProduct = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const response = await fetch("/api/produtos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...productData,
-          id_loja: "2e8bb522-62d1-4578-b402-c12f98c0d64a",
-          variacoes: variations,
-        }),
-      });
+    setLoading(true);
+    setError("");
+    setSuccess(false);
 
-      if (response.ok) {
-        alert("Produto adicionado com sucesso!");
-        // Reset form
-        setProductData({
-          referencia: "",
-          nome: "",
-          categoria: "",
-          material: "",
-          genero: "",
-        });
-        setVariations([
-          { descricao_variacao: "", quant_variacao: 0, valor: 0 },
-        ]);
-      } else {
-        throw new Error("Erro ao adicionar produto");
-      }
-    } catch (err) {
-      console.error("Erro:", err);
-      alert("Ocorreu um erro ao adicionar o produto");
+    const jwtToken = localStorage.getItem("jwtToken");
+    const userData = localStorage.getItem("userData");
+
+    if (
+      !productData.referencia ||
+      !productData.nome ||
+      !productData.categoria ||
+      !productData.material ||
+      !productData.genero ||
+      variations.some(
+        (v) => !v.descricao_variacao || v.quant_variacao <= 0 || v.valor <= 0
+      )
+    ) {
+      setError("Preencha todos os campos obrigatórios corretamente.");
+      setLoading(false);
+      return;
     }
+
+    if (!jwtToken || !userData) {
+      router.push("/initialPage");
+      return;
+    }
+
+    try {
+      const parsedData = JSON.parse(userData);
+      const idLoja = parsedData.id_loja;
+
+      const payload = {
+        ...productData,
+        id_loja: idLoja,
+        variacoes: variations.map((variation) => ({
+          ...variation,
+          valor: Number(variation.valor),
+        })),
+      };
+
+      const response = await axios.post(
+        "http://localhost:9700/api/produtos",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 5000,
+        }
+      );
+
+      if (response.status === 201) {
+        setSuccess(true);
+        setTimeout(() => {
+          pushBackToProducts();
+        }, 2000);
+      }
+    } catch (error: any) {
+      console.error("Erro ao adicionar produto:", error);
+
+      // trate o erro com segurança para não acessar algo indefinido
+      if (error?.response?.data?.message) {
+        setError(`Erro: ${error.response.data.message}`);
+      } else if (error?.message) {
+        setError(`Erro: ${error.message}`);
+      } else {
+        setError(
+          "Erro ao adicionar produto. Verifique os dados e tente novamente."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearForm = () => {
+    setProductData({
+      referencia: "",
+      nome: "",
+      categoria: "",
+      material: "",
+      genero: "",
+    });
+    setVariations([{ descricao_variacao: "", quant_variacao: 0, valor: 0 }]);
+    setError("");
+    setSuccess(false);
   };
 
   return (
     <div className="d-flex justify-content-center align-items-center w-100">
       <div className="product-page d-flex justify-content-center align-items-center terciary p-4 flex-column rounded-5 white-light">
         <h3 className="col-12 text-center">Adicionar Novo Produto</h3>
+
+        {success && (
+          <div className="alert alert-success col-12 text-center mt-2">
+            Produto cadastrado com sucesso! Redirecionando...
+          </div>
+        )}
+
+        {error && (
+          <div className="alert alert-danger col-12 text-center mt-2">
+            {error}
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit}
@@ -98,58 +177,58 @@ const AddProduct = () => {
               <div className="mx-auto col-12 p-4 info-base row">
                 <h5 className="text-center mb-2">Informações gerais</h5>
 
-                <label className="product-label">Referência:</label>
+                <label className="product-label">Referência*:</label>
                 <input
                   className="mb-3 produto-input"
                   name="referencia"
-                  placeholder="Digite a referência"
+                  placeholder="Ex: REF0008"
                   value={productData.referencia}
                   onChange={handleChange}
                   required
                 />
 
-                <label className="product-label">Título:</label>
+                <label className="product-label">Nome do Produto*:</label>
                 <input
                   className="mb-3 produto-input"
                   name="nome"
-                  placeholder="Digite o nome do produto"
+                  placeholder="Ex: Camiseta Polo Levi's"
                   value={productData.nome}
                   onChange={handleChange}
                   required
                 />
 
-                <label className="product-label">Categoria:</label>
+                <label className="product-label">Categoria*:</label>
                 <input
                   className="mb-3 produto-input"
                   name="categoria"
-                  placeholder="Digite a categoria"
+                  placeholder="Ex: Roupas"
                   value={productData.categoria}
                   onChange={handleChange}
                   required
                 />
 
-                <label className="product-label">Material:</label>
+                <label className="product-label">Material*:</label>
                 <input
                   className="mb-3 produto-input"
                   name="material"
-                  placeholder="Digite o material"
+                  placeholder="Ex: Algodão"
                   value={productData.material}
                   onChange={handleChange}
                   required
                 />
 
-                <label className="product-label">Gênero (opcional):</label>
+                <label className="product-label">Gênero:</label>
                 <input
                   className="mb-3 produto-input"
                   name="genero"
-                  placeholder="Digite o gênero"
+                  placeholder="Ex: Masculino"
                   value={productData.genero}
                   onChange={handleChange}
                 />
               </div>
 
               <div className="col-12 w-100">
-                <h5 className="text-center mb-4">Variações:</h5>
+                <h5 className="text-center mb-4">Variações*:</h5>
 
                 {variations.map((variation, index) => (
                   <article
@@ -157,11 +236,11 @@ const AddProduct = () => {
                     className="p-1 mx-auto variacao row align-items-center pb-4 justify-content-evenly mb-2 w-100"
                   >
                     <div className="col-12 col-md-6">
-                      <p className="col-12 mt-2 text-center">Descrição</p>
+                      <p className="col-12 mt-2 text-center">Descrição*</p>
                       <input
                         type="text"
                         className="col-12 produto-input"
-                        placeholder="Digite a variação"
+                        placeholder="Ex: Tamanho GG - Azul"
                         name="descricao_variacao"
                         value={variation.descricao_variacao}
                         onChange={(e) => handleVariationChange(index, e)}
@@ -170,13 +249,13 @@ const AddProduct = () => {
                     </div>
 
                     <div className="col-6 col-md-2">
-                      <p className="col-12 m-2 text-center">Quantidade</p>
+                      <p className="col-12 m-2 text-center">Quantidade*</p>
                       <input
                         type="number"
                         className="col-12 produto-input"
-                        placeholder="Quantidade"
+                        placeholder="Ex: 10"
                         name="quant_variacao"
-                        value={variation.quant_variacao}
+                        value={variation.quant_variacao || ""}
                         onChange={(e) => handleVariationChange(index, e)}
                         required
                         min="0"
@@ -184,14 +263,14 @@ const AddProduct = () => {
                     </div>
 
                     <div className="col-6 col-md-2">
-                      <p className="col-12 m-2 text-center">Valor</p>
+                      <p className="col-12 m-2 text-center">Valor* (R$)</p>
                       <input
                         type="number"
                         className="col-12 produto-input"
-                        placeholder="Valor"
+                        placeholder="Ex: 79.90"
                         name="valor"
                         step="0.01"
-                        value={variation.valor}
+                        value={variation.valor || ""}
                         onChange={(e) => handleVariationChange(index, e)}
                         required
                         min="0"
@@ -200,7 +279,7 @@ const AddProduct = () => {
 
                     <button
                       type="button"
-                      className="col-12 col-md-1 mt-4 btn-delete rounded-5 col-md-1"
+                      className="col-12 col-md-1 mt-4 btn-delete rounded-5"
                       onClick={() => removeVariation(index)}
                       disabled={variations.length <= 1}
                     >
@@ -224,27 +303,25 @@ const AddProduct = () => {
             <button
               type="button"
               className="down-btn btn col-12 col-md-3 primaria"
-              onClick={() => {
-                setProductData({
-                  referencia: "",
-                  nome: "",
-                  categoria: "",
-                  material: "",
-                  genero: "",
-                });
-                setVariations([
-                  { descricao_variacao: "", quant_variacao: 0, valor: 0 },
-                ]);
-              }}
+              onClick={clearForm}
             >
               Limpar
             </button>
 
             <button
+              type="button"
+              className="down-btn btn col-12 col-md-3 primaria"
+              onClick={pushBackToProducts}
+            >
+              Cancelar
+            </button>
+
+            <button
               type="submit"
               className="down-btn btn col-12 col-md-3 primaria"
+              disabled={loading}
             >
-              Salvar Produto
+              {loading ? "Salvando..." : "Salvar Produto"}
             </button>
           </div>
         </form>
