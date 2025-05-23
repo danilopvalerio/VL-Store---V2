@@ -35,19 +35,36 @@ export default class LojaController {
   // validação de dados da loja
   private validarDadosLoja(dados: Partial<LojaCriacaoDTO>): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
-
-    if (!dados.nome || dados.nome.trim().length < 3) {
+    
+    // validação nome
+    if (!dados.nome) {
+      errors.push('Nome é obrigatório');
+    } else if (dados.nome.trim().length < 3){
       errors.push('Nome deve ter pelo menos 3 caracteres');
     }
-
-    if (!validator.isEmail(<string>dados.email)) {
+    else if (dados.nome.length > 100) {
+      errors.push('Nome não pode exceder 100 caracteres');
+    }
+    
+    // validação email
+    if (!dados.email) {
+      errors.push('Email é obrigatório');
+    } else if (!validator.isEmail(dados.email)) {
       errors.push('Email inválido');
+    } else if (dados.email.length > 100) {
+      errors.push('Email não pode exceder 100 caracteres');
     }
-
-    if (!dados.senha || dados.senha.length < 8) {
-      errors.push('Senha deve ter pelo menos 8 caracteres');
+    
+    // validação senha
+    if (!dados.senha) {
+      errors.push('Senha é obrigatória');
+    } else {
+      if (dados.senha.length < 8) {
+        errors.push('Senha deve ter pelo menos 8 caracteres');
+      }
     }
-
+    
+    // validação cpf/cpnj
     if (
       !dados.cpf_cnpj_proprietario_loja ||
       (dados.cpf_cnpj_proprietario_loja.length !== 11 &&
@@ -58,6 +75,7 @@ export default class LojaController {
 
     return { isValid: errors.length === 0, errors };
   }
+  
 
   async createLoja(req: Request, res: Response) {
     try {

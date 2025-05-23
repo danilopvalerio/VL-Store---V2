@@ -27,9 +27,9 @@ export default class Loja {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.ADMIN // Use o enum aqui
+    default: UserRole.ADMIN
   })
-  role: UserRole; // Altere o tipo para UserRole
+  role: UserRole;
   
   constructor(
     nome: string,
