@@ -1,58 +1,51 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import styles from '../ui/styles/Login.module.css';
+import styles from '../ui/styles/InitialPage.module.css';
 
-const LoginPage: React.FC = () => {
+const InitialPage: React.FC = () => {
   const router = useRouter();
 
-  {/* Responsáveis por enviar os usuários para as outras páginas*/}
-
   const pushLoginPage = () => {
-    router.push('/authPage');
+    router.push('/loginPage');
   };
 
   const pushRegisterPage = () => {
     router.push('RegisterPage');
   }
-
-  return (
+ return (
     <>
-      {/* Header, não tenho muito o que explicar */}
       <Head>
-        <title>Login</title>
+        <title>Bem-vindo - VL Store</title> 
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <div className={`d-flex justify-content-between flex-column ${styles.container}`}>
-        <header className="w-100">
-          <div className={styles.headerPanel}>
-            <img className={styles.logo} src="/vlStore.svg" alt="Logo" />
-          </div>
+      <div className={styles.pageContainer}>
+        <header className={styles.header}>
+          <img className={styles.logo} src="/vlStore.svg" alt="VL Store Logo" />
         </header>
+        <main className={styles.contentBox}>
+          
+          <div className={styles.infoPanel}>
+            <h4>VL Store</h4>
+            <p>
+              Seja bem-vindo à VL Store, a plataforma de gerenciamento empresarial da VL Company.
+            </p>
+          </div>
 
-        {/* Card que contém as informações da página inicial */}
-        <main className={`mx-auto w-75  ${styles.loginBlock}`}>  
-          <div className={`shadow  ${styles.column}`}>
-            <div className={`text-white text-center p-4${styles.welcomePanel}`}>
-              <h4>VL Store</h4>
-              <p>
-                Seja bem vindo ao VL Store, a plataforma de gerenciamento empresarial da VL Company
-              </p>
-            </div>
+          <div className={styles.actionsPanel}>
+            <img className={styles.logoInternal} src="/vlStore.svg" alt="VL Store Logo Pequeno" />
 
-            {/* botões de direcionamento pra páginas de login e cadastro */}
-            <div className={`p-4 ${styles.formPanel}`}>
-                 <div className="d-grid gap-3 mt-3">
-                {/* Esse margin left tá porco, depois eu ajeito */}
-                  <img className={`ml-38.5  ${styles.logoLogin}`} src="/vlStore.svg" alt="Logo" />
-
-                  <button onClick={pushLoginPage} className={`btn btn-primary ${styles.btnPrimary}`}>
-                    Entrar com email e senha
-                  </button>
-                    <button onClick={pushRegisterPage} className={`btn text-white text-center ${styles.btnSecondary}`}>
-                    Cadastrar
-                    </button>
-                </div>
-            </div>
+            <button 
+              onClick={pushLoginPage} 
+              className={`${styles.actionButton} ${styles.primaryButton}`}
+            >
+              Entrar com email e senha
+            </button>
+            <button 
+              onClick={pushRegisterPage} 
+              className={`${styles.actionButton} ${styles.secondaryButton}`}
+            >
+              Cadastrar
+            </button>
           </div>
         </main>
       </div>
@@ -60,4 +53,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default InitialPage;

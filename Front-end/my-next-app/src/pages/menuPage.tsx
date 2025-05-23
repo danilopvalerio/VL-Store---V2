@@ -5,10 +5,6 @@ import { useRouter } from "next/router";
 const MenuPage: React.FC = () => {
   const router = useRouter();
 
-  const handleNavigation = (path: string) => {
-    router.push(path);
-  };
-
   return (
     <>
       <Head>
@@ -18,48 +14,23 @@ const MenuPage: React.FC = () => {
 
       <div className={styles.container}>
         <header className={styles.header}>
-          <img src="/react.png" alt="Logo" className={styles.logo} />
-          <h1 className={styles.title}>Menu Principal</h1>
+          <img src="/vlStore.svg" alt="Logo" className={styles.logo} />
         </header>
-
-        <main className={styles.menu}>
-          <div
-            className={styles.card}
-            onClick={() => handleNavigation("/dashboard")}
-          >
-            <h3>Dashboard</h3>
-            <p>Visualize informações gerais do sistema</p>
+        
+           <div className={styles.menu}>
+            <div className={styles.button}>Produtos</div>
+            <div className={styles.button}>Caixa</div>
+            <div className={styles.button}>Funcionários</div>
+            <div className={styles.button}>Vendas</div>
+            <div className={styles.button}>Relatórios</div>
+            <div className={styles.button}>Conta</div>
           </div>
-
-          <div
-            className={styles.card}
-            onClick={() => handleNavigation("/products")}
-          >
-            <h3>Produtos</h3>
-            <p>Gerencie o cadastro de produtos</p>
-          </div>
-
-          <div
-            className={styles.card}
-            onClick={() => handleNavigation("/orders")}
-          >
-            <h3>Pedidos</h3>
-            <p>Acompanhe os pedidos realizados</p>
-          </div>
-
-          <div
-            className={styles.card}
-            onClick={() => handleNavigation("/profile")}
-          >
-            <h3>Perfil</h3>
-            <p>Atualize seus dados de usuário</p>
-          </div>
-        </main>
 
         <footer className={styles.footer}>
           <button
-            className="btn btn-secondary"
-            onClick={() => router.push("/authPage")}
+            className={styles.button
+            }
+            onClick={() => router.push("/initialPage")}
           >
             Sair
           </button>

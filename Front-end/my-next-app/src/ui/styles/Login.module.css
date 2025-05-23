@@ -1,51 +1,246 @@
-.container {
-  min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background-color: #f8f9fa;
-}
-.headerPanel {
-  background-color: #343a40;
-  padding: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.logo {
-  height: 40px;
-}
-.logoLogin {
-  height: 100px;
-}
-.loginBlock {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.column {
+.pageContainer {
+  position: relative;
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
   width: 100%;
-  max-width: 500px;
-  background:  #343a40;
-  border-radius: 8px;
+  background: radial-gradient(circle at center, #36013f 0%, #0b0522 100%);
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+  top: 20px;
+  width: 40px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.loginBox {
+  display: flex;
+  width: 100%;
+  max-width: 850px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 0 80px rgba(255, 0, 128, 0.3), 0 0 60px rgba(0, 128, 255, 0.2);
   overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
+
 .welcomePanel {
-  background-color: #343a40;
-}
-.formPanel {
-  background-color: #f8f9fa;
+  flex-basis: 50%;
+  padding: 40px;
+  color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  background: rgba(10, 10, 30, 0.4);
+  text-align: center;
 }
-.btnPrimary {
-  background-color: #184A71 !important;
 
+.welcomePanel h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #ffffff;
 }
-.btnSecondary {
-  background-color: #53A89A !important;
 
+.welcomePanel p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #c0c0c0;
+}
+
+.formPanel {
+  flex-basis: 50%;
+  padding: 40px;
+  background-color: rgba(10, 10, 20, 0.5);
+  color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.formPanel h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: 0.3s ease;
+}
+
+.inputField::placeholder {
+  color: #a0a0a0;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #c084fc;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.formActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.primaryButton {
+  padding: 12px 25px;
+  background-color: #7e22ce;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  min-width: 120px;
+}
+
+.primaryButton:hover {
+  background-color: #6b21a8;
+}
+
+.primaryButton:disabled {
+  background-color: #4a3a55;
+  cursor: not-allowed;
+}
+
+.linkText {
+  color: #b0b0b0;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.linkText:hover {
+  color: #ffffff;
+}
+
+.linkTextHighlight {
+  color: #bb86fc;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.linkTextHighlight:hover {
+  color: #d6b6ff;
+}
+
+.signupLink {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.signupLink p {
+  color: #c0c0c0;
+  font-size: 0.9rem;
+}
+
+.errorMessage {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #ff8a8a;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.floatingVisitorButton {
+  position: absolute;
+  bottom: 20px;
+  background-color: #1f1f2e;
+  padding: 10px 20px;
+  border-radius: 20px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.floatingVisitorButton:hover {
+  background-color: #2a2a3d;
+}
+
+@media (max-width: 768px) {
+  .loginBox {
+    flex-direction: column;
+    max-width: 90%;
+  }
+
+  .welcomePanel,
+  .formPanel {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .welcomePanel {
+    padding: 30px;
+    text-align: center;
+  }
+
+  .formPanel {
+    padding: 30px;
+  }
+
+  .formActions {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .primaryButton {
+    width: 100%;
+  }
+
+  .floatingVisitorButton {
+    position: static;
+    margin-top: 30px;
+    text-align: center;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }

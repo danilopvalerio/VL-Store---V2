@@ -29,6 +29,10 @@ const StoreRegistration: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const pushInitialPage = () => {
+    router.push('/initialPage');
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -102,7 +106,7 @@ const StoreRegistration: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.headerPanel}>
-        <img src="/vlStore.svg" alt="Logo" className={styles.logo} />
+        <img src="/vlStore.svg" alt="Logo" className={styles.logo} onClick={pushInitialPage} />
       </div>
       
       <div className={styles.loginBlock}>
@@ -125,7 +129,7 @@ const StoreRegistration: React.FC = () => {
             )}
             
             <form onSubmit={handleRegister}>
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label htmlFor="storeName">Nome da loja</label>
                 <input
                   type="text"
@@ -137,7 +141,7 @@ const StoreRegistration: React.FC = () => {
                 />
               </div>
               
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label htmlFor="email">E-mail</label>
                 <input
                   type="email"
@@ -149,7 +153,7 @@ const StoreRegistration: React.FC = () => {
                 />
               </div>
               
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label htmlFor="cpfCnpj">CPF/CNPJ</label>
                 <IMaskInput
                   mask={[
@@ -171,7 +175,7 @@ const StoreRegistration: React.FC = () => {
                 />
               </div>
               
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label htmlFor="birthDate">Data de Nascimento</label>
                 <IMaskInput
                   mask="00/00/0000"
@@ -184,7 +188,7 @@ const StoreRegistration: React.FC = () => {
                 />
               </div>
               
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label htmlFor="telephone">Telefone</label>
                 <IMaskInput
                   mask="(00) 00000-0000"
@@ -199,7 +203,7 @@ const StoreRegistration: React.FC = () => {
 
             
               
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label htmlFor="password">Senha</label>
                 <input
                   type="password"
@@ -212,7 +216,7 @@ const StoreRegistration: React.FC = () => {
                 <small>Mínimo de 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.</small>
               </div>
               
-              <div className="form-group">
+              <div className="form-group mb-3">
                 <label htmlFor="confirmPassword">Confirmar senha</label>
                 <input
                   type="password"
@@ -224,7 +228,7 @@ const StoreRegistration: React.FC = () => {
                 />
               </div>
               
-              <div className="form-buttons row">
+              <div className="form-buttons row mt-5 mb-4">
                 <button 
                   type="submit" 
                   disabled={loading} 
@@ -236,7 +240,7 @@ const StoreRegistration: React.FC = () => {
             </form>
             
             <div className="login-link">
-              Já tem uma conta? <Link href="/authPage">Faça login</Link>
+              Já tem uma conta? <Link href="/loginPage">Faça login</Link>
             </div>
           </div>
         </div>
