@@ -1,12 +1,10 @@
+// pages/authPage.tsx
 import { useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import styles from "../ui/styles/Login.module.css";
 import axios from "axios";
-
-
-console.log("Conteúdo do objeto styles:", styles);
+import "../../public/css/login.css"; // Importação do CSS específico
 
 const AuthPage: React.FC = () => {
   const router = useRouter();
@@ -16,7 +14,7 @@ const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const pushInitialPage = () => {
-    router.push('/initialPage');
+    router.push("/initialPage");
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -32,7 +30,7 @@ const AuthPage: React.FC = () => {
 
     try {
       const payload = {
-        email: email,
+        email: email.toLowerCase(),
         senha: password,
       };
 
@@ -48,7 +46,12 @@ const AuthPage: React.FC = () => {
 
       const data = response.data;
 
-      if (response.status === 200) {
+      if (response.status === 200 && data.success) {
+        localStorage.setItem("jwtToken", data.data.token);
+        localStorage.setItem("userData", JSON.stringify(data.data.loja));
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${data.data.token}`;
         router.push("/menuPage");
       } else {
         setError(data.message || "Usuário ou senha incorretos.");
@@ -63,80 +66,104 @@ const AuthPage: React.FC = () => {
     }
   };
 
- 
   return (
-    <>
+    <div className="d-flex justify-content-between flex-column min-vh-100">
       <Head>
         <title>Login</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <div className={styles.pageContainer}>
-        <header className={styles.header}>
-       <img className={styles.logo} src="/vlStore.svg" alt="VL Store Logo" onClick={pushInitialPage} />
-       </header>
 
-        <main className={styles.loginBox}>
-          <div className={styles.welcomePanel}>
-            <h2>Bem-vindo!</h2>
-            <p>Insira os seus dados de login para ter acesso ao sistema.</p>
-          </div>
+      <header className="w-100">
+        <div className="header-panel">
+          <img
+            className="img logo"
+            src="/vl-store-logo-white.svg"
+            alt="VL Store Logo"
+            onClick={pushInitialPage}
+            style={{ cursor: "pointer" }}
+          />
+        </div>
+      </header>
 
-          <div className={styles.formPanel}>
-            <h3>Login</h3>
-            {error && (
-              <div className={styles.errorMessage}>{error}</div>
-            )}
-            <form onSubmit={handleLogin}>
-              <div className={styles.inputGroup}>
-                <input
-                  type="email"
-                  className={styles.inputField}
-                  placeholder="Digite seu email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
+      <main className="flex-grow-1 d-flex align-items-center">
+        <div className="mx-auto login-register-block fine-transparent-border white-light d-flex justify-content-center align-items-center overflow-hidden w-75">
+          <div className="row w-100 shadow overflow-hidden">
+            {/* Painel de Boas-Vindas */}
+            <div className="col-md-6 text-white d-flex flex-column justify-content-center align-items-center text-center p-4 quartenary">
+              <h4 className="m-3">Bem-vindo!</h4>
+              <p className="w-75">
+                Insira os seus dados de login para ter acesso ao sistema.
+              </p>
+            </div>
 
-              <div className={styles.inputGroup}>
-                <input
-                  type="password"
-                  className={styles.inputField}
-                  placeholder="Digite sua senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
+            <div className="col-md-6 p-4 terciary">
+              <h3 className="text-center mb-4">Login</h3>
+              {error && <div className="alert alert-danger">{error}</div>}
+              <form onSubmit={handleLogin}>
+                <div className="input-block row mb-2 align-items-center mb-3">
+                  <div className="col-12 w-100">
+                    <input
+                      type="email"
+                      className="form-control input-form"
+                      placeholder="Digite seu email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+                </div>
 
-              <div className={styles.formActions}>
-                <button
-                  type="submit"
-                  className={styles.primaryButton}
-                  disabled={loading}
-                >
-                  {loading ? "Entrando..." : "Entrar"}
-                </button>
-                <Link href="/recover" className={styles.linkText}>
-                  Recuperar senha
-                </Link>
-              </div>
+                <div className="input-block row mb-2 align-items-center mb-3">
+                  <div className="col-12 w-100">
+                    <input
+                      type="password"
+                      className="form-control input-form"
+                      placeholder="Digite sua senha"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+                </div>
 
-              <div className={styles.signupLink}>
-                <p>
-                  Não possui conta?{" "}
-                  <Link href="/RegisterPage" className={styles.linkTextHighlight}>
-                    Cadastrar
+                <div className="row mt-3 gap-1">
+                  <button
+                    type="submit"
+                    className="btn primaria col-11 col-lg-5 mx-auto d-flex justify-content-center align-items-center"
+                    disabled={loading}
+                  >
+                    {loading ? "Entrando..." : "Entrar"}
+                  </button>
+                  <Link
+                    href="/recover"
+                    className="btn primaria col-11 col-lg-5 mx-auto d-flex justify-content-center align-items-center text-decoration-none"
+                  >
+                    Recuperar senha
                   </Link>
+                </div>
+
+                <p className="w-100 text-center mt-3">
+                  Não possui conta? <Link href="/RegisterPage">Cadastrar</Link>
                 </p>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </main>
-      </div>
-    </>
+        </div>
+      </main>
+
+      <footer className="w-100">
+        <div className="footer-panel">
+          {/* <button
+            className="btn primaria footerButton col-3 mx-auto d-flex justify-content-center align-items-center"
+            onClick={pushInitialPage}
+          >
+            Entrar como visitante
+          </button> */}
+        </div>
+      </footer>
+    </div>
   );
 };
 
