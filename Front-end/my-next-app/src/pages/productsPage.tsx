@@ -9,45 +9,70 @@ import "../../public/css/general.css";
 const ProductPage = () => {
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const router = useRouter();
+
+  const LIMIT: number = 6; // Limite fixo de itens por página
 
   const pushAddProductPage = () => {
     router.push("AddProductPage");
   };
 
+  const pushBackToMenu = () => {
+    router.push("menuPage");
+  };
+
+  const fetchProducts = async (page: number) => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    const userData = localStorage.getItem("userData");
+
+    if (!jwtToken || !userData) {
+      router.push("/initialPage");
+      return;
+    }
+
+    try {
+      const parsedData = JSON.parse(userData);
+      const idLoja = parsedData.id_loja;
+
+      const response = await axios.get(
+        `http://localhost:9700/api/produtos/loja/${idLoja}/paginado?page=${page}&limit=${LIMIT}`,
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          timeout: 2000,
+        }
+      );
+
+      setProdutos(response.data.data);
+      setCurrentPage(response.data.page);
+      setTotalPages(response.data.totalPages);
+      setTotalItems(response.data.totalItems);
+      setLoading(false);
+    } catch (error) {
+      console.error("Erro ao carregar produtos:", error);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const checkAuth = async () => {
-      const jwtToken = localStorage.getItem("jwtToken");
-      const userData = localStorage.getItem("userData");
-
-      if (!jwtToken || !userData) {
-        router.push("/initialPage");
-        return;
-      }
-
-      try {
-        const parsedData = JSON.parse(userData);
-        const idLoja = parsedData.id_loja;
-
-        const response = await axios.get(
-          `http://localhost:9700/api/produtos/loja/${idLoja}/paginado?page=1&limit=5`,
-          {
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-            },
-            timeout: 2000,
-          }
-        );
-
-        setProdutos(response.data.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Erro ao parsear userData ou carregar produtos:", error);
-      }
-    };
-
-    checkAuth();
+    fetchProducts(1);
   }, [router]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      fetchProducts(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      fetchProducts(currentPage - 1);
+    }
+  };
 
   return (
     <div className="d-flex justify-content-between align-items-center flex-column">
@@ -55,9 +80,7 @@ const ProductPage = () => {
         <button
           id="menu-page-return"
           className="btn primaria position-fixed top-0 end-0 m-2 shadow"
-          onClick={() => {
-            router.push("/menuPage");
-          }}
+          onClick={pushBackToMenu}
         >
           Voltar
         </button>
@@ -90,15 +113,35 @@ const ProductPage = () => {
           {loading ? (
             <p>Carregando produtos...</p>
           ) : (
-            produtos.map((produto, index) => (
-              <ProductCard key={index} product={produto} />
-            ))
+            <>
+              {produtos.length > 0 ? (
+                produtos.map((produto, index) => (
+                  <ProductCard key={index} product={produto} />
+                ))
+              ) : (
+                <p>Nenhum produto encontrado</p>
+              )}
+            </>
           )}
         </div>
 
         <div className="row w-100 gap-3 justify-content-center mt-4">
-          <button className="btn col-3 primaria btn-paginacao">Anterior</button>
-          <button className="btn col-3 primaria btn-paginacao">Próxima</button>
+          <button
+            className="btn col-3 primaria btn-paginacao"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+          >
+            Anterior
+          </button>
+
+          <button
+            className="btn col-3 primaria btn-paginacao"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            Próxima
+          </button>
+          <span className="text-center">{currentPage}</span>
         </div>
       </div>
     </div>

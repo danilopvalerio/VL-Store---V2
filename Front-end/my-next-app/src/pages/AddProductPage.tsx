@@ -81,6 +81,8 @@ const AddProduct = () => {
     ) {
       setError("Preencha todos os campos obrigatórios corretamente.");
       setLoading(false);
+      // Limpa erro depois de 3 segundos
+      setTimeout(() => setError(""), 3000);
       return;
     }
 
@@ -117,22 +119,13 @@ const AddProduct = () => {
       if (response.status === 201) {
         setSuccess(true);
         setTimeout(() => {
+          setSuccess(false);
           pushBackToProducts();
-        }, 2000);
+        }, 3000);
       }
     } catch (error: any) {
-      console.error("Erro ao adicionar produto:", error);
-
-      // trate o erro com segurança para não acessar algo indefinido
-      if (error?.response?.data?.message) {
-        setError(`Erro: ${error.response.data.message}`);
-      } else if (error?.message) {
-        setError(`Erro: ${error.message}`);
-      } else {
-        setError(
-          "Erro ao adicionar produto. Verifique os dados e tente novamente."
-        );
-      }
+      setError(`Erro ao adicionar produto. ${error.response.data.message}.`);
+      setTimeout(() => setError(""), 3000);
     } finally {
       setLoading(false);
     }

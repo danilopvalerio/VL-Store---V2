@@ -231,8 +231,6 @@ footer {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: fadeIn 1s ease-out;
 }
-
-/* Animações para aparecer/sumir suavemente */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -244,7 +242,24 @@ footer {
   }
 }
 
-/* Estilos para tipos diferentes de alerta */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Aparece com fadeIn e some com fadeOut após 3s */
+.alert {
+  animation: fadeIn 0.3s forwards, /* entra rápido */ fadeOut 0.5s forwards 3s; /* começa a sumir após 3s */
+}
+
+/* Estilos para os tipos de alerta */
 .alert-success {
   background-color: #d4eddabb;
   color: #210035;
