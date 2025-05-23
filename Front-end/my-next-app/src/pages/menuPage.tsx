@@ -8,15 +8,34 @@ import "../../public/css/menu.css";
 const MenuPage: React.FC = () => {
   const router = useRouter();
   const [userName, setUserName] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Recupera os dados do usuário ao carregar a página
   useEffect(() => {
-    const userData = localStorage.getItem("userData");
-    if (userData) {
-      const parsedData = JSON.parse(userData);
-      setUserName(parsedData.nome || parsedData.nome_proprietario || "Usuário");
-    }
-  }, []);
+    const checkAuth = () => {
+      const jwtToken = localStorage.getItem("jwtToken");
+      const userData = localStorage.getItem("userData");
+
+      // Redireciona imediatamente se não tiver token ou dados do usuário
+      if (!jwtToken || !userData) {
+        router.push("/initialPage");
+        return;
+      }
+
+      try {
+        const parsedData = JSON.parse(userData);
+        setUserName(
+          parsedData.nome || parsedData.nome_proprietario || "Usuário"
+        );
+      } catch (error) {
+        console.error("Erro ao parsear userData:", error);
+        router.push("/initialPage");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]); // Adicionei router como dependência
 
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
@@ -28,6 +47,10 @@ const MenuPage: React.FC = () => {
   const navigateTo = (path: string) => {
     router.push(path);
   };
+
+  if (isLoading) {
+    return null; // Ou um componente de loading
+  }
 
   return (
     <div className="d-flex justify-content-between align-items-center flex-column min-vh-100">

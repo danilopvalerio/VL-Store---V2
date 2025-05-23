@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import "../../public/css/products.css";
@@ -22,6 +22,16 @@ const AddProduct = () => {
 
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    const userData = localStorage.getItem("userData");
+
+    if (!jwtToken || !userData) {
+      router.push("/initialPage");
+      return;
+    }
+  }, []);
 
   const pushBackToProducts = () => {
     router.push("/productsPage");
