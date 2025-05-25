@@ -1,0 +1,91 @@
+.product-page {
+  width: 90% !important;
+  max-width: 950px;
+  overflow: hidden;
+  margin-top: 100px;
+  margin-bottom: 40px;
+}
+
+.product-label {
+  padding-left: 15px;
+  margin-bottom: 5px;
+}
+
+.product-info {
+  max-height: 400px;
+  overflow-y: auto;
+  font-weight: 600;
+  font-size: 13px;
+  margin: 10px 0px;
+}
+
+.product-info::-webkit-scrollbar {
+  width: 6px;
+}
+
+.product-info::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.product-info::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.product-card {
+  background-color: rgba(255, 255, 255, 0.086);
+  overflow: hidden;
+  height: 350px;
+  min-width: 200px;
+  max-width: 350px;
+}
+
+.product-card img {
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto; /* Centraliza a imagem */
+  display: block; /* Necessário para a margem auto funcionar */
+  border: solid 2px white;
+}
+
+.card-title {
+  width: 100%; /* Define a largura máxima */
+  overflow: hidden;
+  white-space: nowrap; /* Impede a quebra de linha */
+  text-overflow: ellipsis; /* Adiciona "..." no final */
+  display: inline-block; /* Necessário para funcionar em elementos não inline */
+  font-size: 13px;
+}
+
+.variacao {
+  border-radius: 20px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.061);
+}
+
+.produto-input {
+  color: white;
+  background: rgba(255, 255, 255, 0.052) !important;
+  padding: 5px;
+  padding-left: 10px;
+  border-radius: 10px;
+  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.104);
+}
+
+.produto-input:focus {
+  border: none !important;
+}
+
+.button {
+  border: none;
+  height: 30px;
+}
+
+.down-btn {
+  min-width: 200px !important;
+}
