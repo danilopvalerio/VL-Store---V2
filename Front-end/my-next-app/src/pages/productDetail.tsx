@@ -321,6 +321,14 @@ const productDetail = () => {
 
                     <div className="col-6 col-md-2">
                       <p className="col-12 m-2 text-center">Valor* (R$)</p>
+                      <input
+                        type="text"
+                        className="col-12 produto-input"
+                        placeholder="Ex: 79.90"
+                        name="valor"
+                        value={variation.valor || ""}
+                        onChange={(e) => handleVariationChange(index, e)}
+                      />
                     </div>
 
                     <button

@@ -1,76 +1,247 @@
-// import { Repository } from 'typeorm';
-// import Funcionario from '../models/Funcionario';
-// import { AppDataSource } from '../database/AppDataSource';
-// import { Request, Response } from 'express';
-// import bcrypt from 'bcrypt';
-// import validator from 'validator';
-// import { AuthService } from '../services';
-// import { UserRole } from '../types/user.types';
-// import Loja from '../models/Loja';
-//
-// interface FuncionarioCriacaoDTO {
-// 	nome: string;
-// 	email: string;
-// 	senha: string;
-// 	cpf: string;
-// 	data_nascimento: Date;
-// 	telefone: string;
-// 	lojaId: string;
-// 	role?: UserRole;
-// }
-//
-// export default class FuncionarioController {
-// 	private readonly funcionarioRepositorio: Repository<Funcionario>;
-// 	private readonly lojaRepositorio: Repository<Loja>;
-// 	private authService: AuthService;
-//
-// 	constructor() {
-// 		this.funcionarioRepositorio = AppDataSource.getRepository(Funcionario);
-// 		this.lojaRepositorio = AppDataSource.getRepository(Loja);
-// 		this.authService = new AuthService();
-// 	}
-//
-// 	// Validação similar à da Loja, mas com regras específicas para funcionários
-// 	private validarDadosFuncionario(dados: Partial<FuncionarioCriacaoDTO>) {
-//
-// 	}
-//
-// 	async createFuncionario(req: Request, res: Response) {
-// 		try {
-// 			const validacao = this.validarDadosFuncionario(req.body);
-// 			if (!validacao.isValid) {
-// 				return res.status(400).json({ errors: validacao.errors });
-// 			}
-//
-// 			// Verifica se a loja existe
-// 			const loja = await this.lojaRepositorio.findOneBy({ id_loja: req.body.lojaId });
-// 			if (!loja) {
-// 				return res.status(404).json({ error: 'Loja não encontrada' });
-// 			}
-//
-// 			// Verifica se CPF/email já existem (similar ao da Loja)
-// 			// ...
-//
-// 			const senhaHash = await bcrypt.hash(req.body.senha, 10);
-//
-// 			const funcionario = new Funcionario(
-// 				req.body.nome,
-// 				senhaHash,
-// 				req.body.email,
-// 				req.body.cpf,
-// 				req.body.data_nascimento,
-// 				req.body.telefone,
-// 				loja,
-// 				req.body.role || UserRole.FUNCIONARIO,
-// 			);
-//
-// 			const savedFuncionario = await this.funcionarioRepositorio.save(funcionario);
-// 			const { senha: _, ...funcionarioSemSenha } = savedFuncionario;
-//
-// 			res.status(201).json(funcionarioSemSenha);
-// 		} catch (error) {
-// 			res.status(500).json({ error: 'Erro ao criar funcionário' });
-// 		}
-// 	}
-//
-// }
+import { Repository } from 'typeorm';
+import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import validator from 'validator';
+
+import Funcionario from '../models/Funcionario';
+import { AppDataSource } from '../database/AppDataSource';
+import { AuthService } from '../services';
+import { UserRole } from '../types/user.types';
+
+interface FuncionarioDTO {
+  nome: string;
+  senha: string;
+  email: string;
+  cpf: string;
+  data_nascimento: Date;
+  telefone: string;
+  id_loja: string;
+  role?: UserRole;
+}
+
+export default class FuncionarioController {
+  private readonly funcionarioRepositorio: Repository<Funcionario>;
+  private authService: AuthService;
+
+  constructor() {
+    this.funcionarioRepositorio = AppDataSource.getRepository(Funcionario);
+    this.authService = new AuthService();
+  }
+
+  private validarDadosFuncionario(dados: Partial<FuncionarioDTO>): {
+    isValid: boolean;
+    errors: string[];
+  } {
+    const errors: string[] = [];
+
+    if (!dados.nome || dados.nome.trim().length < 3) {
+      errors.push('Nome deve ter pelo menos 3 caracteres');
+    }
+
+    if (!dados.email || !validator.isEmail(dados.email)) {
+      errors.push('Email inválido');
+    }
+
+    if (!dados.senha || dados.senha.length < 8) {
+      errors.push('Senha deve ter pelo menos 8 caracteres');
+    }
+
+    if (!dados.cpf || dados.cpf.length !== 11) {
+      errors.push('CPF inválido');
+    }
+
+    if (!dados.telefone || dados.telefone.length < 10) {
+      errors.push('Telefone inválido');
+    }
+
+    if (!dados.data_nascimento) {
+      errors.push('Data de nascimento é obrigatória');
+    }
+
+    if (!dados.id_loja) {
+      errors.push('ID da loja é obrigatório');
+    }
+
+    return { isValid: errors.length === 0, errors };
+  }
+
+  async createFuncionario(req: Request, res: Response) {
+    const validacao = this.validarDadosFuncionario(req.body);
+    if (!validacao.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados inválidos',
+        validationErrors: validacao.errors,
+      });
+    }
+
+    try {
+      const { email, cpf, telefone } = req.body;
+
+      const existente = await this.funcionarioRepositorio.findOne({
+        where: [{ email }, { cpf }, { telefone }],
+      });
+
+      if (existente) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email, CPF ou telefone já cadastrados',
+        });
+      }
+
+      const senhaHash = await bcrypt.hash(req.body.senha, 10);
+
+      const funcionario = new Funcionario(
+        req.body.nome,
+        senhaHash,
+        email,
+        cpf,
+        req.body.data_nascimento,
+        telefone,
+        req.body.id_loja,
+        req.body.role || UserRole.FUNCIONARIO,
+      );
+
+      const saved = await this.funcionarioRepositorio.save(funcionario);
+      const { senha, ...semSenha } = saved;
+
+      const token = this.authService.gerarTokenFuncionario(saved);
+
+      return res.status(201).json({
+        success: true,
+        message: 'Funcionário criado com sucesso',
+        data: {
+          funcionario: semSenha,
+          token,
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao criar funcionário:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao criar funcionário',
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      });
+    }
+  }
+
+  async login(req: Request, res: Response) {
+    const { email, senha } = req.body;
+
+    if (!email || !senha) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email e senha são obrigatórios',
+      });
+    }
+
+    try {
+      const funcionario = await this.funcionarioRepositorio.findOne({
+        where: { email },
+      });
+
+      if (!funcionario || !(await bcrypt.compare(senha, funcionario.senha))) {
+        return res.status(401).json({
+          success: false,
+          message: 'Email ou senha inválidos',
+        });
+      }
+
+      const token = this.authService.gerarTokenFuncionario(funcionario);
+      const { senha: _, ...semSenha } = funcionario;
+
+      return res.status(200).json({
+        success: true,
+        message: 'Login realizado com sucesso',
+        data: {
+          funcionario: semSenha,
+          token,
+        },
+      });
+    } catch (error) {
+      console.error('Erro no login do funcionário:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Erro no login',
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      });
+    }
+  }
+
+  async findAll(_req: Request, res: Response) {
+    try {
+      const funcionarios = await this.funcionarioRepositorio.find();
+      const listaSemSenha = funcionarios.map(({ senha, ...f }) => f);
+      res.status(200).json({
+        success: true,
+        data: listaSemSenha,
+        count: listaSemSenha.length,
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Erro ao buscar funcionários' });
+    }
+  }
+
+  async findById(req: Request, res: Response) {
+    const { id } = req.params;
+    try {
+      const funcionario = await this.funcionarioRepositorio.findOneBy({ id_funcionario: id });
+
+      if (!funcionario) {
+        return res.status(404).json({
+          success: false,
+          message: 'Funcionário não encontrado',
+        });
+      }
+
+      const { senha, ...semSenha } = funcionario;
+      res.status(200).json({ success: true, data: semSenha });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Erro ao buscar funcionário' });
+    }
+  }
+
+  async delete(req: Request, res: Response) {
+    const { id } = req.params;
+    try {
+      const funcionario = await this.funcionarioRepositorio.findOneBy({ id_funcionario: id });
+      if (!funcionario) {
+        return res.status(404).json({ success: false, message: 'Funcionário não encontrado' });
+      }
+
+      const { senha, ...semSenha } = funcionario;
+      await this.funcionarioRepositorio.remove(funcionario);
+
+      res.status(200).json({ success: true, message: 'Funcionário removido', data: semSenha });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Erro ao remover funcionário' });
+    }
+  }
+
+  async update(req: Request, res: Response) {
+    const { id } = req.params;
+    const dadosAtualizados = req.body;
+
+    try {
+      const funcionario = await this.funcionarioRepositorio.findOneBy({ id_funcionario: id });
+      if (!funcionario) {
+        return res.status(404).json({ success: false, message: 'Funcionário não encontrado' });
+      }
+
+      if (dadosAtualizados.senha) {
+        return res.status(400).json({
+          success: false,
+          message: 'Atualização de senha deve ser feita em endpoint específico',
+        });
+      }
+
+      this.funcionarioRepositorio.merge(funcionario, dadosAtualizados);
+      const atualizado = await this.funcionarioRepositorio.save(funcionario);
+      const { senha, ...semSenha } = atualizado;
+
+      res.status(200).json({ success: true, message: 'Funcionário atualizado', data: semSenha });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Erro ao atualizar funcionário' });
+    }
+  }
+}
