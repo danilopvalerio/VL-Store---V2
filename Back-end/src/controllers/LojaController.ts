@@ -4,7 +4,7 @@ import { AppDataSource } from '../database/AppDataSource';
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import validator from 'validator';
-import { AuthService } from '../services';
+import { AuthService } from '../utils/jwt';
 import { UserRole } from '../types/user.types';
 
 // Interface para os dados de criação da loja
@@ -19,9 +19,7 @@ interface LojaCriacaoDTO {
 }
 
 export default class LojaController {
-  // para poder acessar a tabela:
   private readonly lojaRepositorio: Repository<Loja>;
-  private authService: AuthService;
 
   public getLojaRepository(): Repository<Loja> {
     return this.lojaRepositorio;
@@ -29,7 +27,6 @@ export default class LojaController {
 
   constructor() {
     this.lojaRepositorio = AppDataSource.getRepository(Loja);
-    this.authService = new AuthService();
   }
 
   // validação de dados da loja
@@ -148,7 +145,11 @@ export default class LojaController {
       const { senha: _, ...lojaSemSenha } = savedLoja;
 
       // Gera um token para o usuário recém-criado
-      const token = this.authService.gerarToken(savedLoja);
+      const token = AuthService.gerarTokenLoja({
+        id: savedLoja.id_loja,
+        email: savedLoja.email,
+        nome: savedLoja.nome
+      });
 
       console.log(`Nova loja criada: ${loja.nome} (ID: ${loja.id_loja})`);
 
@@ -404,7 +405,11 @@ export default class LojaController {
       }
 
       // Gera o token JWT
-      const token = this.authService.gerarToken(loja);
+      const token = AuthService.gerarTokenLoja({
+        id: loja.id_loja,
+        email: loja.email,
+        nome: loja.nome
+      });
 
       // Retorna o token e os dados da loja (sem a senha)
       const { senha: _, ...lojaSemSenha } = loja;

@@ -5,8 +5,9 @@ import validator from 'validator';
 
 import Funcionario from '../models/Funcionario';
 import { AppDataSource } from '../database/AppDataSource';
-import { AuthService } from '../services';
+import { AuthService } from '../utils/jwt';
 import { UserRole } from '../types/user.types';
+
 
 interface FuncionarioDTO {
   nome: string;
@@ -16,16 +17,13 @@ interface FuncionarioDTO {
   data_nascimento: Date;
   telefone: string;
   id_loja: string;
-  role?: UserRole;
 }
 
 export default class FuncionarioController {
   private readonly funcionarioRepositorio: Repository<Funcionario>;
-  private authService: AuthService;
 
   constructor() {
     this.funcionarioRepositorio = AppDataSource.getRepository(Funcionario);
-    this.authService = new AuthService();
   }
 
   private validarDadosFuncionario(dados: Partial<FuncionarioDTO>): {
@@ -104,8 +102,14 @@ export default class FuncionarioController {
 
       const saved = await this.funcionarioRepositorio.save(funcionario);
       const { senha, ...semSenha } = saved;
-
-      const token = this.authService.gerarTokenFuncionario(saved);
+      
+      const token = AuthService.gerarToken({
+        id: saved.id_funcionario,
+        email: saved.email,
+        nome: saved.nome,
+        role: saved.role,
+        id_loja: saved.id_loja
+      });
 
       return res.status(201).json({
         success: true,
@@ -124,42 +128,50 @@ export default class FuncionarioController {
       });
     }
   }
-
+  
   async login(req: Request, res: Response) {
     const { email, senha } = req.body;
-
+    
     if (!email || !senha) {
       return res.status(400).json({
         success: false,
         message: 'Email e senha são obrigatórios',
       });
     }
-
+    
     try {
       const funcionario = await this.funcionarioRepositorio.findOne({
         where: { email },
+        select: ['id_funcionario', 'nome', 'email', 'senha', 'role', 'id_loja']
       });
-
+      
       if (!funcionario || !(await bcrypt.compare(senha, funcionario.senha))) {
         return res.status(401).json({
           success: false,
           message: 'Email ou senha inválidos',
         });
       }
-
-      const token = this.authService.gerarTokenFuncionario(funcionario);
-      const { senha: _, ...semSenha } = funcionario;
-
+      
+      const token = AuthService.gerarToken({
+        id: funcionario.id_funcionario,
+        email: funcionario.email,
+        nome: funcionario.nome,
+        role: funcionario.role,
+        id_loja: funcionario.id_loja
+      });
+      
+      const { senha: _, ...funcionarioSemSenha } = funcionario;
       return res.status(200).json({
         success: true,
         message: 'Login realizado com sucesso',
         data: {
-          funcionario: semSenha,
+          usuario: funcionarioSemSenha,
           token,
+          role: funcionario.role
         },
       });
     } catch (error) {
-      console.error('Erro no login do funcionário:', error);
+      console.error('Erro no login:', error);
       return res.status(500).json({
         success: false,
         message: 'Erro no login',

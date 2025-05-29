@@ -1,13 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../services';
+import {AuthService, TokenPayload} from '../utils/jwt';
 import { UserRole } from '../types/user.types';
 
-type TokenPayload = {
-  id_loja: string;
-  email: string;
-  nome: string;
-  role: string;
-};
 
 export interface AuthRequest extends Request {
   user?: TokenPayload;
@@ -16,7 +10,7 @@ export interface AuthRequest extends Request {
 export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction): void => {
   try {
     const authHeader = req.headers.authorization;
-
+    
     if (!authHeader) {
       res.status(401).json({
         success: false,
@@ -25,7 +19,7 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
       });
       return;
     }
-
+    
     const parts = authHeader.split(' ');
     if (parts.length !== 2 || parts[0] !== 'Bearer') {
       res.status(401).json({
@@ -35,11 +29,10 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
       });
       return;
     }
-
+    
     const token = parts[1];
-    const authService = new AuthService();
-    const decoded = authService.verificarToken(token);
-
+    const decoded = AuthService.verificarToken(token);
+    
     if (!decoded) {
       res.status(403).json({
         success: false,
@@ -48,7 +41,7 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
       });
       return;
     }
-
+    
     req.user = decoded;
     next();
   } catch (erro) {
