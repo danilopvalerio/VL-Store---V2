@@ -30,7 +30,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       // Salvar no localStorage
       localStorage.setItem("selectedProduct", JSON.stringify(response.data));
 
-      router.push("productDetail");
+      router.push("ProductDetail");
     } catch (error) {
       alert("Erro desconhecido, tente novamente mais tarde.");
     }

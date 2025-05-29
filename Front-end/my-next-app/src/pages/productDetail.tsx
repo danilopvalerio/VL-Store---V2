@@ -11,9 +11,8 @@ interface Variation {
   valor: number;
 }
 
-const productDetail = () => {
+const ProductDetail = () => {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
 
   const [productData, setProductData] = useState({
     referencia: "",
@@ -376,4 +375,4 @@ const productDetail = () => {
   );
 };
 
-export default productDetail;
+export default ProductDetail;
