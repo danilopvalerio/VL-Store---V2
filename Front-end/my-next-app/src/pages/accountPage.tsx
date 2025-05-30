@@ -4,7 +4,6 @@ import axios from "axios";
 import "../../public/css/products.css";
 import "../../public/css/general.css";
 
-
 interface StoreData {
   nome: string;
   senha: string;
@@ -28,6 +27,24 @@ const AccountPage = () => {
     id_loja: "",
   });
 
+  const [originalData, setOriginalData] = useState<StoreData | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    const userData = localStorage.getItem("userData");
+    if (!jwtToken || !userData) router.push("/initialPage");
+  }, []);
+
+  const getAuthHeaders = () => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    return {
+      Authorization: `Bearer ${jwtToken}`,
+      "Content-Type": "application/json",
+    };
+  };
+
   const getStore = async () => {
     try {
       const jwtToken = localStorage.getItem("jwtToken");
@@ -50,28 +67,20 @@ const AccountPage = () => {
         }
       );
 
-      // Salvar no localStorage
       localStorage.setItem("selectedStore", JSON.stringify(response.data));
-
       return response.data;
-
     } catch (error) {
       alert("Erro desconhecido, tente novamente mais tarde.");
     }
   };
 
-
-  const [error, setError] = useState("");
-
-  // Carrega os dados iniciais
-   useEffect(() => {
+  useEffect(() => {
     const loadStoreData = async () => {
       const storeResponse = await getStore();
 
       if (storeResponse && storeResponse.data) {
         const data = storeResponse.data;
-
-        setStoreData({
+        const parsed = {
           nome: data.nome || "",
           senha: data.senha || "",
           email: data.email || "",
@@ -79,28 +88,36 @@ const AccountPage = () => {
           data_nasc_proprietario: data.data_nasc_proprietario || "",
           telefone: data.telefone || "",
           id_loja: data.id_loja || "",
-        });
+        };
+        setStoreData(parsed);
+        setOriginalData(parsed);
       } else {
         const cachedStore = localStorage.getItem("selectedStore");
         if (cachedStore) {
-            try {
-                const parsedCachedStore = JSON.parse(cachedStore);
-                if (parsedCachedStore.data) {
-                    const data = parsedCachedStore.data;
-                    setStoreData({
-                        nome: data.nome || "",
-                        senha: data.senha || "",
-                        email: data.email || "",
-                        cpf_cnpj_proprietario_loja: data.cpf_cnpj_proprietario_loja || "",
-                        data_nasc_proprietario: data.data_nasc_proprietario || "",
-                        telefone: data.telefone || "",
-                        id_loja: data.id_loja || "",
-                    });
-                }
-            } catch (parseError) {
-                console.error("Erro ao parsear dados da loja do localStorage:", parseError);
-                setError("Erro ao carregar dados armazenados da loja.");
+          try {
+            const parsedCachedStore = JSON.parse(cachedStore);
+            if (parsedCachedStore.data) {
+              const data = parsedCachedStore.data;
+              const parsed = {
+                nome: data.nome || "",
+                senha: data.senha || "",
+                email: data.email || "",
+                cpf_cnpj_proprietario_loja:
+                  data.cpf_cnpj_proprietario_loja || "",
+                data_nasc_proprietario: data.data_nasc_proprietario || "",
+                telefone: data.telefone || "",
+                id_loja: data.id_loja || "",
+              };
+              setStoreData(parsed);
+              setOriginalData(parsed);
             }
+          } catch (parseError) {
+            console.error(
+              "Erro ao parsear dados da loja do localStorage:",
+              parseError
+            );
+            setError("Erro ao carregar dados armazenados da loja.");
+          }
         }
       }
     };
@@ -108,36 +125,40 @@ const AccountPage = () => {
     loadStoreData();
   }, []);
 
-  useEffect(() => {
-    const jwtToken = localStorage.getItem("jwtToken");
-    const userData = localStorage.getItem("userData");
-    if (!jwtToken || !userData) router.push("/initialPage");
-  }, []);
-
-  const getAuthHeaders = () => {
-    const jwtToken = localStorage.getItem("jwtToken");
-    return {
-      Authorization: `Bearer ${jwtToken}`,
-      "Content-Type": "application/json",
-    };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setStoreData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const newData = { ...storeData, [name]: value };
-    setStoreData(newData);
+  const hasStoreDataChanged = () => {
+    if (!originalData) return false;
+    return JSON.stringify(originalData) !== JSON.stringify(storeData);
+  };
 
+  const saveChanges = async () => {
     try {
+      setIsSaving(true);
       await axios.patch(
-        `http://localhost:9700/api/lojas/${newData.id_loja}`,
-        { [name]: value },
+        `http://localhost:9700/api/lojas/${storeData.id_loja}`,
+        storeData,
         { headers: getAuthHeaders() }
       );
+      localStorage.setItem("userData", JSON.stringify(storeData));
+      setOriginalData(storeData);
     } catch (err) {
-      console.error("Erro ao atualizar loja:", err);
-      setError("Erro ao atualizar loja");
+      console.error("Erro ao salvar loja:", err);
+      setError("Erro ao salvar loja");
       setTimeout(() => setError(""), 3000);
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleBackClick = async () => {
+    if (hasStoreDataChanged()) {
+      await saveChanges();
+    }
+    router.push("/menuPage");
   };
 
   const deleteStore = async () => {
@@ -162,6 +183,12 @@ const AccountPage = () => {
         {error && (
           <div className="alert alert-danger col-12 text-center mt-2">
             {error}
+          </div>
+        )}
+
+        {isSaving && (
+          <div className="alert alert-info col-12 text-center mt-2">
+            Salvando dados...
           </div>
         )}
 
@@ -210,7 +237,6 @@ const AccountPage = () => {
                   onChange={handleChange}
                 />
               </div>
-
             </div>
           </div>
 
@@ -218,7 +244,8 @@ const AccountPage = () => {
             <button
               type="button"
               className="down-btn btn col-12 col-md-3 primaria"
-              onClick={() => router.push("/menuPage")}
+              onClick={handleBackClick}
+              disabled={isSaving}
             >
               Voltar
             </button>

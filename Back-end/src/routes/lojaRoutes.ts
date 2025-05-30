@@ -18,19 +18,13 @@ const asyncHandler =
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 
-
 //----- CRUD
 
-router.get('/',
-    asyncHandler(lojaController.findAll.bind(lojaController)));
+router.get('/', asyncHandler(lojaController.findAll.bind(lojaController)));
 
-router.post('/',
-    asyncHandler(lojaController.createLoja.bind(lojaController)));
+router.post('/', asyncHandler(lojaController.createLoja.bind(lojaController)));
 
-router.get(
-  '/:id',
-  asyncHandler(lojaController.findById.bind(lojaController)),
-);
+router.get('/:id', asyncHandler(lojaController.findById.bind(lojaController)));
 
 router.patch('/:id', asyncHandler(lojaController.update.bind(lojaController)));
 
@@ -41,14 +35,11 @@ router.delete(
   asyncHandler(lojaController.delete.bind(lojaController)),
 );
 
-
 router.delete(
   '/:id',
   authenticateJWT,
   autorizar(UserRole.ADMIN),
   asyncHandler(lojaController.delete.bind(lojaController)),
 );
-
-
 
 export default router;

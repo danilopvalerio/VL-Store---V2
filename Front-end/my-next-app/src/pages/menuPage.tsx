@@ -12,9 +12,11 @@ const MenuPage: React.FC = () => {
   const [isViewOnly, setIsViewOnly] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const jwtToken = localStorage.getItem("jwtToken");
       const userData = localStorage.getItem("userData");
+      console.log("JWT token:", jwtToken);
+      console.log("Parsed data:", userData);
 
       // Redireciona imediatamente se não tiver token ou dados do usuário
       if (!jwtToken || !userData) {
@@ -24,12 +26,42 @@ const MenuPage: React.FC = () => {
 
       try {
         const parsedData = JSON.parse(userData);
-        setUserName(
-          parsedData.nome || parsedData.nome_proprietario || "Usuário"
-        );
+        let user;
+        const getUserFuncionario = async (
+          id: string,
+          jwtToken: string,
+          role: string
+        ) => {
+          if (role === "funcionario") {
+            const response = await axios.get(
+              `http://localhost:9700/api/funcionarios/${id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${jwtToken}`,
+                },
+                timeout: 2000,
+              }
+            );
 
-        if (parsedData.role == "funcionario") {
+            const user = response.data.data;
+            return user.nome || "Colaborador";
+          }
+
+          return "Colaborador";
+        };
+
+        // depois do setUserName(parsedData.nome):
+        if (parsedData.role === "funcionario") {
           setIsViewOnly(true);
+          const nome = await getUserFuncionario(
+            parsedData.id_funcionario,
+            jwtToken,
+            parsedData.role
+          );
+          setUserName(nome);
+        } else {
+          setIsViewOnly(false);
+          setUserName(parsedData.nome);
         }
       } catch (error) {
         console.error("Erro ao parsear userData:", error);
@@ -40,7 +72,7 @@ const MenuPage: React.FC = () => {
     };
 
     checkAuth();
-  }, [router]); // Adicionei router como dependência
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
@@ -123,6 +155,7 @@ const MenuPage: React.FC = () => {
             type="button"
             className="btn primaria col-9 col-lg-5 mb-2"
             onClick={() => navigateTo("/accountPage")}
+            disabled={isViewOnly}
           >
             Conta
           </button>
