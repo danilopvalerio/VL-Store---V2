@@ -88,7 +88,7 @@ const ProductPage = () => {
       </header>
 
       <div className="mx-auto product-page d-flex justify-content-center align-items-center terciary p-4 flex-column rounded-5 white-light">
-        <h3 className="text-center mb-4">Produtos</h3>
+        <h3 className="text-center mb-4">Funcionários</h3>
         <div className="row w-100 justify-content-between">
           <div className="p-0 col-12 col-md-12">
             <input

@@ -4,17 +4,22 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import axios from "axios";
-import "../../public/css/login.css"; // Importação do CSS específico
+import "../../public/css/login.css";
 
 const AuthPage: React.FC = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState('funcionario');
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const pushInitialPage = () => {
     router.push("/initialPage");
+  };
+
+  const handleUserTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserType(e.target.value);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -28,6 +33,13 @@ const AuthPage: React.FC = () => {
       return;
     }
 
+    let targetRoute = '';
+    if (userType === 'administrador') {
+      targetRoute = 'login/loja';
+    } else {
+      targetRoute = 'login/funcionario';
+    }
+
     try {
       const payload = {
         email: email.toLowerCase(),
@@ -35,7 +47,7 @@ const AuthPage: React.FC = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:9700/api/login",
+        `http://localhost:9700/api/${targetRoute}`,
         payload,
         {
           headers: {
@@ -48,7 +60,13 @@ const AuthPage: React.FC = () => {
 
       if (response.status === 200 && data.success) {
         localStorage.setItem("jwtToken", data.data.token);
-        localStorage.setItem("userData", JSON.stringify(data.data.loja));
+        if (data.data.loja) {
+            localStorage.setItem("userData", JSON.stringify(data.data.loja));
+        } else if (data.data.admin) {
+             localStorage.setItem("userData", JSON.stringify(data.data.admin));
+        }
+
+
         axios.defaults.headers.common[
           "Authorization"
         ] = `Bearer ${data.data.token}`;
@@ -56,11 +74,15 @@ const AuthPage: React.FC = () => {
       } else {
         setError(data.message || "Usuário ou senha incorretos.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Falha na chamada de login:", err);
-      setError(
-        "Falha na autenticação. Verifique sua conexão ou tente novamente."
-      );
+      if (err.response && err.response.data && err.response.data.message) {
+          setError(err.response.data.message);
+      } else {
+          setError(
+            "Falha na autenticação. Verifique sua conexão ou tente novamente."
+          );
+      }
     } finally {
       setLoading(false);
     }
@@ -127,6 +149,44 @@ const AuthPage: React.FC = () => {
                     />
                   </div>
                 </div>
+
+                <div className="row justify-content-center mb-3">
+                  <div className="col-auto">
+                      <div className="form-check form-check-inline">
+                          <input
+                              className="form-check-input"
+                              type="radio"
+                              name="userType"
+                              id="adminRadio"
+                              value="administrador"
+                              checked={userType === 'administrador'}
+                              onChange={handleUserTypeChange}
+                              disabled={loading}
+                          />
+                          <label className="form-check-label" htmlFor="adminRadio">
+                              Administrador
+                          </label>
+                      </div>
+                  </div>
+
+                  <div className="col-auto">
+                      <div className="form-check form-check-inline">
+                          <input
+                              className="form-check-input"
+                              type="radio"
+                              name="userType"
+                              id="employeeRadio"
+                              value="funcionario"
+                              checked={userType === 'funcionario'}
+                              onChange={handleUserTypeChange}
+                              disabled={loading}
+                          />
+                          <label className="form-check-label" htmlFor="employeeRadio">
+                              Funcionário
+                          </label>
+                      </div>
+                  </div>
+              </div>
 
                 <div className="row mt-3 gap-1">
                   <button

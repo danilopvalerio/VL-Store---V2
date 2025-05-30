@@ -94,7 +94,7 @@ const MenuPage: React.FC = () => {
           <button
             type="button"
             className="btn primaria col-9 col-lg-5 mb-2"
-            onClick={() => navigateTo("/employees")}
+            onClick={() => navigateTo("/employeesPage")}
           >
             Funcionários
           </button>
@@ -115,7 +115,7 @@ const MenuPage: React.FC = () => {
           <button
             type="button"
             className="btn primaria col-9 col-lg-5 mb-2"
-            onClick={() => navigateTo("/account")}
+            onClick={() => navigateTo("/accountPage")}
           >
             Conta
           </button>

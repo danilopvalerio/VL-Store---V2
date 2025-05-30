@@ -60,8 +60,8 @@ const AccountPage = () => {
         { headers: getAuthHeaders() }
       );
     } catch (err) {
-      console.error("Erro ao atualizar funcionário:", err);
-      setError("Erro ao atualizar funcionário");
+      console.error("Erro ao atualizar loja:", err);
+      setError("Erro ao atualizar loja");
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -72,10 +72,10 @@ const AccountPage = () => {
         `http://localhost:9700/api/colocaaquiarota`,
         { headers: getAuthHeaders() }
       );
-      router.push("/employeesPage");
+      router.push("/accountPage");
     } catch (err) {
-      console.error("Erro ao deletar funcionário:", err);
-      setError("Erro ao deletar funcionário");
+      console.error("Erro ao deletar loja:", err);
+      setError("Erro ao deletar loja");
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -83,7 +83,7 @@ const AccountPage = () => {
   return (
     <div className="d-flex justify-content-center align-items-center w-100">
       <div className="product-page d-flex justify-content-center align-items-center terciary p-4 flex-column rounded-5 white-light">
-        <h3 className="col-12 text-center">Editar Produto</h3>
+        <h3 className="col-12 text-center">Editar Loja</h3>
 
         {error && (
           <div className="alert alert-danger col-12 text-center mt-2">
@@ -97,7 +97,7 @@ const AccountPage = () => {
               <div className="mx-auto col-12 p-4 info-base row">
                 <h5 className="text-center mb-2">Informações gerais</h5>
 
-                <label className="product-label">Nome:</label>
+                <label className="product-label">Nome da loja:</label>
 
                 <input
                   className="mb-3 produto-input"
