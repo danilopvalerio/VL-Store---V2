@@ -8,99 +8,88 @@ const router = express.Router();
 const funcionarioController = new FuncionarioController();
 
 type AsyncRequestHandler = (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
 ) => Promise<any>;
 
-const asyncHandler =
-  (fn: AsyncRequestHandler) =>
-  (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
+const asyncHandler = (fn: AsyncRequestHandler) =>
+    (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      Promise.resolve(fn(req, res, next)).catch(next);
+    };
 
-//----- Login
 
-//router.post('/login', asyncHandler(FuncionarioController.login.bind(FuncionarioController)));
+//----- Rotas Protegidas -----
 
-//----- CRUD
+// Listar todos funcionários (apenas admin)
+router.get(
+    '/',
+    authenticateJWT,
+    autorizar(UserRole.ADMIN),
+    asyncHandler(funcionarioController.findAll.bind(funcionarioController))
+);
 
-router.get('/funcionario', asyncHandler(funcionarioController.findAll.bind(funcionarioController)));
-
+// Criar novo funcionário (apenas admin)
 router.post(
-  '/funcionario',
-  asyncHandler(funcionarioController.createFuncionario.bind(funcionarioController)),
+    '/',
+    authenticateJWT,
+    autorizar(UserRole.ADMIN),
+    asyncHandler(funcionarioController.createFuncionario.bind(funcionarioController))
 );
 
+// Obter funcionário por ID (admin ou o próprio funcionário)
 router.get(
-  '/funcionario/:id',
-  // authenticateJWT,
-  asyncHandler(funcionarioController.findById.bind(funcionarioController)),
-);
-
-router.patch(
-  '/funcionario/:id',
-  asyncHandler(funcionarioController.update.bind(funcionarioController)),
-);
-
-router.delete(
-  '/funcionario/:id',
-  authenticateJWT,
-  autorizar(UserRole.ADMIN),
-  asyncHandler(funcionarioController.delete.bind(funcionarioController)),
-);
-
-// Método temporário para deletar lojas - dev - sem token
-router.delete(
-  '/funcionario-dev/:id',
-  authenticateJWT,
-  autorizar(UserRole.ADMIN),
-  asyncHandler(funcionarioController.delete.bind(funcionarioController)),
-);
-
-router.get(
-  '/me',
-  authenticateJWT,
-  asyncHandler(async (req: AuthRequest, res) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        error: 'Não autenticado',
-        message: 'Usuário não autenticado',
-      });
-    }
-
-    try {
-      // Buscar informações atualizadas do usuário no banco de dados
-      const lojaController = new LojaController();
-      const loja = await lojaController
-        .getLojaRepository()
-        .findOneBy({ id_loja: req.user.id_loja });
-
-      if (!loja) {
-        return res.status(404).json({
-          success: false,
-          error: 'Usuário não encontrado',
-          message: 'Não foi possível encontrar o usuário no banco de dados',
-        });
+    '/:id',
+    authenticateJWT,
+    asyncHandler(async (req: AuthRequest, res: express.Response) => {
+      // Admin pode ver qualquer funcionário
+      if (req.user?.role === UserRole.ADMIN) {
+        return funcionarioController.findById(req, res);
       }
-
-      // Remove a senha do retorno
-      const { senha, ...lojaSemSenha } = loja;
-
-      return res.status(200).json({
-        success: true,
-        data: lojaSemSenha,
-      });
-    } catch (error) {
-      console.error('Erro ao buscar informações do usuário:', error);
-      return res.status(500).json({
+      
+      // Funcionário só pode ver a si mesmo
+      if (req.user?.id === req.params.id) {
+        return funcionarioController.findById(req, res);
+      }
+      
+      return res.status(403).json({
         success: false,
-        error: 'Erro ao buscar informações',
-        message: error instanceof Error ? error.message : 'Erro desconhecido',
+        error: 'Acesso negado',
+        message: 'Você só pode visualizar seus próprios dados'
       });
-    }
-  }),
+    })
 );
+
+// Atualizar funcionário (admin ou o próprio funcionário)
+router.patch(
+    '/:id',
+    authenticateJWT,
+    asyncHandler(async (req: AuthRequest, res: express.Response) => {
+      // Admin pode atualizar qualquer funcionário
+      if (req.user?.role === UserRole.ADMIN) {
+        return funcionarioController.update(req, res);
+      }
+      
+      // Funcionário só pode atualizar a si mesmo
+      if (req.user?.id === req.params.id) {
+        return funcionarioController.update(req, res);
+      }
+      
+      return res.status(403).json({
+        success: false,
+        error: 'Acesso negado',
+        message: 'Você só pode atualizar seus próprios dados'
+      });
+    })
+);
+
+// Deletar funcionário (apenas admin)
+router.delete(
+    '/:id',
+    authenticateJWT,
+    autorizar(UserRole.ADMIN),
+    asyncHandler(funcionarioController.delete.bind(funcionarioController))
+);
+
 
 export default router;

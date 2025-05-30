@@ -31,7 +31,7 @@ const asyncHandler =
 
 // Criar produto
 router.post(
-  '/produtos',
+  '/',
   authenticateJWT,
   autorizar(UserRole.ADMIN),
   asyncHandler(produtoController.createProduto.bind(produtoController)),
@@ -39,7 +39,7 @@ router.post(
 
 // Listar todos os produtos
 router.get(
-  '/produtos/loja/:id_loja',
+  '/loja/:id_loja',
   authenticateJWT,
   autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
   asyncHandler(produtoController.findAll.bind(produtoController)),
@@ -47,7 +47,7 @@ router.get(
 
 // Buscar produto pela referência
 router.get(
-  '/produtos/loja/:id_loja/referencia/:referencia',
+  '/loja/:id_loja/referencia/:referencia',
   authenticateJWT,
   autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
   asyncHandler(produtoController.findByReferencia.bind(produtoController)),
@@ -55,7 +55,7 @@ router.get(
 
 // Deletar Produto
 router.delete(
-  '/produtos/loja/:id_loja/referencia/:referencia',
+  '/loja/:id_loja/referencia/:referencia',
   authenticateJWT,
   autorizar(UserRole.ADMIN),
   asyncHandler(produtoController.delete.bind(produtoController)),
@@ -63,7 +63,7 @@ router.delete(
 
 // Atualizar produto
 router.patch(
-  '/produtos/loja/:id_loja/referencia/:referencia',
+  '/loja/:id_loja/referencia/:referencia',
   authenticateJWT,
   autorizar(UserRole.ADMIN),
   asyncHandler(produtoController.update.bind(produtoController)),
@@ -73,7 +73,7 @@ router.patch(
 
 // Adicionar variação (POST /produtos/:referencia/loja/:id_loja/variacoes)
 router.post(
-  '/produtos/referencia/:referencia/loja/:id_loja/variacoes',
+  '/referencia/:referencia/loja/:id_loja/variacoes',
   authenticateJWT,
   autorizar(UserRole.ADMIN),
   asyncHandler(produtoController.addVariacao.bind(produtoController)),
@@ -98,14 +98,14 @@ router.delete(
 // --- FILTROS DE PRODUTOS ---
 
 router.get(
-  '/produtos/loja/:id_loja/busca',
+  '/loja/:id_loja/busca',
   authenticateJWT,
   autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
   asyncHandler(produtoController.searchByDescricaoOuNome.bind(produtoController)),
 );
 
 router.get(
-  '/produtos/loja/:id_loja/paginado',
+  '/loja/:id_loja/paginado',
   authenticateJWT,
   autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
   asyncHandler(produtoController.findAllPaginado.bind(produtoController)),
