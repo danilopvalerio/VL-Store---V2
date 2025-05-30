@@ -1,14 +1,18 @@
 import Loja from './models/Loja';
+import Funcionario from './models/Funcionario';
 import { JWTUtil } from './utils/jwt';
+import { UserRole } from './types/user.types';
 
 type TokenPayload = {
-  id_loja: string;
+  id: string;
   email: string;
   nome: string;
   role: string;
+  id_loja?: string; // Adicionado para funcionários
 };
 
 export class AuthService {
+  // Métodos existentes para Loja
   public gerarToken(loja: Loja): string {
     try {
       if (!loja.id_loja || !loja.email || !loja.nome) {
@@ -16,7 +20,7 @@ export class AuthService {
       }
 
       const payload: TokenPayload = {
-        id_loja: loja.id_loja,
+        id: loja.id_loja,
         email: loja.email,
         nome: loja.nome,
         role: loja.role || 'user',
@@ -29,6 +33,28 @@ export class AuthService {
     }
   }
 
+  // Novo método para Funcionário
+  public gerarTokenFuncionario(funcionario: Funcionario): string {
+    try {
+      if (!funcionario.id_funcionario || !funcionario.email || !funcionario.nome) {
+        throw new Error('Dados do funcionário inválidos');
+      }
+
+      const payload: TokenPayload = {
+        id: funcionario.id_funcionario,
+        email: funcionario.email,
+        nome: funcionario.nome,
+        role: funcionario.role || UserRole.FUNCIONARIO,
+        id_loja: funcionario.id_loja, // Adicionando id_loja ao payload
+      };
+
+      return JWTUtil.gerarToken(payload);
+    } catch (error) {
+      console.error('Erro ao gerar token do funcionário:', error);
+      throw new Error('Falha ao gerar token do funcionário');
+    }
+  }
+
   public verificarToken(token: string): TokenPayload | null {
     try {
       const decoded = JWTUtil.verificarToken(token);
@@ -37,7 +63,7 @@ export class AuthService {
       if (
         !decoded ||
         typeof decoded !== 'object' ||
-        !decoded.id_loja ||
+        !decoded.id ||
         !decoded.email ||
         !decoded.nome ||
         !decoded.role
@@ -51,5 +77,17 @@ export class AuthService {
       console.error('Token verification failed:', error);
       return null;
     }
+  }
+
+  // Novo método para verificar se o token pertence a um funcionário
+  public isFuncionarioToken(token: string): boolean {
+    const payload = this.verificarToken(token);
+    return payload ? payload.role === UserRole.FUNCIONARIO : false;
+  }
+
+  // Novo método para verificar se o token pertence a uma loja
+  public isLojaToken(token: string): boolean {
+    const payload = this.verificarToken(token);
+    return payload ? payload.role === UserRole.ADMIN : false;
   }
 }

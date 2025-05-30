@@ -1,11 +1,11 @@
 import { useRouter } from "next/router";
-import { ProductCardProps } from "../../../domain/interfaces/products-interface";
+import { EmployeeCardProps } from "../../../domain/interfaces/employees-interface";
 import axios from "axios";
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee }) => {
   const router = useRouter();
 
-  const openDetailedProduct = async (referencia: string) => {
+  const openDetailedEmployee = async (referencia: string) => {
     try {
       const jwtToken = localStorage.getItem("jwtToken");
       const userData = localStorage.getItem("userData");
@@ -27,10 +27,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         }
       );
 
-      // Salvar no localStorage
-      localStorage.setItem("selectedProduct", JSON.stringify(response.data));
+      localStorage.setItem("selectedEmployee", JSON.stringify(response.data));
 
-      router.push("ProductDetail");
+      router.push("EmployeeDetail");
     } catch (error) {
       alert("Erro desconhecido, tente novamente mais tarde.");
     }
@@ -38,16 +37,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div className="col-12 col-md-3 product-card rounded-5 p-3 d-flex justify-content-center flex-column">
-      <p className="mt-2 card-title secondary p-1 m-1">{product.nome}</p>
+      <p className="mt-2 card-title secondary p-1 m-1">{employee.nome}</p>
       <p className="card-title secondary p-1 m-1">
-        Categoria: {product.categoria}
+        Telefone: {employee.telefone}
       </p>
       <p className="card-title secondary p-1 m-1">
-        Material: {product.material}
+        Email: {employee.email}
       </p>
       <button
         className="btn primaria w-100 mt-2"
-        onClick={() => openDetailedProduct(product.referencia)}
+
       >
         Detalhes
       </button>
@@ -55,4 +54,4 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   );
 };
 
-export default ProductCard;
+export default EmployeeCard;
