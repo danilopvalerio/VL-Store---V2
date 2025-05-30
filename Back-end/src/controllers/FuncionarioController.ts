@@ -8,7 +8,6 @@ import { AppDataSource } from '../database/AppDataSource';
 import { AuthService } from '../utils/jwt';
 import { UserRole } from '../types/user.types';
 
-
 interface FuncionarioDTO {
   nome: string;
   senha: string;
@@ -102,13 +101,13 @@ export default class FuncionarioController {
 
       const saved = await this.funcionarioRepositorio.save(funcionario);
       const { senha, ...semSenha } = saved;
-      
+
       const token = AuthService.gerarToken({
         id: saved.id_funcionario,
         email: saved.email,
         nome: saved.nome,
         role: saved.role,
-        id_loja: saved.id_loja
+        id_loja: saved.id_loja,
       });
 
       return res.status(201).json({
@@ -128,38 +127,38 @@ export default class FuncionarioController {
       });
     }
   }
-  
+
   async login(req: Request, res: Response) {
     const { email, senha } = req.body;
-    
+
     if (!email || !senha) {
       return res.status(400).json({
         success: false,
         message: 'Email e senha são obrigatórios',
       });
     }
-    
+
     try {
       const funcionario = await this.funcionarioRepositorio.findOne({
         where: { email },
-        select: ['id_funcionario', 'nome', 'email', 'senha', 'role', 'id_loja']
+        select: ['id_funcionario', 'nome', 'email', 'senha', 'role', 'id_loja'],
       });
-      
+
       if (!funcionario || !(await bcrypt.compare(senha, funcionario.senha))) {
         return res.status(401).json({
           success: false,
           message: 'Email ou senha inválidos',
         });
       }
-      
+
       const token = AuthService.gerarToken({
         id: funcionario.id_funcionario,
         email: funcionario.email,
         nome: funcionario.nome,
         role: funcionario.role,
-        id_loja: funcionario.id_loja
+        id_loja: funcionario.id_loja,
       });
-      
+
       const { senha: _, ...funcionarioSemSenha } = funcionario;
       return res.status(200).json({
         success: true,
@@ -167,7 +166,7 @@ export default class FuncionarioController {
         data: {
           usuario: funcionarioSemSenha,
           token,
-          role: funcionario.role
+          role: funcionario.role,
         },
       });
     } catch (error) {
@@ -180,9 +179,10 @@ export default class FuncionarioController {
     }
   }
 
-  async findAll(_req: Request, res: Response) {
+  async findAll(req: Request, res: Response) {
     try {
-      const funcionarios = await this.funcionarioRepositorio.find();
+      const id_loja = req.params.id_loja;
+      const funcionarios = await this.funcionarioRepositorio.find({ where: { id_loja: id_loja } });
       const listaSemSenha = funcionarios.map(({ senha, ...f }) => f);
       res.status(200).json({
         success: true,
@@ -214,11 +214,17 @@ export default class FuncionarioController {
   }
 
   async delete(req: Request, res: Response) {
-    const { id } = req.params;
+    const { id_loja, id } = req.params;
     try {
       const funcionario = await this.funcionarioRepositorio.findOneBy({ id_funcionario: id });
       if (!funcionario) {
         return res.status(404).json({ success: false, message: 'Funcionário não encontrado' });
+      }
+
+      if (funcionario.id_loja !== id_loja) {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Funcionário não pertence à loja especificada' });
       }
 
       const { senha, ...semSenha } = funcionario;
@@ -253,7 +259,7 @@ export default class FuncionarioController {
 
       res.status(200).json({ success: true, message: 'Funcionário atualizado', data: semSenha });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Erro ao atualizar funcionário' });
+      res.status(500).json({ success: false, message: error });
     }
   }
 }
