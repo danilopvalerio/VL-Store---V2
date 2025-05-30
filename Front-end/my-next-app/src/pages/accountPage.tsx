@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FocusEvent as ReactFocusEvent } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import "../../public/css/products.css";

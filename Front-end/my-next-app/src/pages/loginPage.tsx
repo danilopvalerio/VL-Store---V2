@@ -5,6 +5,8 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import axios from "axios";
 import "../../public/css/login.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const AuthPage: React.FC = () => {
   const router = useRouter();
@@ -13,6 +15,7 @@ const AuthPage: React.FC = () => {
   const [userType, setUserType] = useState("funcionario");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   const pushInitialPage = () => {
     router.push("/initialPage");
@@ -20,6 +23,10 @@ const AuthPage: React.FC = () => {
 
   const handleUserTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserType(e.target.value);
+  };
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(prev => !prev);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -34,7 +41,7 @@ const AuthPage: React.FC = () => {
         return;
       }
 
-      let targetRoute =
+      const targetRoute =
         userType === "administrador" ? "login/loja" : "login/funcionario";
 
       const payload = {
@@ -131,9 +138,9 @@ const AuthPage: React.FC = () => {
                 </div>
 
                 <div className="input-block row mb-2 align-items-center mb-3">
-                  <div className="col-12 w-100">
+                  <div className="col-12 w-100 position-relative">
                     <input
-                      type="password"
+                      type={passwordVisible ? "text" : "password"}
                       className="form-control input-form"
                       placeholder="Digite sua senha"
                       value={password}
@@ -141,7 +148,15 @@ const AuthPage: React.FC = () => {
                       disabled={loading}
                       required
                     />
+                    <span
+                      className="position-absolute top-50 end-0 translate-middle-y me-4"
+                      style={{ cursor: 'pointer', zIndex: 100 }}
+                      onClick={togglePasswordVisibility}
+                    >
+                      <FontAwesomeIcon icon={passwordVisible ? faEyeSlash : faEye} />
+                   </span>
                   </div>
+                   
                 </div>
 
                 <div className="row justify-content-center mb-3">
