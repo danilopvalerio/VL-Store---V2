@@ -27,20 +27,16 @@ const AuthPage: React.FC = () => {
     setError("");
     setLoading(true);
 
-    if (!email || !password) {
-      setError("Email e senha são obrigatórios.");
-      setLoading(false);
-      return;
-    }
-
-    let targetRoute = "";
-    if (userType === "administrador") {
-      targetRoute = "login/loja";
-    } else {
-      targetRoute = "login/funcionario";
-    }
-
     try {
+      if (!email || !password) {
+        setError("Email e senha são obrigatórios.");
+        setLoading(false);
+        return;
+      }
+
+      let targetRoute =
+        userType === "administrador" ? "login/loja" : "login/funcionario";
+
       const payload = {
         email: email.toLowerCase(),
         senha: password,
@@ -50,15 +46,13 @@ const AuthPage: React.FC = () => {
         `http://localhost:9700/api/${targetRoute}`,
         payload,
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
 
       const data = response.data;
 
-      if (response.status === 200 && data.success) {
+      if (response.status === 200 && data.success && data.data?.token) {
         localStorage.setItem("jwtToken", data.data.token);
         if (data.data.loja) {
           localStorage.setItem("userData", JSON.stringify(data.data.loja));
@@ -74,13 +68,15 @@ const AuthPage: React.FC = () => {
         setError(data.message || "Usuário ou senha incorretos.");
       }
     } catch (err: any) {
-      console.error("Falha na chamada de login:", err);
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
+      // Captura qualquer erro e seta o erro para o usuário
+      if (axios.isAxiosError(err)) {
         setError(
-          "Falha na autenticação. Verifique sua conexão ou tente novamente."
+          err.response?.data?.message || `Erro na requisição: ${err.message}`
         );
+      } else if (err instanceof Error) {
+        setError(`Erro inesperado: ${err.message}`);
+      } else {
+        setError("Erro desconhecido. Tente novamente.");
       }
     } finally {
       setLoading(false);
@@ -105,11 +101,10 @@ const AuthPage: React.FC = () => {
           />
         </div>
       </header>
-
+      {error && <div className="alert alert-danger">{error}</div>}
       <main className="flex-grow-1 d-flex align-items-center">
         <div className="mx-auto login-register-block fine-transparent-border white-light d-flex justify-content-center align-items-center overflow-hidden w-75">
           <div className="row w-100 shadow overflow-hidden">
-            {/* Painel de Boas-Vindas */}
             <div className="col-md-6 text-white d-flex flex-column justify-content-center align-items-center text-center p-4 quartenary">
               <h4 className="m-3">Bem-vindo!</h4>
               <p className="w-75">
@@ -119,7 +114,7 @@ const AuthPage: React.FC = () => {
 
             <div className="col-md-6 p-4 terciary">
               <h3 className="text-center mb-4">Login</h3>
-              {error && <div className="alert alert-danger">{error}</div>}
+
               <form onSubmit={handleLogin}>
                 <div className="input-block row mb-2 align-items-center mb-3">
                   <div className="col-12 w-100">
@@ -198,12 +193,6 @@ const AuthPage: React.FC = () => {
                   >
                     {loading ? "Entrando..." : "Entrar"}
                   </button>
-                  <Link
-                    href="/recover"
-                    className="btn primaria col-11 col-lg-5 mx-auto d-flex justify-content-center align-items-center text-decoration-none"
-                  >
-                    Recuperar senha
-                  </Link>
                 </div>
 
                 <p className="w-100 text-center mt-3">
@@ -216,14 +205,7 @@ const AuthPage: React.FC = () => {
       </main>
 
       <footer className="w-100">
-        <div className="footer-panel">
-          {/* <button
-            className="btn primaria footerButton col-3 mx-auto d-flex justify-content-center align-items-center"
-            onClick={pushInitialPage}
-          >
-            Entrar como visitante
-          </button> */}
-        </div>
+        <div className="footer-panel">{/* Footer content if needed */}</div>
       </footer>
     </div>
   );

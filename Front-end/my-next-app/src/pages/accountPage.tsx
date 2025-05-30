@@ -138,11 +138,16 @@ const AccountPage = () => {
   const saveChanges = async () => {
     try {
       setIsSaving(true);
+
+      // Extrai senha e pega o resto dos dados
+      const { senha, ...dataWithoutPassword } = storeData;
+
       await axios.patch(
         `http://localhost:9700/api/lojas/${storeData.id_loja}`,
-        storeData,
+        dataWithoutPassword, // envia sem a senha
         { headers: getAuthHeaders() }
       );
+
       localStorage.setItem("userData", JSON.stringify(storeData));
       setOriginalData(storeData);
     } catch (err) {
@@ -161,17 +166,27 @@ const AccountPage = () => {
     router.push("/menuPage");
   };
 
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const deleteStore = async () => {
     try {
+      setIsDeleting(true);
       await axios.delete(
         `http://localhost:9700/api/lojas/${storeData.id_loja}`,
         { headers: getAuthHeaders() }
       );
-      router.push("/accountPage");
+      // Limpa o localStorage ao deletar a conta
+      localStorage.removeItem("jwtToken");
+      localStorage.removeItem("userData");
+      localStorage.removeItem("selectedStore");
+
+      router.push("/initialPage"); // redireciona para a página inicial
     } catch (err) {
       console.error("Erro ao deletar loja:", err);
       setError("Erro ao deletar loja");
       setTimeout(() => setError(""), 3000);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -189,6 +204,11 @@ const AccountPage = () => {
         {isSaving && (
           <div className="alert alert-info col-12 text-center mt-2">
             Salvando dados...
+          </div>
+        )}
+        {isDeleting && (
+          <div className="alert alert-info col-12 text-center mt-2">
+            Deletando conta...
           </div>
         )}
 
