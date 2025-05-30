@@ -4,39 +4,70 @@ import axios from "axios";
 import "../../public/css/products.css";
 import "../../public/css/general.css";
 
-
 const EmployeeDetail = () => {
   const router = useRouter();
 
   const [employeeData, setEmployeeData] = useState({
+    id_funcionario: "",
     nome: "",
     email: "",
-    senha: "",
     cpf: "",
-    data_nascimento: "",
+    data_nascimento: "", // será YYYY-MM-DD
     telefone: "",
     id_loja: "",
   });
 
-
   const [error, setError] = useState("");
+
+  // Data original como veio do backend (ex: "0200-07-20T03:06:28.000Z")
+  const [originalDate, setOriginalDate] = useState<string>("");
+
+  // Formata data para input type="date"
+  const formatDateToInput = (dateString: string): string => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  // Mantém o horário original, apenas atualiza dia/mês/ano
+  const updateDateKeepingTime = (
+    originalDateString: string,
+    newDateInput: string
+  ): string => {
+    const original = new Date(originalDateString);
+    const [year, month, day] = newDateInput.split("-");
+
+    original.setFullYear(parseInt(year));
+    original.setMonth(parseInt(month) - 1); // Mês começa em 0
+    original.setDate(parseInt(day));
+
+    return original.toISOString(); // Retorna no formato ISO completo
+  };
 
   // Carrega os dados iniciais
   useEffect(() => {
-    const funcionario = localStorage.getItem("selectedEmployee");
-    if (funcionario) {
-      const produtoObj = JSON.parse(funcionario);
-      const data = produtoObj.data;
+    const employee = localStorage.getItem("selectedEmployee");
+    if (employee) {
+      const employeObj = JSON.parse(employee);
+      const data = employeObj.data;
+
+      const rawDate = data.data_nascimento;
+      setOriginalDate(rawDate);
 
       setEmployeeData({
+        id_funcionario: data.id_funcionario || "",
         nome: data.nome || "",
         email: data.email || "",
-        senha: data.senha,
         cpf: data.cpf || "",
-        data_nascimento: data.data_nascimento || "",
-        telefone: data.telefone,
-        id_loja: data.id_loja || "",
-        
+        data_nascimento: formatDateToInput(rawDate),
+        telefone: data.telefone || "",
+        id_loja: data.id_loja,
       });
     }
   }, []);
@@ -62,9 +93,15 @@ const EmployeeDetail = () => {
     setEmployeeData(newData);
 
     try {
+      let formattedValue = value;
+
+      if (name === "data_nascimento") {
+        formattedValue = updateDateKeepingTime(originalDate, value);
+      }
+
       await axios.patch(
-        `http://localhost:9700/api/colocaaquiarota`,
-        { [name]: value },
+        `http://localhost:9700/api/funcionarios/loja/${newData.id_loja}/funcionario/${newData.id_funcionario}`,
+        { [name]: formattedValue },
         { headers: getAuthHeaders() }
       );
     } catch (err) {
@@ -77,7 +114,7 @@ const EmployeeDetail = () => {
   const deleteEmployee = async () => {
     try {
       await axios.delete(
-        `http://localhost:9700/api/colocaaquiarota`,
+        `http://localhost:9700/api/funcionarios/loja/${employeeData.id_loja}/funcionario/${employeeData.id_funcionario}`,
         { headers: getAuthHeaders() }
       );
       router.push("/employeesPage");
@@ -91,7 +128,7 @@ const EmployeeDetail = () => {
   return (
     <div className="d-flex justify-content-center align-items-center w-100">
       <div className="product-page d-flex justify-content-center align-items-center terciary p-4 flex-column rounded-5 white-light">
-        <h3 className="col-12 text-center">Editar Produto</h3>
+        <h3 className="col-12 text-center">Editar funcionário</h3>
 
         {error && (
           <div className="alert alert-danger col-12 text-center mt-2">
@@ -103,44 +140,43 @@ const EmployeeDetail = () => {
           <div className="col-12 w-100">
             <div className="row product-info w-100 d-flex justify-content-between align-items-between">
               <div className="mx-auto col-12 p-4 info-base row">
-                <h5 className="text-center mb-2">Informações gerais</h5>
+                <h5 className="text-center mb-2">Informações do Funcionário</h5>
 
-                <label className="product-label">Nome:</label>
-
+                <label className="product-label">Nome*:</label>
                 <input
                   className="mb-3 produto-input"
-                  name="Nome"
-                  placeholder="Nome"
+                  name="nome"
+                  placeholder="Ex: João da Silva"
                   value={employeeData.nome}
-                  readOnly
-                  style={{ backgroundColor: "#f8f9fa", cursor: "not-allowed" }}
-                />
-
-                <label className="product-label">CPF/CNPJ*:</label>
-                <input
-                  className="mb-3 produto-input"
-                  name="cpf"
-                  placeholder="Digite o CPF ou CNPJ"
-                  value={employeeData.cpf}
                   onChange={handleChange}
                   required
                 />
 
-                <label className="product-label">Email:</label>
+                <label className="product-label">Email*:</label>
                 <input
                   className="mb-3 produto-input"
                   name="email"
-                  placeholder="Digite o email"
+                  placeholder="Ex: joao@email.com"
                   value={employeeData.email}
                   onChange={handleChange}
                   required
                 />
 
-                <label className="product-label">Data de nascimento:</label>
+                <label className="product-label">CPF*:</label>
                 <input
                   className="mb-3 produto-input"
-                  name="data de nascimento"
-                  placeholder="Digite a data de nascimento"
+                  name="cpf"
+                  placeholder="Ex: 123.456.789-00"
+                  value={employeeData.cpf}
+                  onChange={handleChange}
+                  required
+                />
+
+                <label className="product-label">Data de Nascimento*:</label>
+                <input
+                  type="date"
+                  className="mb-3 produto-input"
+                  name="data_nascimento"
                   value={employeeData.data_nascimento}
                   onChange={handleChange}
                   required
@@ -150,21 +186,11 @@ const EmployeeDetail = () => {
                 <input
                   className="mb-3 produto-input"
                   name="telefone"
-                  placeholder="Ex: (99) 99999-9999"
+                  placeholder="Ex: (11) 91234-5678"
                   value={employeeData.telefone}
                   onChange={handleChange}
                 />
-
-                 <label className="product-label">Senha:</label>
-                <input
-                  className="mb-3 produto-input"
-                  name="genero"
-                  placeholder="Ex: Masculino"
-                  value={employeeData.senha}
-                  onChange={handleChange}
-                />
               </div>
-
             </div>
           </div>
 

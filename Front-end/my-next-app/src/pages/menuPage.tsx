@@ -9,6 +9,7 @@ const MenuPage: React.FC = () => {
   const router = useRouter();
   const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isViewOnly, setIsViewOnly] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -26,6 +27,10 @@ const MenuPage: React.FC = () => {
         setUserName(
           parsedData.nome || parsedData.nome_proprietario || "Usuário"
         );
+
+        if (parsedData.role == "funcionario") {
+          setIsViewOnly(true);
+        }
       } catch (error) {
         console.error("Erro ao parsear userData:", error);
         router.push("/initialPage");
@@ -88,6 +93,7 @@ const MenuPage: React.FC = () => {
             type="button"
             className="btn primaria col-9 col-lg-5 mb-2"
             onClick={() => navigateTo("/cashier")}
+            disabled={isViewOnly}
           >
             Caixa
           </button>
@@ -95,6 +101,7 @@ const MenuPage: React.FC = () => {
             type="button"
             className="btn primaria col-9 col-lg-5 mb-2"
             onClick={() => navigateTo("/employeesPage")}
+            disabled={isViewOnly}
           >
             Funcionários
           </button>

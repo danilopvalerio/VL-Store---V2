@@ -262,4 +262,97 @@ export default class FuncionarioController {
       res.status(500).json({ success: false, message: error });
     }
   }
+
+  // Adicione estes métodos na classe FuncionarioController
+
+  async searchByDescricaoOuNome(req: Request, res: Response) {
+    const { id_loja, termo } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 6; // ou personalize como quiser
+    const skip = (page - 1) * limit;
+
+    if (!id_loja || !termo) {
+      return res.status(400).json({
+        success: false,
+        error: 'Parâmetros ausentes',
+        message: 'ID da loja e termo de busca são obrigatórios',
+      });
+    }
+
+    const termoFormatado = `%${termo.toLowerCase()}%`;
+
+    try {
+      const [funcionarios, total] = await this.funcionarioRepositorio
+        .createQueryBuilder('funcionario')
+        .where('funcionario.id_loja = :id_loja', { id_loja })
+        .andWhere(
+          `(LOWER(funcionario.nome) LIKE :termo OR
+                LOWER(funcionario.email) LIKE :termo OR
+                LOWER(funcionario.cpf) LIKE :termo OR
+                LOWER(funcionario.telefone) LIKE :termo)`,
+          { termo: termoFormatado },
+        )
+        .skip(skip)
+        .take(limit)
+        .getManyAndCount();
+
+      // Remover senhas dos resultados
+      const funcionariosSemSenha = funcionarios.map(({ senha, ...rest }) => rest);
+
+      return res.status(200).json({
+        success: true,
+        data: funcionariosSemSenha,
+        count: total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      });
+    } catch (error) {
+      console.error('Erro ao buscar funcionários:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Erro interno',
+        message: 'Erro ao buscar funcionários por termo',
+      });
+    }
+  }
+
+  async findAllPaginado(req: Request, res: Response) {
+    const { page = '1', limit = '9' } = req.query;
+    const id_loja = req.params.id_loja;
+
+    if (!id_loja) {
+      return res.status(400).json({
+        success: false,
+        error: 'Parâmetro id_loja é obrigatório na URL',
+      });
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    try {
+      const [funcionarios, total] = await this.funcionarioRepositorio.findAndCount({
+        where: { id_loja },
+        skip,
+        take: Number(limit),
+      });
+
+      // Remover senhas dos resultados
+      const funcionariosSemSenha = funcionarios.map(({ senha, ...rest }) => rest);
+
+      return res.status(200).json({
+        success: true,
+        data: funcionariosSemSenha,
+        page: Number(page),
+        totalPages: Math.ceil(total / Number(limit)),
+        totalItems: total,
+      });
+    } catch (error) {
+      console.error('Erro ao buscar funcionários paginados:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao buscar funcionários',
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
+      });
+    }
+  }
 }

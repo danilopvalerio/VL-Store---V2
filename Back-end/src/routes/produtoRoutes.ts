@@ -98,7 +98,7 @@ router.delete(
 // --- FILTROS DE PRODUTOS ---
 
 router.get(
-  '/loja/:id_loja/busca',
+  '/loja/:id_loja/busca/:termo',
   authenticateJWT,
   autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
   asyncHandler(produtoController.searchByDescricaoOuNome.bind(produtoController)),

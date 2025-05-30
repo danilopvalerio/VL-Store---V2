@@ -8,11 +8,12 @@ interface Variation {
   id_variacao?: string;
   descricao_variacao: string;
   quant_variacao: number;
-  valor: number;
+  valor: number | string;
 }
 
 const ProductDetail = () => {
   const router = useRouter();
+  const [isViewOnly, setIsViewOnly] = useState(false);
 
   const [productData, setProductData] = useState({
     referencia: "",
@@ -61,8 +62,18 @@ const ProductDetail = () => {
   // Verifica autenticação
   useEffect(() => {
     const jwtToken = localStorage.getItem("jwtToken");
-    const userData = localStorage.getItem("userData");
-    if (!jwtToken || !userData) router.push("/initialPage");
+    const userDataStr = localStorage.getItem("userData");
+
+    if (!jwtToken || !userDataStr) {
+      router.push("/initialPage");
+      return;
+    }
+
+    const userData = JSON.parse(userDataStr);
+    console.log(userData);
+    if (userData.role == "funcionario") {
+      setIsViewOnly(true);
+    }
   }, []);
 
   const getAuthHeaders = () => {
@@ -90,32 +101,9 @@ const ProductDetail = () => {
       setTimeout(() => setError(""), 3000);
     }
   };
+  const handleVariationBlur = async (index: number) => {
+    const variation = variations[index];
 
-  const handleVariationChange = async (
-    index: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value } = e.target;
-    const updated = [...variations];
-
-    if (name === "valor") {
-      // Para o campo valor, mantemos como texto (string)
-      updated[index] = {
-        ...updated[index],
-        [name]: value, // Armazena como texto
-      };
-    } else {
-      // Para outros campos, mantemos a lógica original
-      updated[index] = {
-        ...updated[index],
-        [name]: name === "descricao_variacao" ? value : parseFloat(value) || 0,
-      };
-    }
-
-    setVariations(updated);
-
-    // Restante da lógica de persistência...
-    const variation = updated[index];
     const valorNumerico =
       parseFloat(variation.valor.toString().replace(",", ".")) || 0;
 
@@ -123,46 +111,85 @@ const ProductDetail = () => {
       variation.descricao_variacao.trim() !== "" && valorNumerico > 0;
 
     if (variation.id_variacao) {
-      // Variação já existe no banco, atualiza
-      const url = `http://localhost:9700/api/variacoes/${variation.id_variacao}`;
-      const body = {
-        [name]:
-          name === "valor" ? valorNumerico : variation[name as keyof Variation],
-      };
-
+      // Atualiza variação existente
       try {
-        await axios.patch(url, body, { headers: getAuthHeaders() });
+        await axios.patch(
+          `http://localhost:9700/api/produtos/variacoes/${variation.id_variacao}`,
+          { valor: valorNumerico },
+          { headers: getAuthHeaders() }
+        );
+
+        const updated = [...variations];
+        updated[index].valor = valorNumerico;
+        setVariations(updated);
       } catch (err) {
-        console.error("Erro ao atualizar variação:", err);
-        setError("Erro ao atualizar variação");
+        console.error("Erro ao atualizar valor:", err);
+        setError("Erro ao atualizar valor");
         setTimeout(() => setError(""), 3000);
       }
     } else if (hasValidData) {
-      // Variação nova com dados válidos, cria no banco
-      const url = `http://localhost:9700/api/produtos/referencia/${productData.referencia}/loja/${productData.id_loja}/variacoes`;
-      const body = {
-        descricao_variacao: variation.descricao_variacao,
-        quant_variacao: variation.quant_variacao,
-        valor: valorNumerico,
-      };
-
+      // Cria nova variação
       try {
-        const response = await axios.post(url, body, {
-          headers: getAuthHeaders(),
-        });
+        const response = await axios.post(
+          `http://localhost:9700/api/produtos/referencia/${productData.referencia}/loja/${productData.id_loja}/variacoes`,
+          {
+            descricao_variacao: variation.descricao_variacao,
+            quant_variacao: variation.quant_variacao,
+            valor: valorNumerico,
+          },
+          { headers: getAuthHeaders() }
+        );
 
-        // Atualiza a variação local com o ID retornado do banco
-        const updatedWithId = [...updated];
-        updatedWithId[index] = {
+        const updated = [...variations];
+        updated[index] = {
           ...variation,
           id_variacao: response.data.id_variacao,
-          valor: valorNumerico, // Atualiza com o valor numérico
+          valor: valorNumerico,
         };
-        setVariations(updatedWithId);
+        setVariations(updated);
       } catch (err) {
         console.error("Erro ao criar variação:", err);
         setError("Erro ao criar variação");
         setTimeout(() => setError(""), 3000);
+      }
+    }
+  };
+
+  const handleVariationChange = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value } = e.target;
+    const updated = [...variations];
+
+    updated[index] = {
+      ...updated[index],
+      [name]:
+        name === "valor"
+          ? value // Apenas atualiza localmente como string
+          : name === "descricao_variacao"
+          ? value
+          : parseFloat(value) || 0,
+    };
+
+    setVariations(updated);
+
+    // Para campos que não sejam "valor", atualiza diretamente
+    if (name !== "valor") {
+      const variation = updated[index];
+      if (variation.id_variacao) {
+        const url = `http://localhost:9700/api/produtos/variacoes/${variation.id_variacao}`;
+        axios
+          .patch(
+            url,
+            { [name]: variation[name as keyof Variation] },
+            { headers: getAuthHeaders() }
+          )
+          .catch((err) => {
+            console.error("Erro ao atualizar variação:", err);
+            setError("Erro ao atualizar variação");
+            setTimeout(() => setError(""), 3000);
+          });
       }
     }
   };
@@ -186,7 +213,7 @@ const ProductDetail = () => {
       // Se a variação existe no banco, remove do banco primeiro
       try {
         await axios.delete(
-          `http://localhost:9700/api/variacoes/${variation.id_variacao}`,
+          `http://localhost:9700/api/produtos/variacoes/${variation.id_variacao}`,
           { headers: getAuthHeaders() }
         );
       } catch (err) {
@@ -234,7 +261,7 @@ const ProductDetail = () => {
               <div className="mx-auto col-12 p-4 info-base row">
                 <h5 className="text-center mb-2">Informações gerais</h5>
 
-                <label className="product-label">Referência*:</label>
+                <label className="product-label">Referência:</label>
 
                 <input
                   className="mb-3 produto-input"
@@ -245,7 +272,7 @@ const ProductDetail = () => {
                   style={{ backgroundColor: "#f8f9fa", cursor: "not-allowed" }}
                 />
 
-                <label className="product-label">Nome do Produto*:</label>
+                <label className="product-label">Nome do Produto:</label>
                 <input
                   className="mb-3 produto-input"
                   name="nome"
@@ -253,9 +280,10 @@ const ProductDetail = () => {
                   value={productData.nome}
                   onChange={handleChange}
                   required
+                  disabled={isViewOnly}
                 />
 
-                <label className="product-label">Categoria*:</label>
+                <label className="product-label">Categoria:</label>
                 <input
                   className="mb-3 produto-input"
                   name="categoria"
@@ -263,9 +291,10 @@ const ProductDetail = () => {
                   value={productData.categoria}
                   onChange={handleChange}
                   required
+                  disabled={isViewOnly}
                 />
 
-                <label className="product-label">Material*:</label>
+                <label className="product-label">Material:</label>
                 <input
                   className="mb-3 produto-input"
                   name="material"
@@ -273,6 +302,7 @@ const ProductDetail = () => {
                   value={productData.material}
                   onChange={handleChange}
                   required
+                  disabled={isViewOnly}
                 />
 
                 <label className="product-label">Gênero:</label>
@@ -282,11 +312,12 @@ const ProductDetail = () => {
                   placeholder="Ex: Masculino"
                   value={productData.genero}
                   onChange={handleChange}
+                  disabled={isViewOnly}
                 />
               </div>
 
               <div className="col-12 w-100">
-                <h5 className="text-center mb-4">Variações*:</h5>
+                <h5 className="text-center mb-4">Variações:</h5>
 
                 {variations.map((variation, index) => (
                   <article
@@ -294,7 +325,7 @@ const ProductDetail = () => {
                     className="p-1 mx-auto variacao row align-items-center pb-4 justify-content-evenly mb-2 w-100"
                   >
                     <div className="col-12 col-md-6">
-                      <p className="col-12 mt-2 text-center">Descrição*</p>
+                      <p className="col-12 mt-2 text-center">Descrição</p>
                       <input
                         type="text"
                         className="col-12 produto-input"
@@ -302,11 +333,12 @@ const ProductDetail = () => {
                         name="descricao_variacao"
                         value={variation.descricao_variacao}
                         onChange={(e) => handleVariationChange(index, e)}
+                        disabled={isViewOnly}
                       />
                     </div>
 
                     <div className="col-6 col-md-2">
-                      <p className="col-12 m-2 text-center">Quantidade*</p>
+                      <p className="col-12 m-2 text-center">Quantidade</p>
                       <input
                         type="number"
                         className="col-12 produto-input"
@@ -315,11 +347,12 @@ const ProductDetail = () => {
                         value={variation.quant_variacao || ""}
                         onChange={(e) => handleVariationChange(index, e)}
                         min="0"
+                        disabled={isViewOnly}
                       />
                     </div>
 
                     <div className="col-6 col-md-2">
-                      <p className="col-12 m-2 text-center">Valor* (R$)</p>
+                      <p className="col-12 m-2 text-center">Valor (R$)</p>
                       <input
                         type="text"
                         className="col-12 produto-input"
@@ -327,6 +360,8 @@ const ProductDetail = () => {
                         name="valor"
                         value={variation.valor || ""}
                         onChange={(e) => handleVariationChange(index, e)}
+                        onBlur={() => handleVariationBlur(index)}
+                        disabled={isViewOnly}
                       />
                     </div>
 
@@ -334,7 +369,7 @@ const ProductDetail = () => {
                       type="button"
                       className="col-12 col-md-1 mt-4 btn-delete rounded-5"
                       onClick={() => removeVariation(index)}
-                      disabled={variations.length <= 1}
+                      disabled={variations.length <= 1 || isViewOnly}
                     >
                       X
                     </button>
@@ -345,6 +380,7 @@ const ProductDetail = () => {
                   type="button"
                   className="down-btn btn col-12 col-md-3 primaria"
                   onClick={addVariation}
+                  disabled={isViewOnly}
                 >
                   Adicionar Variação
                 </button>
@@ -356,7 +392,11 @@ const ProductDetail = () => {
             <button
               type="button"
               className="down-btn btn col-12 col-md-3 primaria"
-              onClick={() => router.push("/productsPage")}
+              onClick={() => {
+                setTimeout(() => {
+                  router.push("/productsPage");
+                }, 1000);
+              }}
             >
               Voltar
             </button>
@@ -365,6 +405,7 @@ const ProductDetail = () => {
               type="button"
               className="down-btn btn col-12 col-md-3 primaria"
               onClick={deleteProduct}
+              disabled={isViewOnly}
             >
               Deletar Produto
             </button>

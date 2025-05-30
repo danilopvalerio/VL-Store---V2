@@ -1,9 +1,23 @@
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .product-page {
   width: 90% !important;
   max-width: 950px;
   overflow: hidden;
   margin-top: 100px;
   margin-bottom: 40px;
+
+  /* animação ao ser inserida */
+  animation: fadeInUp 0.5s ease forwards;
 }
 
 .product-label {
@@ -40,6 +54,7 @@
   height: 200px;
   min-width: 200px;
   width: 260px;
+  animation: fadeInUp 0.5s ease forwards;
 }
 
 .product-card img {

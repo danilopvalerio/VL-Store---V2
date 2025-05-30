@@ -316,8 +316,10 @@ export default class ProdutoController {
   // Realiza busca pelo nome, categoria e material de um produto
   // Também busca pelas variações do produto
   async searchByDescricaoOuNome(req: Request, res: Response) {
-    const { id_loja } = req.params;
-    const { termo } = req.query;
+    const { id_loja, termo } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 6; // ou personalize como quiser
+    const skip = (page - 1) * limit;
 
     if (!id_loja || !termo) {
       return res.status(400).json({
@@ -327,10 +329,10 @@ export default class ProdutoController {
       });
     }
 
-    try {
-      const termoFormatado = `%${(termo as string).toLowerCase()}%`;
+    const termoFormatado = `%${termo.toLowerCase()}%`;
 
-      const produtos = await this.produtoRepositorio
+    try {
+      const [produtos, total] = await this.produtoRepositorio
         .createQueryBuilder('produto')
         .leftJoinAndSelect('produto.variacoes', 'variacao')
         .where('produto.id_loja = :id_loja', { id_loja })
@@ -341,12 +343,16 @@ export default class ProdutoController {
           LOWER(variacao.descricao_variacao) LIKE :termo)`,
           { termo: termoFormatado },
         )
-        .getMany();
+        .skip(skip)
+        .take(limit)
+        .getManyAndCount();
 
       return res.status(200).json({
         success: true,
         data: produtos,
-        count: produtos.length,
+        count: total,
+        page,
+        totalPages: Math.ceil(total / limit),
       });
     } catch (error) {
       console.error('Erro ao buscar produtos:', error);

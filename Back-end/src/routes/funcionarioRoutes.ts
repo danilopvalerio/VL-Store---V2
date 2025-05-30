@@ -91,4 +91,20 @@ router.delete(
   asyncHandler(funcionarioController.delete.bind(funcionarioController)),
 );
 
+// Busca funcionários por termo (nome, email, cpf ou telefone)
+router.get(
+  '/loja/:id_loja/busca/:termo',
+  authenticateJWT,
+  autorizar(UserRole.ADMIN),
+  asyncHandler(funcionarioController.searchByDescricaoOuNome.bind(funcionarioController)),
+);
+
+// Lista funcionários paginados
+router.get(
+  '/loja/:id_loja/paginado',
+  authenticateJWT,
+  autorizar(UserRole.ADMIN),
+  asyncHandler(funcionarioController.findAllPaginado.bind(funcionarioController)),
+);
+
 export default router;

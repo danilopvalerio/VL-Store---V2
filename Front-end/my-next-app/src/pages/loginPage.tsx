@@ -10,7 +10,7 @@ const AuthPage: React.FC = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState('funcionario');
+  const [userType, setUserType] = useState("funcionario");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -33,11 +33,11 @@ const AuthPage: React.FC = () => {
       return;
     }
 
-    let targetRoute = '';
-    if (userType === 'administrador') {
-      targetRoute = 'login/loja';
+    let targetRoute = "";
+    if (userType === "administrador") {
+      targetRoute = "login/loja";
     } else {
-      targetRoute = 'login/funcionario';
+      targetRoute = "login/funcionario";
     }
 
     try {
@@ -61,11 +61,10 @@ const AuthPage: React.FC = () => {
       if (response.status === 200 && data.success) {
         localStorage.setItem("jwtToken", data.data.token);
         if (data.data.loja) {
-            localStorage.setItem("userData", JSON.stringify(data.data.loja));
-        } else if (data.data.admin) {
-             localStorage.setItem("userData", JSON.stringify(data.data.admin));
+          localStorage.setItem("userData", JSON.stringify(data.data.loja));
+        } else if (data.data.usuario) {
+          localStorage.setItem("userData", JSON.stringify(data.data.usuario));
         }
-
 
         axios.defaults.headers.common[
           "Authorization"
@@ -77,11 +76,11 @@ const AuthPage: React.FC = () => {
     } catch (err: any) {
       console.error("Falha na chamada de login:", err);
       if (err.response && err.response.data && err.response.data.message) {
-          setError(err.response.data.message);
+        setError(err.response.data.message);
       } else {
-          setError(
-            "Falha na autenticação. Verifique sua conexão ou tente novamente."
-          );
+        setError(
+          "Falha na autenticação. Verifique sua conexão ou tente novamente."
+        );
       }
     } finally {
       setLoading(false);
@@ -152,41 +151,44 @@ const AuthPage: React.FC = () => {
 
                 <div className="row justify-content-center mb-3">
                   <div className="col-auto">
-                      <div className="form-check form-check-inline">
-                          <input
-                              className="form-check-input"
-                              type="radio"
-                              name="userType"
-                              id="adminRadio"
-                              value="administrador"
-                              checked={userType === 'administrador'}
-                              onChange={handleUserTypeChange}
-                              disabled={loading}
-                          />
-                          <label className="form-check-label" htmlFor="adminRadio">
-                              Administrador
-                          </label>
-                      </div>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="userType"
+                        id="adminRadio"
+                        value="administrador"
+                        checked={userType === "administrador"}
+                        onChange={handleUserTypeChange}
+                        disabled={loading}
+                      />
+                      <label className="form-check-label" htmlFor="adminRadio">
+                        Administrador
+                      </label>
+                    </div>
                   </div>
 
                   <div className="col-auto">
-                      <div className="form-check form-check-inline">
-                          <input
-                              className="form-check-input"
-                              type="radio"
-                              name="userType"
-                              id="employeeRadio"
-                              value="funcionario"
-                              checked={userType === 'funcionario'}
-                              onChange={handleUserTypeChange}
-                              disabled={loading}
-                          />
-                          <label className="form-check-label" htmlFor="employeeRadio">
-                              Funcionário
-                          </label>
-                      </div>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="userType"
+                        id="employeeRadio"
+                        value="funcionario"
+                        checked={userType === "funcionario"}
+                        onChange={handleUserTypeChange}
+                        disabled={loading}
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="employeeRadio"
+                      >
+                        Funcionário
+                      </label>
+                    </div>
                   </div>
-              </div>
+                </div>
 
                 <div className="row mt-3 gap-1">
                   <button

@@ -12,6 +12,7 @@ const ProductPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
   const LIMIT: number = 6; // Limite fixo de itens por página
@@ -22,6 +23,39 @@ const ProductPage = () => {
 
   const pushBackToMenu = () => {
     router.push("menuPage");
+  };
+
+  const handleSearch = async (page = 1) => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    const userData = localStorage.getItem("userData");
+
+    if (!jwtToken || !userData) {
+      router.push("/initialPage");
+      return;
+    }
+
+    const parsedData = JSON.parse(userData);
+    const idLoja = parsedData.id_loja;
+
+    try {
+      const response = await axios.get(
+        `http://localhost:9700/api/produtos/loja/${idLoja}/busca/${encodeURIComponent(
+          searchTerm
+        )}?page=${page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
+      );
+
+      setProdutos(response.data.data);
+      setTotalItems(response.data.count);
+      setTotalPages(response.data.totalPages);
+      setCurrentPage(response.data.page);
+    } catch (error) {
+      console.error("Erro ao buscar produtos:", error);
+    }
   };
 
   const fetchProducts = async (page: number) => {
@@ -62,15 +96,28 @@ const ProductPage = () => {
     fetchProducts(1);
   }, [router]);
 
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    fetchProducts(1); // Sua função padrão para listar todos os produtos paginados
+  };
+
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      fetchProducts(currentPage + 1);
+      if (searchTerm.trim() !== "") {
+        handleSearch(currentPage + 1);
+      } else {
+        fetchProducts(currentPage + 1);
+      }
     }
   };
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
-      fetchProducts(currentPage - 1);
+      if (searchTerm.trim() !== "") {
+        handleSearch(currentPage - 1);
+      } else {
+        fetchProducts(currentPage - 1);
+      }
     }
   };
 
@@ -95,12 +142,24 @@ const ProductPage = () => {
               className="input-form primaria w-100"
               type="text"
               placeholder="Digite o produto..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="btn primaria col-12 col-md-3 mt-2">
+          <button
+            className="btn primaria col-12 col-md-3 mt-2"
+            onClick={() => handleSearch()}
+            disabled={!searchTerm.trim()} // Desabilita se o input estiver vazio
+          >
             Pesquisar
           </button>
-          <button className="btn primaria col-12 col-md-3 mt-2">Limpar</button>
+          <button
+            className="btn primaria col-12 col-md-3 mt-2"
+            onClick={handleClearSearch}
+            disabled={!searchTerm.trim()} // Desabilita se o input estiver vazio
+          >
+            Limpar
+          </button>
           <button
             className="btn primaria col-12 col-md-3 mt-2"
             onClick={pushAddProductPage}
