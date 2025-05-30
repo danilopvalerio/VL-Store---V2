@@ -5,33 +5,107 @@ import "../../public/css/products.css";
 import "../../public/css/general.css";
 
 
+interface StoreData {
+  nome: string;
+  senha: string;
+  email: string;
+  cpf_cnpj_proprietario_loja: string;
+  data_nasc_proprietario: string;
+  telefone: string;
+  id_loja: string;
+}
+
 const AccountPage = () => {
   const router = useRouter();
 
-  const [storeData, setStoreData] = useState({
-    nome_loja: "",
-    cpf: "",
+  const [storeData, setStoreData] = useState<StoreData>({
+    nome: "",
+    senha: "",
     email: "",
+    cpf_cnpj_proprietario_loja: "",
+    data_nasc_proprietario: "",
     telefone: "",
+    id_loja: "",
   });
+
+  const getStore = async () => {
+    try {
+      const jwtToken = localStorage.getItem("jwtToken");
+      const userData = localStorage.getItem("userData");
+
+      if (!jwtToken || !userData) {
+        console.error("Usuário não autenticado.");
+        return;
+      }
+
+      const { id_loja } = JSON.parse(userData);
+
+      const response = await axios.get(
+        `http://localhost:9700/api/lojas/${id_loja}`,
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          timeout: 2000,
+        }
+      );
+
+      // Salvar no localStorage
+      localStorage.setItem("selectedStore", JSON.stringify(response.data));
+
+      return response.data;
+
+    } catch (error) {
+      alert("Erro desconhecido, tente novamente mais tarde.");
+    }
+  };
 
 
   const [error, setError] = useState("");
 
   // Carrega os dados iniciais
-  useEffect(() => {
-    const loja = localStorage.getItem("selectedStore");
-    if (loja) {
-      const produtoObj = JSON.parse(loja);
-      const data = produtoObj.data;
+   useEffect(() => {
+    const loadStoreData = async () => {
+      const storeResponse = await getStore();
 
-      setStoreData({
-        nome_loja: data.nome || "",
-        cpf: data.categoria || "",
-        email: data.material || "",
-        telefone: data.id_loja,
-      });
-    }
+      if (storeResponse && storeResponse.data) {
+        const data = storeResponse.data;
+
+        setStoreData({
+          nome: data.nome || "",
+          senha: data.senha || "",
+          email: data.email || "",
+          cpf_cnpj_proprietario_loja: data.cpf_cnpj_proprietario_loja || "",
+          data_nasc_proprietario: data.data_nasc_proprietario || "",
+          telefone: data.telefone || "",
+          id_loja: data.id_loja || "",
+        });
+      } else {
+        const cachedStore = localStorage.getItem("selectedStore");
+        if (cachedStore) {
+            try {
+                const parsedCachedStore = JSON.parse(cachedStore);
+                if (parsedCachedStore.data) {
+                    const data = parsedCachedStore.data;
+                    setStoreData({
+                        nome: data.nome || "",
+                        senha: data.senha || "",
+                        email: data.email || "",
+                        cpf_cnpj_proprietario_loja: data.cpf_cnpj_proprietario_loja || "",
+                        data_nasc_proprietario: data.data_nasc_proprietario || "",
+                        telefone: data.telefone || "",
+                        id_loja: data.id_loja || "",
+                    });
+                }
+            } catch (parseError) {
+                console.error("Erro ao parsear dados da loja do localStorage:", parseError);
+                setError("Erro ao carregar dados armazenados da loja.");
+            }
+        }
+      }
+    };
+
+    loadStoreData();
   }, []);
 
   useEffect(() => {
@@ -55,7 +129,7 @@ const AccountPage = () => {
 
     try {
       await axios.patch(
-        `http://localhost:9700/api/colocaaquiarota`,
+        `http://localhost:9700/api/lojas/${newData.id_loja}`,
         { [name]: value },
         { headers: getAuthHeaders() }
       );
@@ -69,7 +143,7 @@ const AccountPage = () => {
   const deleteStore = async () => {
     try {
       await axios.delete(
-        `http://localhost:9700/api/colocaaquiarota`,
+        `http://localhost:9700/api/lojas/${storeData.id_loja}`,
         { headers: getAuthHeaders() }
       );
       router.push("/accountPage");
@@ -98,22 +172,21 @@ const AccountPage = () => {
                 <h5 className="text-center mb-2">Informações gerais</h5>
 
                 <label className="product-label">Nome da loja:</label>
-
                 <input
                   className="mb-3 produto-input"
-                  name="Nome"
+                  name="nome"
                   placeholder="Nome"
-                  value={storeData.nome_loja}
-                  readOnly
-                  style={{ backgroundColor: "#f8f9fa", cursor: "not-allowed" }}
+                  value={storeData.nome}
+                  onChange={handleChange}
+                  required
                 />
 
                 <label className="product-label">CPF/CNPJ*:</label>
                 <input
                   className="mb-3 produto-input"
-                  name="cpf"
+                  name="cpf_cnpj_proprietario_loja"
                   placeholder="Digite o CPF ou CNPJ"
-                  value={storeData.cpf}
+                  value={storeData.cpf_cnpj_proprietario_loja}
                   onChange={handleChange}
                   required
                 />
@@ -155,7 +228,7 @@ const AccountPage = () => {
               className="down-btn btn col-12 col-md-3 primaria"
               onClick={deleteStore}
             >
-              Deletar loja
+              Deletar Loja
             </button>
           </div>
         </form>

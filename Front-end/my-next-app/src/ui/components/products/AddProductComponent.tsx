@@ -239,13 +239,6 @@ const AddProduct = () => {
             >
               Limpar
             </button>
-
-            <button
-              type="submit"
-              className="down-btn btn col-12 col-md-3 primaria"
-            >
-              Salvar Produto
-            </button>
           </div>
         </form>
       </div>
