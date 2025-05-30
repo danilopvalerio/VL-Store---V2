@@ -5,17 +5,14 @@ import "../../public/css/products.css";
 import "../../public/css/general.css";
 
 
-const EmployeeDetail = () => {
+const AccountPage = () => {
   const router = useRouter();
 
-  const [employeeData, setEmployeeData] = useState({
-    nome: "",
-    email: "",
-    senha: "",
+  const [storeData, setStoreData] = useState({
+    nome_loja: "",
     cpf: "",
-    data_nascimento: "",
+    email: "",
     telefone: "",
-    id_loja: "",
   });
 
 
@@ -23,25 +20,20 @@ const EmployeeDetail = () => {
 
   // Carrega os dados iniciais
   useEffect(() => {
-    const funcionario = localStorage.getItem("selectedEmployee");
-    if (funcionario) {
-      const produtoObj = JSON.parse(funcionario);
+    const loja = localStorage.getItem("selectedStore");
+    if (loja) {
+      const produtoObj = JSON.parse(loja);
       const data = produtoObj.data;
 
-      setEmployeeData({
-        nome: data.nome || "",
-        email: data.email || "",
-        senha: data.senha,
-        cpf: data.cpf || "",
-        data_nascimento: data.data_nascimento || "",
-        telefone: data.telefone,
-        id_loja: data.id_loja || "",
-        
+      setStoreData({
+        nome_loja: data.nome || "",
+        cpf: data.categoria || "",
+        email: data.material || "",
+        telefone: data.id_loja,
       });
     }
   }, []);
 
-  // Verifica autenticação
   useEffect(() => {
     const jwtToken = localStorage.getItem("jwtToken");
     const userData = localStorage.getItem("userData");
@@ -58,8 +50,8 @@ const EmployeeDetail = () => {
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const newData = { ...employeeData, [name]: value };
-    setEmployeeData(newData);
+    const newData = { ...storeData, [name]: value };
+    setStoreData(newData);
 
     try {
       await axios.patch(
@@ -74,7 +66,7 @@ const EmployeeDetail = () => {
     }
   };
 
-  const deleteEmployee = async () => {
+  const deleteStore = async () => {
     try {
       await axios.delete(
         `http://localhost:9700/api/colocaaquiarota`,
@@ -111,7 +103,7 @@ const EmployeeDetail = () => {
                   className="mb-3 produto-input"
                   name="Nome"
                   placeholder="Nome"
-                  value={employeeData.nome}
+                  value={storeData.nome_loja}
                   readOnly
                   style={{ backgroundColor: "#f8f9fa", cursor: "not-allowed" }}
                 />
@@ -121,7 +113,7 @@ const EmployeeDetail = () => {
                   className="mb-3 produto-input"
                   name="cpf"
                   placeholder="Digite o CPF ou CNPJ"
-                  value={employeeData.cpf}
+                  value={storeData.cpf}
                   onChange={handleChange}
                   required
                 />
@@ -131,17 +123,7 @@ const EmployeeDetail = () => {
                   className="mb-3 produto-input"
                   name="email"
                   placeholder="Digite o email"
-                  value={employeeData.email}
-                  onChange={handleChange}
-                  required
-                />
-
-                <label className="product-label">Data de nascimento:</label>
-                <input
-                  className="mb-3 produto-input"
-                  name="data de nascimento"
-                  placeholder="Digite a data de nascimento"
-                  value={employeeData.data_nascimento}
+                  value={storeData.email}
                   onChange={handleChange}
                   required
                 />
@@ -151,16 +133,7 @@ const EmployeeDetail = () => {
                   className="mb-3 produto-input"
                   name="telefone"
                   placeholder="Ex: (99) 99999-9999"
-                  value={employeeData.telefone}
-                  onChange={handleChange}
-                />
-
-                 <label className="product-label">Senha:</label>
-                <input
-                  className="mb-3 produto-input"
-                  name="genero"
-                  placeholder="Ex: Masculino"
-                  value={employeeData.senha}
+                  value={storeData.telefone}
                   onChange={handleChange}
                 />
               </div>
@@ -172,7 +145,7 @@ const EmployeeDetail = () => {
             <button
               type="button"
               className="down-btn btn col-12 col-md-3 primaria"
-              onClick={() => router.push("/employeesPage")}
+              onClick={() => router.push("/menuPage")}
             >
               Voltar
             </button>
@@ -180,9 +153,9 @@ const EmployeeDetail = () => {
             <button
               type="button"
               className="down-btn btn col-12 col-md-3 primaria"
-              onClick={deleteEmployee}
+              onClick={deleteStore}
             >
-              Deletar Funcionário
+              Deletar loja
             </button>
           </div>
         </form>
@@ -191,4 +164,4 @@ const EmployeeDetail = () => {
   );
 };
 
-export default EmployeeDetail;
+export default AccountPage;

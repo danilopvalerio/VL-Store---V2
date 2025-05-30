@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-import ProductCard from "@/ui/components/products/ProductCardComponent";
+import EmployeeCard from "@/ui/components/products/ProductCardComponent";
 import { useRouter } from "next/router";
 import "../../public/css/products.css";
 import "../../public/css/general.css";
@@ -116,7 +116,7 @@ const ProductPage = () => {
             <>
               {funcionarios.length > 0 ? (
                 funcionarios.map((funcionario, index) => (
-                  <ProductCard key={index} product={funcionario} />
+                  <EmployeeCard key={index} product={funcionario} />
                 ))
               ) : (
                 <p>Nenhum funcionário encontrado</p>
