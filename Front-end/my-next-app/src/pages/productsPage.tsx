@@ -149,14 +149,14 @@ const ProductPage = () => {
           <button
             className="btn primaria col-12 col-md-3 mt-2"
             onClick={() => handleSearch()}
-            disabled={!searchTerm.trim()} // Desabilita se o input estiver vazio
+            disabled={!searchTerm.trim()}
           >
             Pesquisar
           </button>
           <button
             className="btn primaria col-12 col-md-3 mt-2"
             onClick={handleClearSearch}
-            disabled={!searchTerm.trim()} // Desabilita se o input estiver vazio
+            disabled={!searchTerm.trim()}
           >
             Limpar
           </button>

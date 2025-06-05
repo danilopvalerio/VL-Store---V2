@@ -18,7 +18,6 @@ const MenuPage: React.FC = () => {
       console.log("JWT token:", jwtToken);
       console.log("Parsed data:", userData);
 
-      // Redireciona imediatamente se não tiver token ou dados do usuário
       if (!jwtToken || !userData) {
         router.push("/initialPage");
         return;
@@ -140,7 +139,7 @@ const MenuPage: React.FC = () => {
           <button
             type="button"
             className="btn primaria col-9 col-lg-5 mb-2"
-            onClick={() => navigateTo("/sales")}
+            onClick={() => navigateTo("/salesPage")}
           >
             Vendas
           </button>

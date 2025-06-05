@@ -30,7 +30,6 @@ const ProductDetail = () => {
 
   const [error, setError] = useState("");
 
-  // Carrega os dados iniciais
   useEffect(() => {
     const produto = localStorage.getItem("selectedProduct");
     if (produto) {
@@ -59,7 +58,6 @@ const ProductDetail = () => {
     }
   }, []);
 
-  // Verifica autenticação
   useEffect(() => {
     const jwtToken = localStorage.getItem("jwtToken");
     const userDataStr = localStorage.getItem("userData");
@@ -111,7 +109,6 @@ const ProductDetail = () => {
       variation.descricao_variacao.trim() !== "" && valorNumerico > 0;
 
     if (variation.id_variacao) {
-      // Atualiza variação existente
       try {
         await axios.patch(
           `http://localhost:9700/api/produtos/variacoes/${variation.id_variacao}`,
@@ -128,7 +125,6 @@ const ProductDetail = () => {
         setTimeout(() => setError(""), 3000);
       }
     } else if (hasValidData) {
-      // Cria nova variação
       try {
         const response = await axios.post(
           `http://localhost:9700/api/produtos/referencia/${productData.referencia}/loja/${productData.id_loja}/variacoes`,
@@ -166,7 +162,7 @@ const ProductDetail = () => {
       ...updated[index],
       [name]:
         name === "valor"
-          ? value // Apenas atualiza localmente como string
+          ? value 
           : name === "descricao_variacao"
           ? value
           : parseFloat(value) || 0,
@@ -174,7 +170,6 @@ const ProductDetail = () => {
 
     setVariations(updated);
 
-    // Para campos que não sejam "valor", atualiza diretamente
     if (name !== "valor") {
       const variation = updated[index];
       if (variation.id_variacao) {
@@ -195,7 +190,6 @@ const ProductDetail = () => {
   };
 
   const addVariation = () => {
-    // Apenas adiciona uma nova variação vazia localmente
     const newVariation = {
       descricao_variacao: "",
       quant_variacao: 0,
@@ -210,7 +204,6 @@ const ProductDetail = () => {
     const variation = variations[index];
 
     if (variation.id_variacao) {
-      // Se a variação existe no banco, remove do banco primeiro
       try {
         await axios.delete(
           `http://localhost:9700/api/produtos/variacoes/${variation.id_variacao}`,
@@ -224,7 +217,6 @@ const ProductDetail = () => {
       }
     }
 
-    // Remove localmente
     const updated = [...variations];
     updated.splice(index, 1);
     setVariations(updated);
