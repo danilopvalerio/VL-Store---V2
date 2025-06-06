@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import router from 'next/router';
+import { useRouter } from 'next/router';
 import axios from 'axios';
 import SalesForm from '../ui/components/sales/salesFormComponent';
 import SalesList from '../ui/components/sales/salesListComponent';
@@ -23,62 +23,95 @@ interface Seller {
 }
 
 export default function SalesPage() {
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('info');
   const [registeredSales, setRegisteredSales] = useState<any[]>([]);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState<ProductVariation[]>([]);
   const [vendedoresDisponiveis, setVendedoresDisponiveis] = useState<Seller[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const authToken = (typeof window !== 'undefined' && localStorage.getItem('authToken')) || undefined;
+  const router = useRouter(); // MUDANÇA: Inicializando o router
 
   useEffect(() => {
-    if (!authToken) {
-      setError("Autenticação necessária. Faça o login para acessar esta página.");
-      setLoading(false);
+    // MUDANÇA: Lendo as chaves corretas do localStorage, igual ao ProductPage
+    const jwtToken = localStorage.getItem("jwtToken");
+    const userData = localStorage.getItem("userData");
+
+    // MUDANÇA: Verificação de segurança que redireciona se não houver login
+    if (!jwtToken || !userData) {
+      router.push("/initialPage"); // Redireciona para a página inicial/login
       return;
     }
 
     const api = axios.create({
-      baseURL: '/api',
-      headers: { 'Authorization': `Bearer ${authToken}` }
+      baseURL: 'http://localhost:9700/api',
+      headers: { 
+        'Authorization': `Bearer ${jwtToken}` 
+      }
     });
 
     const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    const jwtToken = localStorage.getItem("jwtToken");
+    const userData = localStorage.getItem("userData");
 
-        const [vendedoresRes, produtosRes] = await Promise.all([
-          api.get('/funcionarios'),
-          api.get('/produtos/variacoes')
-        ]);
+    if (!jwtToken || !userData) {
+      router.push("/initialPage");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
 
-        if (vendedoresRes.data?.success) {
-          setVendedoresDisponiveis(vendedoresRes.data.data);
-        }
+      const parsedData = JSON.parse(userData);
+      const idLoja = parsedData.id_loja;
+      
+      // --- CORREÇÃO: Removido o 'axios.create'. Usaremos chamadas diretas. ---
 
-        if (produtosRes.data?.success) {
-          setProdutosDisponiveis(produtosRes.data.data);
-        }
+      const config = {
+        headers: { 'Authorization': `Bearer ${jwtToken}` }
+      };
 
-      } catch (err) {
-        console.error("Erro ao buscar dados iniciais:", err);
-        setError("Não foi possível carregar os dados do servidor. Tente recarregar a página.");
-      } finally {
-        setLoading(false);
+      const [vendedoresRes, produtosRes] = await Promise.all([
+        // Chamada explícita com a URL completa, passando a config
+        axios.get(`http://localhost:9700/api/funcionarios/loja/${idLoja}`, config),
+        
+        // Chamada explícita com a URL completa, passando a config
+        axios.get(`http://localhost:9700/api/produtos/loja/${idLoja}`, config)
+      ]);
+
+      if (vendedoresRes.data?.success) {
+        setVendedoresDisponiveis(vendedoresRes.data.data);
       }
-    };
+
+      if (produtosRes.data?.success) {
+        // ... a lógica de transformação dos dados continua a mesma ...
+        const produtosDaApi = produtosRes.data.data;
+        const variacoesFormatadas = produtosDaApi.flatMap(produto =>
+          produto.variacoes.map(variacao => ({
+            ...variacao,
+            preco_venda: parseFloat(variacao.valor),
+            produto: {
+              nome: produto.nome,
+              referencia: produto.referencia
+            }
+          }))
+        );
+        setProdutosDisponiveis(variacoesFormatadas);
+      }
+
+    } catch (err) {
+      console.error("Erro ao buscar dados iniciais:", err);
+      setError("Não foi possível carregar os dados do servidor.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
     fetchData();
-  }, [authToken]);
+  }, [router]); // MUDANÇA: A dependência do efeito agora é o router
 
   const showCustomMessage = (msg, type = 'info') => {
     alert(`[${type.toUpperCase()}] ${msg}`); 
-    setMessage(msg);
-    setMessageType(type);
   };
 
   const handleNewSaleRegistered = (newSale: any) => {
@@ -88,6 +121,9 @@ export default function SalesPage() {
   const pushBackToMenu = () => {
     router.push("menuPage");
   };
+
+  // MUDANÇA: Precisamos do token também no escopo do return para passar como prop
+  const jwtToken = typeof window !== 'undefined' ? localStorage.getItem("jwtToken") : null;
 
   return (
     <div className="d-flex justify-content-between align-items-center flex-column">
@@ -118,7 +154,7 @@ export default function SalesPage() {
                 showMessage={showCustomMessage}
                 vendedoresDisponiveis={vendedoresDisponiveis}
                 produtosDisponiveis={produtosDisponiveis}
-                authToken={authToken}
+                jwtToken={jwtToken || undefined}
               />
             </div>
             <div className="col-lg-7">

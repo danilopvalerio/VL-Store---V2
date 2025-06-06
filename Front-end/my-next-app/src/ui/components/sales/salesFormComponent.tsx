@@ -1,65 +1,30 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
-// As interfaces de dados podem ficar aqui ou em um arquivo compartilhado
-interface ProductVariation {
-  id_variacao: string;
-  produto: {
-    nome: string;
-    referencia: string;
-  };
-  descricao_variacao: string;
-  preco_venda: number;
-}
+// Interfaces de dados
+interface ProductVariation { id_variacao: string; produto: { nome: string; referencia: string; }; descricao_variacao: string; preco_venda: number; }
+interface CartItem { id_variacao: string; nome: string; referencia: string; descricao_variacao: string; quantidade: number; precoUnitario: number; }
+interface Seller { id_funcionario: string; nome: string; cargo?: string; }
+interface SalePayload { id_funcionario: string; forma_pagamento: string; itens: { id_variacao: string; quantidade: number; preco_unitario: number; }[]; desconto: number; acrescimo: number; }
 
-interface CartItem {
-  id_variacao: string;
-  nome: string;
-  referencia: string;
-  descricao_variacao: string;
-  quantidade: number;
-  precoUnitario: number;
-}
-
-interface Seller {
-  id_funcionario: string;
-  nome: string;
-  cargo?: string;
-}
-
-interface SalePayload {
-  id_funcionario: string;
-  forma_pagamento: string;
-  itens: {
-    id_variacao: string;
-    quantidade: number;
-    preco_unitario: number;
-  }[];
-  desconto: number;
-  acrescimo: number;
-}
-
-// --- MODIFICAÇÃO 1: Unificar e corrigir a interface de Props ---
-// Removemos a duplicata e deixamos apenas a versão completa e correta.
+// Interface de Props
 interface SalesFormProps {
   vendedoresDisponiveis: Seller[];
   produtosDisponiveis: ProductVariation[];
-  authToken?: string;
+  jwtToken?: string;
   onSaleRegistered: (sale: any) => void;
   showMessage: (message: string, type: 'info' | 'success' | 'warning' | 'danger') => void;
 }
 
-// --- MODIFICAÇÃO 2: Atualizar a assinatura do componente para receber as novas props ---
 const SalesForm: React.FC<SalesFormProps> = ({ 
     onSaleRegistered, 
     showMessage, 
-    authToken,
-    vendedoresDisponiveis, // <-- Prop recebida
-    produtosDisponiveis   // <-- Prop recebida
+    jwtToken,
+    vendedoresDisponiveis,
+    produtosDisponiveis
 }) => {
-  // --- Estados do formulário (sem alteração) ---
-  const generateSaleCode = () => `VENDA-${Math.floor(Math.random() * 90000) + 10000}`;
-  const [codigoVenda, setCodigoVenda] = useState<string>(generateSaleCode());
+  // Hooks de estado
+  const [codigoVenda, setCodigoVenda] = useState<string>('');
   const [vendedorResponsavelId, setVendedorResponsavelId] = useState<string>('');
   const [dataVenda, setDataVenda] = useState<string>('');
   const [formaPagamento, setFormaPagamento] = useState<string>('');
@@ -71,6 +36,8 @@ const SalesForm: React.FC<SalesFormProps> = ({
   const [acrescimoVenda, setAcrescimoVenda] = useState<string>("0.00");
 
   useEffect(() => {
+    const generateSaleCode = () => `VENDA-${Math.floor(Math.random() * 90000) + 10000}`;
+    setCodigoVenda(generateSaleCode());
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     setDataVenda(now.toISOString().slice(0, 16));
@@ -79,19 +46,23 @@ const SalesForm: React.FC<SalesFormProps> = ({
   useEffect(() => {
     if (produtoSelecionadoId) {
       const produto = produtosDisponiveis.find(p => p.id_variacao === produtoSelecionadoId);
-      setPrecoUnitario(produto ? produto.preco_venda.toFixed(2) : '');
+      if (produto && typeof produto.preco_venda === 'number') {
+        setPrecoUnitario(produto.preco_venda.toFixed(2));
+      }
     } else {
       setPrecoUnitario('');
     }
   }, [produtoSelecionadoId, produtosDisponiveis]);
 
-    const valorTotalVenda = useMemo(() => {
+  // --- LÓGICA DO VALOR TOTAL (COMPLETA) ---
+  const valorTotalVenda = useMemo(() => {
     const subtotalProdutos = carrinhoVenda.reduce((sum, item) => sum + (item.quantidade * item.precoUnitario), 0);
     const descontoNum = parseFloat(descontoVenda.replace(',', '.')) || 0;
     const acrescimoNum = parseFloat(acrescimoVenda.replace(',', '.')) || 0;
     return subtotalProdutos - descontoNum + acrescimoNum;
   }, [carrinhoVenda, descontoVenda, acrescimoVenda]);
 
+  // --- LÓGICA DE ADICIONAR AO CARRINHO (COMPLETA) ---
   const handleAdicionarProdutoVenda = () => {
     if (!produtoSelecionadoId) {
       showMessage('Selecione um produto para adicionar.', 'warning');
@@ -125,10 +96,12 @@ const SalesForm: React.FC<SalesFormProps> = ({
     setPrecoUnitario('');
   };
 
+  // --- LÓGICA DE REMOVER DO CARRINHO (COMPLETA) ---
   const handleRemoverProdutoDoCarrinho = (idVariacao: string) => {
     setCarrinhoVenda(carrinhoVenda.filter(item => item.id_variacao !== idVariacao));
   };
 
+  // --- LÓGICA DO INPUT NUMÉRICO (COMPLETA) ---
   const handleNumericInputChange = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
     const sanitizedValue = value.replace(/[^0-9,.]/g, '').replace(',', '.');
     if (sanitizedValue.split('.').length > 2) {
@@ -137,7 +110,9 @@ const SalesForm: React.FC<SalesFormProps> = ({
     setter(sanitizedValue);
   };
   
+  // --- LÓGICA DE RESETAR O FORMULÁRIO (COMPLETA) ---
   const resetForm = () => {
+    const generateSaleCode = () => `VENDA-${Math.floor(Math.random() * 90000) + 10000}`;
     setCodigoVenda(generateSaleCode());
     setVendedorResponsavelId('');
     setFormaPagamento('');
@@ -146,24 +121,15 @@ const SalesForm: React.FC<SalesFormProps> = ({
     setAcrescimoVenda("0.00");
     setProdutoSelecionadoId('');
     setQuantidadeProduto(1);
-  }
+  };
 
+  // --- LÓGICA DE SUBMISSÃO DA VENDA (JÁ ESTAVA COMPLETA) ---
   const handleSubmitVenda = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!vendedorResponsavelId) {
-      showMessage('Selecione o vendedor responsável.', 'warning');
+    if (!vendedorResponsavelId || !formaPagamento || carrinhoVenda.length === 0) {
+      showMessage('Preencha todos os campos obrigatórios.', 'warning');
       return;
     }
-    if (!formaPagamento) {
-      showMessage('Selecione a forma de pagamento.', 'warning');
-      return;
-    }
-    if (carrinhoVenda.length === 0) {
-      showMessage('Adicione pelo menos um produto à venda.', 'warning');
-      return;
-    }
-    
     const payload: SalePayload = {
       id_funcionario: vendedorResponsavelId,
       forma_pagamento: formaPagamento,
@@ -175,37 +141,20 @@ const SalesForm: React.FC<SalesFormProps> = ({
       desconto: parseFloat(descontoVenda.replace(',', '.')) || 0,
       acrescimo: parseFloat(acrescimoVenda.replace(',', '.')) || 0,
     };
-    
     try {
-      const api = axios.create({
-          baseURL: '/api',
-          headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-      
-      const response = await api.post('/vendas', payload);
-      
-      if(response.data && response.data.success) {
+      const config = { headers: { 'Authorization': `Bearer ${jwtToken}` } };
+      const response = await axios.post('http://localhost:9700/api/vendas', payload, config);
+      if(response.data?.success) {
         showMessage('Venda registrada com sucesso!', 'success');
         onSaleRegistered(response.data.data);
         resetForm();
       }
-
     } catch (error: any) {
-        console.error('Erro ao registrar venda:', error);
-        if (axios.isAxiosError(error) && error.response) {
-            const backendMessage = error.response.data?.message || 'Ocorreu um erro desconhecido.';
-            const validationErrors = error.response.data?.validationErrors;
-            if(validationErrors) {
-              showMessage(`Erro de validação: ${validationErrors.join(', ')}`, 'danger');
-            } else {
-              showMessage(`Erro: ${backendMessage}`, 'danger');
-            }
-        } else {
-            showMessage('Não foi possível conectar ao servidor.', 'danger');
-        }
+      console.error('Erro ao registrar venda:', error);
+      const backendMessage = error.response?.data?.message || 'Ocorreu um erro desconhecido.';
+      showMessage(`Erro: ${backendMessage}`, 'danger');
     }
   };
-
 
   return (
     <div className="terciary p-4 rounded-20px small-shadow d-flex flex-column h-100">
@@ -297,12 +246,11 @@ const SalesForm: React.FC<SalesFormProps> = ({
       </div>
 
       <div className="mt-auto pt-3 d-flex justify-content-between align-items-center border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-        <div>
+          <div>
           <h4 className="text-white mb-0">
             Total: <span className="font-weight-bold" style={{color: '#86efac'}}>R$ {valorTotalVenda.toFixed(2)}</span>
           </h4>
         </div>
-
         <button type="submit" form="sales-form-content" className="btn primaria px-4 py-2">
           <i className="fas fa-check-circle mr-2"></i>Finalizar Venda
         </button>
