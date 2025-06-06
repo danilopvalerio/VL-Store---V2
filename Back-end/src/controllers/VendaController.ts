@@ -22,13 +22,11 @@ interface VendaDTO {
 
 export default class VendaController {
 	private readonly vendaRepositorio: Repository<Venda>;
-	private readonly itemVendaRepositorio: Repository<ItemVenda>;
 	private readonly variacaoRepositorio: Repository<ProdutoVariacao>;
 	private readonly funcionarioRepositorio: Repository<Funcionario>;
 	
 	constructor() {
 		this.vendaRepositorio = AppDataSource.getRepository(Venda);
-		this.itemVendaRepositorio = AppDataSource.getRepository(ItemVenda);
 		this.variacaoRepositorio = AppDataSource.getRepository(ProdutoVariacao);
 		this.funcionarioRepositorio = AppDataSource.getRepository(Funcionario);
 	}
@@ -67,7 +65,6 @@ export default class VendaController {
 		
 		
 		try {
-			
 			// validação de dados obrigatórios da venda
 			if (!vendaDTO.id_funcionario || !vendaDTO.forma_pagamento || !vendaDTO.itens || vendaDTO.itens.length === 0) {
 				return res.status(400).json({
@@ -157,7 +154,7 @@ export default class VendaController {
 			
 			// Obter venda completa com relacionamentos
 			const vendaCompleta = await this.vendaRepositorio.findOne({
-				where: { id_venda: resultado.id_venda },
+				where: {id_venda: resultado.id_venda},
 				relations: ['itens', 'itens.variacao', 'funcionario'],
 			});
 			
@@ -372,6 +369,86 @@ export default class VendaController {
 				success: false,
 				message: 'Erro ao gerar relatório de vendas',
 				error: error instanceof Error ? error.message : 'Erro desconhecido',
+			});
+		}
+	}
+	
+	async findAllPaginado(req: Request, res: Response) {
+		const {id_loja} = req.params;
+		const {
+			page = '1',
+			limit = '10',
+			funcionario_id, // Filtro opcional por funcionário
+			forma_pagamento, // Filtro opcional
+			data_inicio, // Filtro opcional
+			data_fim // Filtro opcional
+		} = req.query;
+		
+		try {
+			const skip = (Number(page) - 1) * Number(limit);
+			
+			// Criar query builder base
+			const query = this.vendaRepositorio.createQueryBuilder('venda')
+				.leftJoinAndSelect('venda.itens', 'itens')
+				.leftJoinAndSelect('itens.variacao', 'variacao')
+				.leftJoinAndSelect('venda.funcionario', 'funcionario')
+				.orderBy('venda.data_hora', 'DESC');
+			
+			// Filtro por loja (obrigatório)
+			const funcionarios = await this.funcionarioRepositorio.find({
+				where: {id_loja},
+				select: ['id_funcionario'],
+			});
+			
+			const funcionarioIds = funcionarios.map(f => f.id_funcionario);
+			
+			if (funcionarioIds.length === 0) {
+				return res.status(200).json({
+					success: true,
+					data: [],
+					page: 1,
+					totalPages: 0,
+					totalItems: 0,
+				});
+			}
+			
+			query.where('venda.id_funcionario IN (:...funcionarioIds)', {funcionarioIds});
+			
+			// Filtros adicionais
+			if (funcionario_id) {
+				query.andWhere('venda.id_funcionario = :funcionario_id', {funcionario_id});
+			}
+			
+			if (forma_pagamento) {
+				query.andWhere('venda.forma_pagamento = :forma_pagamento', {forma_pagamento});
+			}
+			
+			if (data_inicio && data_fim) {
+				query.andWhere('venda.data_hora BETWEEN :data_inicio AND :data_fim', {
+					data_inicio: new Date(data_inicio as string),
+					data_fim: new Date(data_fim as string)
+				});
+			}
+			
+			// Executar query paginada
+			const [vendas, total] = await query
+				.skip(skip)
+				.take(Number(limit))
+				.getManyAndCount();
+			
+			return res.status(200).json({
+				success: true,
+				data: vendas,
+				page: Number(page),
+				totalPages: Math.ceil(total / Number(limit)),
+				totalItems: total,
+			});
+		} catch (error) {
+			console.error('Erro ao buscar vendas paginadas:', error);
+			return res.status(500).json({
+				success: false,
+				error: 'Erro ao buscar vendas',
+				message: error instanceof Error ? error.message : 'Erro desconhecido',
 			});
 		}
 	}
