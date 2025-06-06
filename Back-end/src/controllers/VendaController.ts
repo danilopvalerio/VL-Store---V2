@@ -23,11 +23,13 @@ interface VendaDTO {
 export default class VendaController {
 	private readonly vendaRepositorio: Repository<Venda>;
 	private readonly variacaoRepositorio: Repository<ProdutoVariacao>;
+	private readonly itemVendaRepositorio: Repository<ItemVenda>;
 	private readonly funcionarioRepositorio: Repository<Funcionario>;
 	
 	constructor() {
 		this.vendaRepositorio = AppDataSource.getRepository(Venda);
 		this.variacaoRepositorio = AppDataSource.getRepository(ProdutoVariacao);
+		this.itemVendaRepositorio = AppDataSource.getRepository(ItemVenda);
 		this.funcionarioRepositorio = AppDataSource.getRepository(Funcionario);
 	}
 	
@@ -452,4 +454,114 @@ export default class VendaController {
 			});
 		}
 	}
+	
+	async findItensByVenda(req: Request, res: Response) {
+		const { id_venda } = req.params;
+		
+		try {
+			const itens = await this.itemVendaRepositorio.find({
+				where: { venda: { id_venda } },
+				relations: ['variacao', 'variacao.produto']
+			});
+			
+			return res.status(200).json({
+				success: true,
+				data: itens
+			});
+		} catch (error) {
+			console.error('Erro ao buscar itens da venda:', error);
+			return res.status(500).json({
+				success: false,
+				message: 'Erro ao buscar itens da venda',
+				error: error instanceof Error ? error.message : 'Erro desconhecido'
+			});
+		}
+	}
+	
+	// remove uma venda e reverte o estoque dos produtos
+	async delete(req: Request, res: Response) {
+		const { id } = req.params;
+		
+		try {
+			const venda = await this.vendaRepositorio.findOne({
+				where: { id_venda: id },
+				relations: ['itens', 'itens.variacao']
+			});
+			
+			if (!venda) {
+				return res.status(404).json({
+					success: false,
+					message: 'Venda não encontrada'
+				});
+			}
+			
+			await AppDataSource.transaction(async transactionalEntityManager => {
+				// Reverte o estoque para cada item
+				for (const item of venda.itens) {
+					await transactionalEntityManager.increment(
+						ProdutoVariacao,
+						{ id_variacao: item.id_variacao },
+						'quant_variacao',
+						item.quantidade
+					);
+				}
+				
+				// Remove os itens da venda
+				await transactionalEntityManager.remove(ItemVenda, venda.itens);
+				
+				// Remove a venda
+				await transactionalEntityManager.remove(Venda, venda);
+			});
+			
+			return res.status(200).json({
+				success: true,
+				message: 'Venda removida e estoque reestocado com sucesso'
+			});
+			
+		} catch (error) {
+			console.error('Erro ao remover venda:', error);
+			return res.status(500).json({
+				success: false,
+				message: 'Erro ao remover venda',
+				error: error instanceof Error ? error.message : 'Erro desconhecido'
+			});
+		}
+	}
+	
+	// atuzalizar venda pro caso do cancelamento
+	async update(req: Request, res: Response) {
+		const { id } = req.params;
+		const { status } = req.body;
+		
+		try {
+			const venda = await this.vendaRepositorio.findOneBy({ id_venda: id });
+			
+			if (!venda) {
+				return res.status(404).json({
+					success: false,
+					message: 'Venda não encontrada'
+				});
+			}
+			
+			// Atualiza apenas o status (pode ser expandido para outros campos)
+			venda.status = status || venda.status;
+			
+			const vendaAtualizada = await this.vendaRepositorio.save(venda);
+			
+			return res.status(200).json({
+				success: true,
+				message: 'Venda atualizada com sucesso',
+				data: vendaAtualizada
+			});
+			
+		} catch (error) {
+			console.error('Erro ao atualizar venda:', error);
+			return res.status(500).json({
+				success: false,
+				message: 'Erro ao atualizar venda',
+				error: error instanceof Error ? error.message : 'Erro desconhecido'
+			});
+		}
+	}
+	
 }
