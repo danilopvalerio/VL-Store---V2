@@ -1,13 +1,13 @@
-// src/app.ts
 import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { AppDataSource } from './database/AppDataSource';
 import { Request, Response } from 'express';
 import lojaRoutes from './routes/lojaRoutes';
 import produtoRoutes from './routes/produtoRoutes';
 import funcionarioRoutes from "./routes/funcionarioRoutes";
+import vendaRoutes from "./routes/vendaRoutes";
 import generalRoutes from "./routes/generalRoutes";
+
 
 dotenv.config();
 
@@ -57,6 +57,7 @@ class App {
     this.app.use('/api/funcionarios', funcionarioRoutes);
     this.app.use('/api/lojas', lojaRoutes);
     this.app.use('/api/produtos', produtoRoutes);
+    this.app.use('/api/vendas', vendaRoutes);
   }
   
   private errorHandling(): void {
