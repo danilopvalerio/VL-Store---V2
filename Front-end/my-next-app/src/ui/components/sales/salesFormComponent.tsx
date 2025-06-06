@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 
-// Interfaces de dados
 interface ProductVariation {
   id_variacao: string;
   produto: { nome: string; referencia: string };
@@ -29,7 +28,6 @@ interface SalePayload {
   acrescimo: number;
 }
 
-// Interface de Props
 interface SalesFormProps {
   vendedoresDisponiveis: Seller[];
   produtosDisponiveis: ProductVariation[];
@@ -83,7 +81,6 @@ const SalesForm: React.FC<SalesFormProps> = ({
     }
   }, [produtoSelecionadoId, produtosDisponiveis]);
 
-  // --- LÓGICA DO VALOR TOTAL (COMPLETA) ---
   const valorTotalVenda = useMemo(() => {
     const subtotalProdutos = carrinhoVenda.reduce(
       (sum, item) => sum + item.quantidade * item.precoUnitario,
@@ -94,7 +91,6 @@ const SalesForm: React.FC<SalesFormProps> = ({
     return subtotalProdutos - descontoNum + acrescimoNum;
   }, [carrinhoVenda, descontoVenda, acrescimoVenda]);
 
-  // --- LÓGICA DE ADICIONAR AO CARRINHO (COMPLETA) ---
   const handleAdicionarProdutoVenda = () => {
     if (!produtoSelecionadoId) {
       showMessage("Selecione um produto para adicionar.", "warning");
@@ -134,14 +130,11 @@ const SalesForm: React.FC<SalesFormProps> = ({
     setPrecoUnitario("");
   };
 
-  // --- LÓGICA DE REMOVER DO CARRINHO (COMPLETA) ---
   const handleRemoverProdutoDoCarrinho = (idVariacao: string) => {
     setCarrinhoVenda(
       carrinhoVenda.filter((item) => item.id_variacao !== idVariacao)
     );
   };
-
-  // --- LÓGICA DO INPUT NUMÉRICO (COMPLETA) ---
   const handleNumericInputChange = (
     setter: React.Dispatch<React.SetStateAction<string>>,
     value: string
@@ -153,7 +146,6 @@ const SalesForm: React.FC<SalesFormProps> = ({
     setter(sanitizedValue);
   };
 
-  // --- LÓGICA DE RESETAR O FORMULÁRIO (COMPLETA) ---
   const resetForm = () => {
     const generateSaleCode = () =>
       `VENDA-${Math.floor(Math.random() * 90000) + 10000}`;
@@ -167,7 +159,6 @@ const SalesForm: React.FC<SalesFormProps> = ({
     setQuantidadeProduto(1);
   };
 
-  // --- LÓGICA DE SUBMISSÃO DA VENDA (JÁ ESTAVA COMPLETA) ---
   const handleSubmitVenda = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (
@@ -208,6 +199,8 @@ const SalesForm: React.FC<SalesFormProps> = ({
       showMessage(`Erro: ${backendMessage}`, "danger");
     }
   };
+
+  
 
   return (
     <div className="terciary mx-auto p-4 rounded-5 white-light-small d-flex flex-column h-100 w-75">
@@ -325,80 +318,69 @@ const SalesForm: React.FC<SalesFormProps> = ({
             <i className="fas fa-shopping-basket mr-2"></i>Produtos da Venda
           </h6>
 
-          <div className="row align-items-end mb-3">
-            <div className="col-md-5">
-              <label
-                htmlFor="produtoVenda"
-                className="form-label text-white-75 small"
-              >
-                Produto
-              </label>
-              <select
-                id="produtoVenda"
-                className="form-control custom-select input-form"
-                value={produtoSelecionadoId}
-                onChange={(e) => setProdutoSelecionadoId(e.target.value)}
-              >
-                <option value="" disabled className="text-gray-500">
-                  Selecione...
-                </option>
-                {produtosDisponiveis.map((p) => (
-                  <option
-                    key={p.id_variacao}
-                    value={p.id_variacao}
-                    className="text-black"
-                  >
-                    {p.produto.nome} (REF: {p.produto.referencia}) -{" "}
-                    {p.descricao_variacao}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-3">
-              <label
-                htmlFor="quantidadeProduto"
-                className="form-label text-white-75 small"
-              >
-                Quantidade
-              </label>
-              <input
-                type="number"
-                className="form-control input-form"
-                id="quantidadeProduto"
-                value={quantidadeProduto}
-                onChange={(e) =>
-                  setQuantidadeProduto(parseInt(e.target.value, 10) || 1)
-                }
-                min="1"
-              />
-            </div>
-            <div className="col-md-2">
-              <label
-                htmlFor="precoUnitario"
-                className="form-label text-white-75 small"
-              >
-                Preço Un.
-              </label>
-              <input
-                type="text"
-                className="form-control input-form"
-                id="precoUnitario"
-                value={precoUnitario ? `R$ ${precoUnitario}` : ""}
-                readOnly
-              />
-            </div>
-            <div className="col-md-2">
-              <button
-                type="button"
-                className="btn btn-block primaria"
-                style={{ height: "38px", marginTop: "6px" }}
-                onClick={handleAdicionarProdutoVenda}
-              >
-                <i className="fas fa-plus"></i>Adicionar
-              </button>
-            </div>
-          </div>
+          <div className="row mb-3">
+  <div className="col-md-5">
+    <label htmlFor="produtoVenda" className="form-label text-white-75 small">
+      Produto
+    </label>
+    <select
+      id="produtoVenda"
+      className="form-control custom-select input-form"
+      value={produtoSelecionadoId}
+      onChange={(e) => setProdutoSelecionadoId(e.target.value)}
+    >
+      <option value="" disabled className="text-gray-500">
+        Selecione...
+      </option>
+      {produtosDisponiveis.map((p) => (
+        <option
+          key={p.id_variacao}
+          value={p.id_variacao}
+          className="text-black"
+        >
+          {p.produto.nome} (REF: {p.produto.referencia}) - {p.descricao_variacao}
+        </option>
+      ))}
+    </select>
+  </div>
 
+  <div className="col-md-3">
+    <label htmlFor="quantidadeProduto" className="form-label text-white-75 small">
+      Quantidade
+    </label>
+    <input
+      type="number"
+      className="form-control input-form"
+      id="quantidadeProduto"
+      value={quantidadeProduto}
+      onChange={(e) => setQuantidadeProduto(parseInt(e.target.value, 10) || 1)}
+      min="1"
+    />
+  </div>
+
+  <div className="col-md-2">
+    <label htmlFor="precoUnitario" className="form-label text-white-75 small">
+      Preço Un.
+    </label>
+    <input
+      type="text"
+      className="form-control input-form"
+      id="precoUnitario"
+      value={precoUnitario ? `R$ ${precoUnitario}` : ""}
+      readOnly
+    />
+  </div>
+
+  <div className="col-md-2 d-flex align-items-end">
+    <button
+      type="button"
+      className="btn btn-block primaria w-100"
+      onClick={handleAdicionarProdutoVenda}
+    >
+      <i className="fas fa-plus me-1"></i>Adicionar
+    </button>
+  </div>
+</div>
           <div
             id="listaProdutosVenda"
             className="mb-4 table-responsive p-2 rounded-lg"

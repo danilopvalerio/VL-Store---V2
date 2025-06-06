@@ -3,7 +3,7 @@ const SalesDetail = ({ show, onClose, sale }) => {
     return null;
   }
 
-  const subtotalProdutos = sale.produtos.reduce((sum: number, item) => sum + (item.quantidade * item.precoUnitario), 0);
+  const subtotalProdutos = (sale.produtos || []).reduce((sum: number, item) => sum + (item.quantidade * item.precoUnitario), 0);
 
   return (
     <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
