@@ -15,6 +15,12 @@ export default class ItemVenda {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   preco_unitario!: number;
+  
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
+  subtotal!: number;
+  
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  criado_em!: Date;
 
   @ManyToOne(() => Venda, (venda) => venda.itens, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_venda' })
@@ -29,5 +35,6 @@ export default class ItemVenda {
     this.id_variacao = id_variacao;
     this.quantidade = quantidade;
     this.preco_unitario = preco_unitario;
+    this.subtotal = quantidade * preco_unitario;
   }
 }
