@@ -40,7 +40,7 @@ export default class Venda {
     enum: FormaPagamento,
     nullable: false,
   })
-  forma_pagamento!: FormaPagamento;
+  forma_pagamento!: number;
 
   @Column({ nullable: false })
   id_funcionario!: string;
@@ -79,7 +79,7 @@ export default class Venda {
   constructor(
       id_funcionario: string,
       id_loja: string,
-      forma_pagamento: FormaPagamento,
+      forma_pagamento: number,
       total: number,
       desconto: number = 0,
       acrescimo: number = 0,
