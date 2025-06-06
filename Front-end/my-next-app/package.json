@@ -15,6 +15,7 @@
     "@hookform/resolvers": "^5.0.1",
     "axios": "^1.9.0",
     "bootstrap": "^5.3.6",
+    "lucide-react": "^0.513.0",
     "my-next-app": "file:",
     "next": "^15.3.2",
     "react": "^19.1.0",
