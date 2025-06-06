@@ -1,13 +1,14 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import Funcionario from './Funcionario';
 import ItemVenda from './ItemVenda';
+import Loja from './Loja';
 
 export enum FormaPagamento {
-  DINHEIRO = 'dinheiro',
-  CARTAO_CREDITO = 'cartao_credito',
-  CARTAO_DEBITO = 'cartao_debito',
-  PIX = 'pix',
-  OUTRO = 'outro',
+  DINHEIRO = 'DINHEIRO',
+  CARTAO_CREDITO = 'CARTAO_CREDITO',
+  CARTAO_DEBITO = 'CARTAO_DEBITO',
+  PIX = 'PIX',
+  OUTRO = 'OUTRO',
 }
 
 @Entity('venda')
@@ -43,6 +44,13 @@ export default class Venda {
 
   @OneToMany(() => ItemVenda, (item) => item.venda, { cascade: true })
   itens!: ItemVenda[];
+  
+  @Column({ nullable: false })
+  id_loja!: string;
+  
+  @ManyToOne(() => Loja)
+  @JoinColumn({ name: 'id_loja' })
+  loja!: Loja;
 
   constructor(
     id_funcionario: string,
