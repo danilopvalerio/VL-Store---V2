@@ -564,4 +564,67 @@ export default class VendaController {
 		}
 	}
 	
+	async decrementarEstoque(req: Request, res: Response) {
+		const { id_variacao } = req.params;
+		const { quantidade } = req.body;
+		
+		// Validação básica
+		if (!quantidade || quantidade <= 0) {
+			return res.status(400).json({
+				success: false,
+				message: 'Quantidade deve ser um número positivo'
+			});
+		}
+		
+		try {
+			// 1. Encontra a variação
+			const variacao = await this.variacaoRepositorio.findOne({
+				where: { id_variacao },
+				select: ['id_variacao', 'quant_variacao']
+			});
+			
+			if (!variacao) {
+				return res.status(404).json({
+					success: false,
+					message: 'Variação não encontrada'
+				});
+			}
+			
+			// 2. Verifica estoque suficiente
+			if (variacao.quant_variacao < quantidade) {
+				return res.status(400).json({
+					success: false,
+					message: `Estoque insuficiente. Disponível: ${variacao.quant_variacao}`,
+					estoque_atual: variacao.quant_variacao
+				});
+			}
+			
+			// 3. Decrementa o estoque
+			await this.variacaoRepositorio.decrement(
+				{ id_variacao },
+				'quant_variacao',
+				quantidade
+			);
+			
+			// 4. Retorna a variação atualizada
+			const variacaoAtualizada = await this.variacaoRepositorio.findOneBy({ id_variacao });
+			
+			return res.status(200).json({
+				success: true,
+				message: 'Estoque decrementado com sucesso',
+				data: {
+					...variacaoAtualizada,
+					decremento: quantidade
+				}
+			});
+			
+		} catch (error) {
+			console.error('Erro ao decrementar estoque:', error);
+			return res.status(500).json({
+				success: false,
+				message: 'Erro ao atualizar estoque',
+				error: error instanceof Error ? error.message : 'Erro desconhecido'
+			});
+		}
+	}
 }

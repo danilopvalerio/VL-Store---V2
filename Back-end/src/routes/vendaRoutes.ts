@@ -76,6 +76,13 @@ router.delete(
 	asyncHandler(vendaController.delete.bind(vendaController))
 );
 
+router.patch(
+	'/variacoes/:id_variacao/decrementar',
+	authenticateJWT,
+	autorizar(UserRole.ADMIN),
+	asyncHandler(vendaController.decrementarEstoque.bind(vendaController))
+);
+
 //----- Relatórios -----
 
 // Relatório de vendas por período
