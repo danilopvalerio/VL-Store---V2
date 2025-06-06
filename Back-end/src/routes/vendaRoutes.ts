@@ -18,9 +18,9 @@ const asyncHandler =
 			Promise.resolve(fn(req, res, next)).catch(next);
 		};
 
-// --- ROTAS DE VENDA ---
+//----- CRUD Completo -----
 
-// Criar nova venda (funcionários e admin)
+// CREATE - Criar nova venda
 router.post(
 	'/',
 	authenticateJWT,
@@ -28,7 +28,7 @@ router.post(
 	asyncHandler(vendaController.createVenda.bind(vendaController))
 );
 
-// Obter venda por ID (funcionários e admin)
+// READ - Obter venda por ID
 router.get(
 	'/:id',
 	authenticateJWT,
@@ -36,71 +36,55 @@ router.get(
 	asyncHandler(vendaController.findById.bind(vendaController))
 );
 
-// Listar todas as vendas de um funcionário (admin ou o próprio funcionário)
+// READ - Listar itens de uma venda específica
 router.get(
-	'/funcionario/:id_funcionario',
+	'/:id_venda/itens',
 	authenticateJWT,
-	asyncHandler(async (req: AuthRequest, res: express.Response) => {
-		// Admin pode ver todas as vendas
-		if (req.user?.role === UserRole.ADMIN) {
-			return vendaController.findAllByFuncionario(req, res);
-		}
-		
-		// Funcionário só pode ver suas próprias vendas
-		if (req.user?.id === req.params.id_funcionario) {
-			return vendaController.findAllByFuncionario(req, res);
-		}
-		
-		return res.status(403).json({
-			success: false,
-			error: 'Acesso negado',
-			message: 'Você só pode visualizar suas próprias vendas',
-		});
-	})
+	autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
+	asyncHandler(vendaController.findItensByVenda.bind(vendaController))
 );
 
-// Listar todas as vendas de uma loja (apenas admin da loja)
+// READ - Listar todas as vendas de uma loja (paginado)
 router.get(
 	'/loja/:id_loja',
 	authenticateJWT,
-	asyncHandler(async (req: AuthRequest, res: express.Response) => {
-		// Verifica se o usuário é admin da loja solicitada
-		if (req.user?.role === UserRole.ADMIN && req.user?.id_loja === req.params.id_loja) {
-			return vendaController.findAllByLoja(req, res);
-		}
-		
-		return res.status(403).json({
-			success: false,
-			error: 'Acesso negado',
-			message: 'Você só pode visualizar vendas da sua própria loja',
-		});
-	})
+	autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
+	asyncHandler(vendaController.findAllByLoja.bind(vendaController))
 );
 
-// Relatório de vendas (apenas admin da loja)
-router.get(
-	'/loja/:id_loja/relatorio/:data_inicio/:data_fim',
-	authenticateJWT,
-	asyncHandler(async (req: AuthRequest, res: express.Response) => {
-		// Verifica se o usuário é admin da loja solicitada
-		if (req.user?.role === UserRole.ADMIN && req.user?.id_loja === req.params.id_loja) {
-			return vendaController.getRelatorioVendas(req, res);
-		}
-		
-		return res.status(403).json({
-			success: false,
-			error: 'Acesso negado',
-			message: 'Você só pode gerar relatórios da sua própria loja',
-		});
-	})
-);
-
-// Listar vendas paginadas (para dashboard)
+// READ - Listar vendas paginadas (com filtros)
 router.get(
 	'/loja/:id_loja/paginado',
 	authenticateJWT,
 	autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
 	asyncHandler(vendaController.findAllPaginado.bind(vendaController))
 );
+
+// UPDATE - Atualizar venda (ex: cancelamento)
+router.patch(
+	'/:id',
+	authenticateJWT,
+	autorizar(UserRole.ADMIN),
+	asyncHandler(vendaController.update.bind(vendaController))
+);
+
+// DELETE - Remover venda (com reversão de estoque)
+router.delete(
+	'/:id',
+	authenticateJWT,
+	autorizar(UserRole.ADMIN),
+	asyncHandler(vendaController.delete.bind(vendaController))
+);
+
+//----- Relatórios -----
+
+// Relatório de vendas por período
+router.get(
+	'/loja/:id_loja/relatorio/:data_inicio/:data_fim',
+	authenticateJWT,
+	autorizar(UserRole.ADMIN),
+	asyncHandler(vendaController.getRelatorioVendas.bind(vendaController))
+);
+
 
 export default router;
