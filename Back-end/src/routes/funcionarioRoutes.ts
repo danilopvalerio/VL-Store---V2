@@ -28,6 +28,10 @@ router.get(
   autorizar(UserRole.ADMIN),
   asyncHandler(funcionarioController.findAll.bind(funcionarioController)),
 );
+router.get(
+  '/loja-dev/:id',
+  asyncHandler(funcionarioController.findAll.bind(funcionarioController)),
+);
 
 // Criar novo funcionário (apenas admin)
 router.post(

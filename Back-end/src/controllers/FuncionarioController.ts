@@ -181,7 +181,7 @@ export default class FuncionarioController {
 
   async findAll(req: Request, res: Response) {
     try {
-      const id_loja = req.params.id_loja;
+      const id_loja = req.params.id;
       const funcionarios = await this.funcionarioRepositorio.find({ where: { id_loja: id_loja } });
       const listaSemSenha = funcionarios.map(({ senha, ...f }) => f);
       res.status(200).json({

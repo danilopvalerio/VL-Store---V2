@@ -39,8 +39,10 @@ body {
 }
 .white-light {
   box-shadow: 0 0 120px rgba(255, 255, 255, 0.447);
+}
 
-  /* box-shadow: 0 0 15px rgb(255, 255, 255); */
+.white-light-small {
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.196);
 }
 
 .small-shadow {
@@ -154,6 +156,11 @@ body {
   font-size: 13px;
   margin: 10px 0px;
   border-radius: 20px;
+}
+
+.primaria-forced {
+  background-color: rgb(255, 0, 0) !important;
+  color: rgb(255, 255, 255);
 }
 button.primaria:hover {
   background-color: rgb(255, 255, 255);
