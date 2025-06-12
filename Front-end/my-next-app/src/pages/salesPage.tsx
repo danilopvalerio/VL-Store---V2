@@ -33,7 +33,7 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(true);
   const [idloja, setIdloja] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<"form" | "list" | null>(null);
+  const [activeView, setActiveView] = useState<"form" | "list">("list"); // Inicia com "list" ativo
 
   const router = useRouter();
 
@@ -110,8 +110,8 @@ export default function SalesPage() {
     router.push("menuPage");
   };
 
-  const toggleView = (view: "form" | "list") => {
-    setActiveView((current) => (current === view ? null : view));
+  const switchToView = (view: "form" | "list") => {
+    setActiveView(view);
   };
 
   const jwtToken =
@@ -141,16 +141,18 @@ export default function SalesPage() {
         <div className="row mb-4">
           <div className="col d-flex gap-3 justify-content-center">
             <button
-              className={`btn primaria px-4 py-2`}
-              onClick={() => toggleView("form")}
+              className={`btn primaria text-white px-4 py-2`}
+              onClick={() => switchToView("form")}
+              disabled={activeView === "form"}
             >
-              {activeView === "form" ? "Fechar Formulário" : "Adicionar Venda"}
+              Adicionar Venda
             </button>
             <button
-              className={`btn primaria px-4 py-2`}
-              onClick={() => toggleView("list")}
+              className={`btn primaria text-white px-4 py-2`}
+              onClick={() => switchToView("list")}
+              disabled={activeView === "list"}
             >
-              {activeView === "list" ? "Fechar Lista" : "Listar Vendas"}
+              Listar Vendas
             </button>
           </div>
         </div>
@@ -167,7 +169,6 @@ export default function SalesPage() {
               <div>
                 <SalesForm
                   onSaleRegistered={handleNewSaleRegistered}
-                  showMessage={showCustomMessage}
                   vendedoresDisponiveis={vendedoresDisponiveis}
                   produtosDisponiveis={produtosDisponiveis}
                   jwtToken={jwtToken || undefined}
@@ -179,13 +180,6 @@ export default function SalesPage() {
             {activeView === "list" && (
               <div>
                 <SalesList idLoja={idloja} />
-              </div>
-            )}
-
-            {/* Nenhuma visualização selecionada */}
-            {!activeView && (
-              <div className="col-12 text-center py-5 text-center text-white">
-                <p className="">Selecione uma opção acima para começar</p>
               </div>
             )}
           </div>
