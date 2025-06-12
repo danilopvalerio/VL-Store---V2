@@ -1,37 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SalesDetail from "../sales/salesDetailComponent";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
-
-interface ProductItem {
-  id: string;
-  nome: string;
-  referencia: string;
-  quantidade: number;
-  precoUnitario: number;
-}
-
-interface Sale {
-  id_venda: string;
-  data_hora: string;
-  funcionario: {
-    nome: string;
-    id_funcionario: string;
-  };
-  total: string;
-  forma_pagamento: string;
-  itens: Array<{
-    quantidade: number;
-    preco_unitario: string;
-    variacao: {
-      descricao_variacao: string;
-      referencia_produto: string;
-    };
-  }>;
-  desconto: string;
-  acrescimo: string;
-}
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { Sale } from "../../../domain/interfaces/sale-interface";
 
 interface SalesListProps {
   salesData?: Sale[];
@@ -43,7 +15,7 @@ const ITEMS_PER_PAGE = 5;
 const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
   const [allSales, setAllSales] = useState<Sale[]>([]);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
-s
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -108,162 +80,161 @@ s
   };
 
   const deleteSale = async (saleId: string) => {
-  try {
-    await axios.delete(`http://localhost:9700/api/vendas/${saleId}`, {
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-      },
-    });
-    setAllSales((prevSales) => prevSales.filter((sale) => sale.id_venda !== saleId));
-  } catch (err) {
-    console.error("Erro ao deletar venda:", err);
-    setError("Erro ao deletar venda");
-    setTimeout(() => setError(null), 3000);
-  }
-};
-
-
-    return (
-      <div className="quinary p-4 rounded-20px small-shadow">
-        <div className="mb-4">
-          <h5 className="mb-0 text-white">
-            <i className="fas fa-list-ul mr-2"></i>Vendas Registradas
-          </h5>
-        </div>
-
-        {loading && (
-          <div className="text-center text-white py-4">Carregando vendas...</div>
-        )}
-        {error && <div className="text-center text-danger py-4">{error}</div>}
-
-        {!loading && !error && (
-          <>
-            <div className="table-responsive quartenary p-3 rounded-lg mb-4">
-              <table className="table table-sm table-borderless text-white">
-                <thead>
-                  <tr className="fine-transparent-border">
-                    <th className="small font-weight-bold">Cód. Venda</th>
-                    <th className="small font-weight-bold">Data</th>
-                    <th className="small font-weight-bold">Vendedor</th>
-                    <th className="small font-weight-bold">Valor Total</th>
-                    <th className="small font-weight-bold">Pagamento</th>
-                    <th className="small font-weight-bold text-center">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allSales && allSales.length > 0 ? (
-                    allSales.map((sale) => (
-                      <tr key={sale.id_venda} className="fine-transparent-border">
-                        <td className="font-weight-medium">{sale.id_venda}</td>
-                        <td>
-                          {new Date(sale.data_hora).toLocaleString("pt-BR", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </td>
-                        <td>{sale.funcionario.nome}</td>
-                        <td className="font-weight-medium">
-                          R$ {parseFloat(sale.total).toFixed(2)}
-                        </td>
-                        <td>{sale.forma_pagamento}</td>
-                        <td className="text-center">
-                          <div className="btn-group" role="group">
-                            <button
-                              className="btn btn-sm"
-                              style={{
-                                backgroundColor: "#dc3545",
-                                color: "white",
-                                border: "none",
-                                padding: "0.375rem 0.5rem",
-                                borderRadius: "50%",
-                                width: "32px",
-                                height: "32px",
-                              }}
-                              title="Excluir"
-                              onClick={() => deleteSale(sale.id_venda)}
-                            >
-                             <FontAwesomeIcon icon={faTrash} />
-                            </button>
-
-                             <button
-                              className="btn btn-sm"
-                              style={{
-                                backgroundColor: "#17a2b8",
-                                color: "white",
-                                border: "none",
-                                padding: "0.375rem 0.5rem",
-                                borderRadius: "50%",
-                                width: "32px",
-                                height: "32px",
-                              }}
-                              title="Visualizar"
-                              onClick={() => openModalWithSale(sale)}
-                            >
-                             <FontAwesomeIcon icon={faEye} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="text-center py-4 text-white-75">
-                        Nenhuma venda encontrada.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {totalPages > 1 && (
-              <nav aria-label="Navegação de páginas">
-                <div className="d-flex justify-content-center align-items-center">
-                  <button
-                    className={`btn primaria px-4 py-2 ${
-                      currentPage === 1 ? "btn-secondary" : "btn-outline-light"
-                    }`}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    style={{ minWidth: "80px" }}
-                  >
-                    Anterior
-                  </button>
-
-                  <span className="mx-3 text-white">
-                    Página {currentPage} de {totalPages}
-                  </span>
-
-                  <button
-                    className={`btn primaria px-4 py-2 ${
-                      currentPage === totalPages
-                        ? "btn-secondary"
-                        : "btn-outline-light"
-                    }`}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    style={{ minWidth: "80px" }}
-                  >
-                    Próxima
-                  </button>
-                </div>
-              </nav>
-            )}
-          </>
-        )}
-
-        {selectedSale && (
-          <SalesDetail
-            show={isModalOpen}
-            onClose={closeModal}
-            sale={selectedSale}
-          />
-        )}
-      </div>
-    );
+    try {
+      await axios.delete(`http://localhost:9700/api/vendas/${saleId}`, {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      });
+      setAllSales((prevSales) =>
+        prevSales.filter((sale) => sale.id_venda !== saleId)
+      );
+    } catch (err) {
+      console.error("Erro ao deletar venda:", err);
+      setError("Erro ao deletar venda");
+      setTimeout(() => setError(null), 3000);
+    }
   };
 
-  export default SalesList;
+  return (
+    <div className="quinary p-5 pb-4 mb-5 mx-auto white-light-small  w-75 rounded-5">
+      <div className="mb-4 mx-auto text-center">
+        <h5 className="mb-0  text-white">
+          <i className="fas fa-list-ul mr-2"></i>Vendas Registradas
+        </h5>
+      </div>
+
+      {loading && (
+        <div className="text-center text-white py-4">Carregando vendas...</div>
+      )}
+      {error && <div className="text-center text-danger py-4">{error}</div>}
+
+      {!loading && !error && (
+        <>
+          <div className="table-responsive quartenary p-3 rounded-lg mb-4">
+            <table className="table table-sm table-borderless text-white">
+              <thead>
+                <tr className="fine-transparent-border">
+                  <th className="small font-weight-bold">Data</th>
+                  <th className="small font-weight-bold">Vendedor</th>
+                  <th className="small font-weight-bold">Valor Total</th>
+                  <th className="small font-weight-bold">Pagamento</th>
+                  <th className="small font-weight-bold text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allSales && allSales.length > 0 ? (
+                  allSales.map((sale) => (
+                    <tr key={sale.id_venda} className="fine-transparent-border">
+                      <td>
+                        {new Date(sale.data_hora).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                      <td>{sale.funcionario.nome}</td>
+                      <td className="font-weight-medium">
+                        R$ {parseFloat(sale.total).toFixed(2)}
+                      </td>
+                      <td>{sale.forma_pagamento}</td>
+                      <td className="text-center">
+                        <div className="btn-group gap-2" role="group">
+                          <button
+                            className="btn btn-sm"
+                            style={{
+                              backgroundColor: "none",
+                              color: "white",
+                              border: "none",
+                              padding: "0.375rem 0.5rem",
+                              borderRadius: "50%",
+                              width: "32px",
+                              height: "32px",
+                            }}
+                            title="Excluir"
+                            onClick={() => deleteSale(sale.id_venda)}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+
+                          <button
+                            className="btn btn-sm"
+                            style={{
+                              backgroundColor: "",
+                              color: "white",
+                              border: "none",
+                              padding: "0.375rem 0.5rem",
+                              borderRadius: "50%",
+                              width: "32px",
+                              height: "32px",
+                            }}
+                            title="Visualizar"
+                            onClick={() => openModalWithSale(sale)}
+                          >
+                            <FontAwesomeIcon icon={faEye} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center py-4 text-white-75">
+                      Nenhuma venda encontrada.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {totalPages > 1 && (
+            <nav aria-label="Navegação de páginas">
+              <div className="d-flex justify-content-center align-items-center">
+                <button
+                  className={`btn primaria px-4 py-2 ${
+                    currentPage === 1 ? "btn-secondary" : "btn-outline-light"
+                  }`}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  style={{ minWidth: "80px" }}
+                >
+                  Anterior
+                </button>
+
+                <span className="mx-3 text-white">
+                  Página {currentPage} de {totalPages}
+                </span>
+
+                <button
+                  className={`btn primaria px-4 py-2 ${
+                    currentPage === totalPages
+                      ? "btn-secondary"
+                      : "btn-outline-light"
+                  }`}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  style={{ minWidth: "80px" }}
+                >
+                  Próxima
+                </button>
+              </div>
+            </nav>
+          )}
+        </>
+      )}
+
+      {selectedSale && (
+        <SalesDetail
+          show={isModalOpen}
+          onClose={closeModal}
+          sale={selectedSale}
+        />
+      )}
+    </div>
+  );
+};
+
+export default SalesList;

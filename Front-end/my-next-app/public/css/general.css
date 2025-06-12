@@ -159,7 +159,7 @@ body {
 }
 
 .primaria-forced {
-  background-color: rgb(255, 0, 0) !important;
+  background-color: rgba(255, 0, 0, 0.06) !important;
   color: rgb(255, 255, 255);
 }
 button.primaria:hover {
@@ -289,4 +289,25 @@ footer {
   background-color: #d1ecf1;
   color: #0c5460;
   border: 1px solid #bee5eb;
+}
+
+.table-responsive {
+  background: transparent !important;
+}
+
+.table {
+  background: transparent !important;
+  color: white !important;
+  border-radius: 10px !important;
+}
+
+.table th,
+.table td {
+  background: transparent !important;
+  color: white !important;
+  border: none !important;
+}
+.table thead tr,
+.table tbody tr {
+  border: none !important;
 }

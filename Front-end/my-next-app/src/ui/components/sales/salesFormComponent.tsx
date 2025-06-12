@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 
+// Interfaces de dados
 interface ProductVariation {
   id_variacao: string;
   produto: { nome: string; referencia: string };
   descricao_variacao: string;
   preco_venda: number;
 }
+
 interface CartItem {
   id_variacao: string;
   nome: string;
@@ -15,11 +19,13 @@ interface CartItem {
   quantidade: number;
   precoUnitario: number;
 }
+
 interface Seller {
   id_funcionario: string;
   nome: string;
   cargo?: string;
 }
+
 interface SalePayload {
   id_funcionario: string;
   forma_pagamento: string;
@@ -28,20 +34,16 @@ interface SalePayload {
   acrescimo: number;
 }
 
+// Interface de Props
 interface SalesFormProps {
   vendedoresDisponiveis: Seller[];
   produtosDisponiveis: ProductVariation[];
   jwtToken?: string;
   onSaleRegistered: (sale: any) => void;
-  showMessage: (
-    message: string,
-    type: "info" | "success" | "warning" | "danger"
-  ) => void;
 }
 
 const SalesForm: React.FC<SalesFormProps> = ({
   onSaleRegistered,
-  showMessage,
   jwtToken,
   vendedoresDisponiveis,
   produtosDisponiveis,
@@ -58,14 +60,45 @@ const SalesForm: React.FC<SalesFormProps> = ({
   const [carrinhoVenda, setCarrinhoVenda] = useState<CartItem[]>([]);
   const [descontoVenda, setDescontoVenda] = useState<string>("0.00");
   const [acrescimoVenda, setAcrescimoVenda] = useState<string>("0.00");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Estados para pesquisa de produto
+  const [produtoSearchTerm, setProdutoSearchTerm] = useState<string>("");
+  const [showProductDropdown, setShowProductDropdown] =
+    useState<boolean>(false);
+
+  // Estados para pesquisa de vendedor
+  const [vendedorSearchTerm, setVendedorSearchTerm] = useState<string>("");
+  const [showVendedorDropdown, setShowVendedorDropdown] =
+    useState<boolean>(false);
+
+  const showMessage = (message: string, type: "success" | "error") => {
+    if (type === "error") {
+      setError(message);
+      setSuccess("");
+      setTimeout(() => setError(""), 5000);
+    } else {
+      setSuccess(message);
+      setError("");
+      setTimeout(() => setSuccess(""), 5000);
+    }
+  };
 
   useEffect(() => {
     const generateSaleCode = () =>
       `VENDA-${Math.floor(Math.random() * 90000) + 10000}`;
     setCodigoVenda(generateSaleCode());
     const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    setDataVenda(now.toISOString().slice(0, 16));
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0"); // mês é 0-based
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+
+    const localDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    setDataVenda(localDateTime);
   }, []);
 
   useEffect(() => {
@@ -91,14 +124,39 @@ const SalesForm: React.FC<SalesFormProps> = ({
     return subtotalProdutos - descontoNum + acrescimoNum;
   }, [carrinhoVenda, descontoVenda, acrescimoVenda]);
 
+  const filteredProducts = useMemo(() => {
+    if (!produtoSearchTerm.trim()) return produtosDisponiveis;
+
+    const term = produtoSearchTerm.toLowerCase();
+    return produtosDisponiveis.filter(
+      (p) =>
+        p.produto.nome.toLowerCase().includes(term) ||
+        p.descricao_variacao.toLowerCase().includes(term) ||
+        p.produto.referencia.toLowerCase().includes(term)
+    );
+  }, [produtoSearchTerm, produtosDisponiveis]);
+
+  const filteredVendedores = useMemo(() => {
+    if (!vendedorSearchTerm.trim()) return vendedoresDisponiveis;
+
+    const term = vendedorSearchTerm.toLowerCase();
+    return vendedoresDisponiveis.filter(
+      (v) =>
+        v.nome.toLowerCase().includes(term) ||
+        (v.cargo && v.cargo.toLowerCase().includes(term))
+    );
+  }, [vendedorSearchTerm, vendedoresDisponiveis]);
+
   const handleAdicionarProdutoVenda = () => {
     if (!produtoSelecionadoId) {
-      showMessage("Selecione um produto para adicionar.", "warning");
+      showMessage("Selecione um produto para adicionar.", "error");
       return;
     }
+
     const produto = produtosDisponiveis.find(
       (p) => p.id_variacao === produtoSelecionadoId
     );
+
     if (!produto) return;
 
     const itemExistente = carrinhoVenda.find(
@@ -128,6 +186,8 @@ const SalesForm: React.FC<SalesFormProps> = ({
     setProdutoSelecionadoId("");
     setQuantidadeProduto(1);
     setPrecoUnitario("");
+    setProdutoSearchTerm("");
+    setShowProductDropdown(false);
   };
 
   const handleRemoverProdutoDoCarrinho = (idVariacao: string) => {
@@ -135,6 +195,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
       carrinhoVenda.filter((item) => item.id_variacao !== idVariacao)
     );
   };
+
   const handleNumericInputChange = (
     setter: React.Dispatch<React.SetStateAction<string>>,
     value: string
@@ -151,12 +212,14 @@ const SalesForm: React.FC<SalesFormProps> = ({
       `VENDA-${Math.floor(Math.random() * 90000) + 10000}`;
     setCodigoVenda(generateSaleCode());
     setVendedorResponsavelId("");
+    setVendedorSearchTerm("");
     setFormaPagamento("");
     setCarrinhoVenda([]);
     setDescontoVenda("0.00");
     setAcrescimoVenda("0.00");
     setProdutoSelecionadoId("");
     setQuantidadeProduto(1);
+    setProdutoSearchTerm("");
   };
 
   const handleSubmitVenda = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -166,9 +229,10 @@ const SalesForm: React.FC<SalesFormProps> = ({
       !formaPagamento ||
       carrinhoVenda.length === 0
     ) {
-      showMessage("Preencha todos os campos obrigatórios.", "warning");
+      showMessage("Preencha todos os campos obrigatórios.", "error");
       return;
     }
+
     const payload: SalePayload = {
       id_funcionario: vendedorResponsavelId,
       forma_pagamento: formaPagamento,
@@ -180,6 +244,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
       desconto: parseFloat(descontoVenda.replace(",", ".")) || 0,
       acrescimo: parseFloat(acrescimoVenda.replace(",", ".")) || 0,
     };
+
     try {
       const config = { headers: { Authorization: `Bearer ${jwtToken}` } };
       const response = await axios.post(
@@ -196,75 +261,112 @@ const SalesForm: React.FC<SalesFormProps> = ({
       console.error("Erro ao registrar venda:", error);
       const backendMessage =
         error.response?.data?.message || "Ocorreu um erro desconhecido.";
-      showMessage(`Erro: ${backendMessage}`, "danger");
+      showMessage(`Erro: ${backendMessage}`, "error");
     }
   };
 
-  
-
   return (
-    <div className="terciary mx-auto p-4 rounded-5 white-light-small d-flex flex-column h-100 w-75">
+    <div className="quinary text-white p-4 rounded-5 white-light-small d-flex flex-column w-75 mx-auto h-100">
+      {/* Alertas de erro e sucesso */}
+      {error && (
+        <div
+          className="alert alert-danger alert-dismissible fade show"
+          role="alert"
+        >
+          {error}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+            aria-label="Close"
+          ></button>
+        </div>
+      )}
+      {success && (
+        <div
+          className="alert alert-success alert-dismissible fade show"
+          role="alert"
+        >
+          {success}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setSuccess("")}
+            aria-label="Close"
+          ></button>
+        </div>
+      )}
+
       <div className="mb-3">
         <h5 className="mb-0 text-white">
           <i className="fas fa-plus-circle mr-2"></i>Registrar Nova Venda
         </h5>
       </div>
-
       <div
         className="flex-grow-1"
         style={{ overflowY: "auto", overflowX: "hidden", paddingRight: "10px" }}
       >
         <form id="sales-form-content" onSubmit={handleSubmitVenda} noValidate>
           <div className="row mb-3">
-            <div className="col-md-6">
-              <label
-                htmlFor="codigoVenda"
-                className="form-label text-white-75 small"
-              >
-                Código da Venda
-              </label>
-              <input
-                type="text"
-                className="form-control input-form"
-                id="codigoVenda"
-                value={codigoVenda}
-                readOnly
-              />
-              <small className="form-text text-white-50">
-                Gerado automaticamente.
-              </small>
-            </div>
-            <div className="col-md-6">
+            <div className="col-md-6 position-relative">
               <label
                 htmlFor="vendedorResponsavel"
                 className="form-label text-white-75 small"
               >
                 Vendedor Responsável
               </label>
-              <select
-                id="vendedorResponsavel"
-                className="form-control custom-select input-form"
+              <input
+                type="text"
+                className="form-control input-form"
+                placeholder="Buscar vendedor..."
+                value={vendedorSearchTerm}
+                onChange={(e) => {
+                  setVendedorSearchTerm(e.target.value);
+                  setShowVendedorDropdown(true);
+                }}
+                onFocus={() => setShowVendedorDropdown(true)}
+                onBlur={() =>
+                  setTimeout(() => setShowVendedorDropdown(false), 200)
+                }
+              />
+              {showVendedorDropdown && (
+                <ul
+                  className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                  style={{
+                    maxHeight: "250px",
+                    overflowY: "auto",
+                  }}
+                >
+                  {filteredVendedores.length === 0 ? (
+                    <li className="list-group-item text-white bg-dark">
+                      Nenhum vendedor encontrado
+                    </li>
+                  ) : (
+                    filteredVendedores.map((v) => (
+                      <li
+                        key={v.id_funcionario}
+                        className="list-group-item bg-dark text-white cursor-pointer hover-light"
+                        onClick={() => {
+                          setVendedorResponsavelId(v.id_funcionario);
+                          setVendedorSearchTerm(
+                            `${v.nome}${v.cargo ? ` (${v.cargo})` : ""}`
+                          );
+                          setShowVendedorDropdown(false);
+                        }}
+                      >
+                        {v.nome} {v.cargo && `(${v.cargo})`}
+                      </li>
+                    ))
+                  )}
+                </ul>
+              )}
+              <input
+                type="hidden"
+                id="vendedorResponsavelId"
                 value={vendedorResponsavelId}
-                onChange={(e) => setVendedorResponsavelId(e.target.value)}
-                required
-              >
-                <option value="" disabled className="text-gray-500">
-                  Selecione...
-                </option>
-                {vendedoresDisponiveis.map((vendedor) => (
-                  <option
-                    key={vendedor.id_funcionario}
-                    value={vendedor.id_funcionario}
-                    className="text-black"
-                  >
-                    {vendedor.nome}{" "}
-                    {vendedor.cargo ? `(${vendedor.cargo})` : ""}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
-          </div>
-          <div className="row mb-4">
+
             <div className="col-md-6">
               <label
                 htmlFor="dataVenda"
@@ -281,6 +383,8 @@ const SalesForm: React.FC<SalesFormProps> = ({
                 required
               />
             </div>
+          </div>
+          <div className="row mb-4">
             <div className="col-md-6">
               <label
                 htmlFor="formaPagamento"
@@ -313,77 +417,112 @@ const SalesForm: React.FC<SalesFormProps> = ({
               </select>
             </div>
           </div>
-
           <h6 className="mb-3 text-white">
             <i className="fas fa-shopping-basket mr-2"></i>Produtos da Venda
           </h6>
+          <div className="row align-items-end mb-3 position-relative">
+            <div className="col-md-5">
+              <label
+                htmlFor="produtoVenda"
+                className="form-label text-white-75 small"
+              >
+                Produto
+              </label>
+              <input
+                type="text"
+                className="form-control input-form"
+                placeholder="Buscar produto..."
+                value={produtoSearchTerm}
+                onChange={(e) => {
+                  setProdutoSearchTerm(e.target.value);
+                  setShowProductDropdown(true);
+                }}
+                onFocus={() => setShowProductDropdown(true)}
+                onBlur={() =>
+                  setTimeout(() => setShowProductDropdown(false), 200)
+                }
+              />
+              {showProductDropdown && (
+                <ul
+                  className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                  style={{
+                    maxHeight: "250px",
+                    overflowY: "auto",
+                  }}
+                >
+                  {filteredProducts.length === 0 ? (
+                    <li className="list-group-item text-white bg-dark">
+                      Nenhum produto encontrado
+                    </li>
+                  ) : (
+                    filteredProducts.map((p) => (
+                      <li
+                        key={p.id_variacao}
+                        className="list-group-item bg-dark text-white cursor-pointer hover-light"
+                        onClick={() => {
+                          setProdutoSelecionadoId(p.id_variacao);
+                          setProdutoSearchTerm(
+                            `${p.produto.nome} - ${p.descricao_variacao}`
+                          );
+                          setShowProductDropdown(false);
+                        }}
+                      >
+                        {p.produto.nome} (REF: {p.produto.referencia}) -{" "}
+                        {p.descricao_variacao}
+                      </li>
+                    ))
+                  )}
+                </ul>
+              )}
+            </div>
+            <div className="col-md-3">
+              <label
+                htmlFor="quantidadeProduto"
+                className="form-label text-white-75 small"
+              >
+                Quantidade
+              </label>
+              <input
+                type="number"
+                className="form-control input-form"
+                id="quantidadeProduto"
+                value={quantidadeProduto}
+                onChange={(e) =>
+                  setQuantidadeProduto(parseInt(e.target.value, 10) || 1)
+                }
+                min="1"
+              />
+            </div>
+            <div className="col-md-2">
+              <label
+                htmlFor="precoUnitario"
+                className="form-label text-white-75 small"
+              >
+                Preço Un.
+              </label>
+              <input
+                type="text"
+                className="form-control input-form"
+                id="precoUnitario"
+                value={precoUnitario ? `R$ ${precoUnitario}` : ""}
+                readOnly
+              />
+            </div>
+            <div className="col-md-2">
+              <button
+                type="button"
+                className="btn btn-block primaria"
+                style={{ height: "38px", marginTop: "6px" }}
+                onClick={handleAdicionarProdutoVenda}
+              >
+                <i className="fas fa-plus"></i> Adicionar
+              </button>
+            </div>
+          </div>
 
-          <div className="row mb-3">
-  <div className="col-md-5">
-    <label htmlFor="produtoVenda" className="form-label text-white-75 small">
-      Produto
-    </label>
-    <select
-      id="produtoVenda"
-      className="form-control custom-select input-form"
-      value={produtoSelecionadoId}
-      onChange={(e) => setProdutoSelecionadoId(e.target.value)}
-    >
-      <option value="" disabled className="text-gray-500">
-        Selecione...
-      </option>
-      {produtosDisponiveis.map((p) => (
-        <option
-          key={p.id_variacao}
-          value={p.id_variacao}
-          className="text-black"
-        >
-          {p.produto.nome} (REF: {p.produto.referencia}) - {p.descricao_variacao}
-        </option>
-      ))}
-    </select>
-  </div>
-
-  <div className="col-md-3">
-    <label htmlFor="quantidadeProduto" className="form-label text-white-75 small">
-      Quantidade
-    </label>
-    <input
-      type="number"
-      className="form-control input-form"
-      id="quantidadeProduto"
-      value={quantidadeProduto}
-      onChange={(e) => setQuantidadeProduto(parseInt(e.target.value, 10) || 1)}
-      min="1"
-    />
-  </div>
-
-  <div className="col-md-2">
-    <label htmlFor="precoUnitario" className="form-label text-white-75 small">
-      Preço Un.
-    </label>
-    <input
-      type="text"
-      className="form-control input-form"
-      id="precoUnitario"
-      value={precoUnitario ? `R$ ${precoUnitario}` : ""}
-      readOnly
-    />
-  </div>
-
-  <div className="col-md-2 d-flex align-items-end">
-    <button
-      type="button"
-      className="btn btn-block primaria w-100"
-      onClick={handleAdicionarProdutoVenda}
-    >
-      <i className="fas fa-plus me-1"></i>Adicionar
-    </button>
-  </div>
-</div>
           <div
             id="listaProdutosVenda"
-            className="mb-4 table-responsive p-2 rounded-lg"
+            className="mb-4 table-responsive quartenary p-2 rounded-lg"
             style={{ maxHeight: "200px", overflowY: "auto" }}
           >
             <table className="table table-sm table-borderless text-white">
@@ -426,7 +565,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
                             }
                             title="Remover"
                           >
-                            <i className="fas fa-trash-alt"></i>
+                            <FontAwesomeIcon icon={faTrash} />
                           </button>
                         </td>
                       </tr>
@@ -477,7 +616,6 @@ const SalesForm: React.FC<SalesFormProps> = ({
           </div>
         </form>
       </div>
-
       <div
         className="mt-auto pt-3 d-flex justify-content-between align-items-center border-top"
         style={{ borderColor: "rgba(255,255,255,0.1)" }}
