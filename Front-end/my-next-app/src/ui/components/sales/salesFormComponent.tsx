@@ -420,18 +420,21 @@ const SalesForm: React.FC<SalesFormProps> = ({
           <h6 className="mb-3 text-white">
             <i className="fas fa-shopping-basket mr-2"></i>Produtos da Venda
           </h6>
-          <div className="row align-items-end mb-3 position-relative">
+          <div className="row g-2 align-items-baseline">
             <div className="col-md-5">
+              <div className="d-flex flex-column">
               <label
                 htmlFor="produtoVenda"
-                className="form-label text-white-75 small"
+                className="form-label text-white-75 small mb-1" style={{ height: "20px" }}
               >
                 Produto
               </label>
+              <div className="d-flex align-items-center" style={{ height: "38px" }}>
               <input
                 type="text"
-                className="form-control input-form"
+                className="form-control input-form border-end-0"
                 placeholder="Buscar produto..."
+                style={{ height: "100%" }}
                 value={produtoSearchTerm}
                 onChange={(e) => {
                   setProdutoSearchTerm(e.target.value);
@@ -474,11 +477,14 @@ const SalesForm: React.FC<SalesFormProps> = ({
                   )}
                 </ul>
               )}
+              </div>
+              </div>
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
+              <div className="d-flex flex-column">
               <label
                 htmlFor="quantidadeProduto"
-                className="form-label text-white-75 small"
+                className="form-label text-white-75 small mb-1" style={{ height: "20px" }}
               >
                 Quantidade
               </label>
@@ -487,16 +493,19 @@ const SalesForm: React.FC<SalesFormProps> = ({
                 className="form-control input-form"
                 id="quantidadeProduto"
                 value={quantidadeProduto}
+                style={{ height: "38px", padding: "0.375rem 0.5rem" }}
                 onChange={(e) =>
                   setQuantidadeProduto(parseInt(e.target.value, 10) || 1)
                 }
                 min="1"
               />
+              </div>
             </div>
             <div className="col-md-2">
+              <div className="d-flex flex-column">
               <label
                 htmlFor="precoUnitario"
-                className="form-label text-white-75 small"
+                className="form-label text-white-75 small mb-1" style={{ height: "20px" }}
               >
                 Preço Un.
               </label>
@@ -505,14 +514,21 @@ const SalesForm: React.FC<SalesFormProps> = ({
                 className="form-control input-form"
                 id="precoUnitario"
                 value={precoUnitario ? `R$ ${precoUnitario}` : ""}
+                style={{ height: "38px", padding: "0.375rem 0.5rem" }}
                 readOnly
               />
+              </div>
             </div>
-            <div className="col-md-2">
+            <div className="col-md-2 d-flex flex-column">
+              <div style={{ height: "20px" }}></div>
               <button
                 type="button"
-                className="btn btn-block primaria"
-                style={{ height: "38px", marginTop: "6px" }}
+                className="btn primaria d-flex align-items-center justify-content-center"
+                style={{ 
+                  height: "38px",
+                  padding: "0.375rem 0.75rem",
+                  lineHeight: "1.5"
+                }}
                 onClick={handleAdicionarProdutoVenda}
               >
                 <i className="fas fa-plus"></i> Adicionar
