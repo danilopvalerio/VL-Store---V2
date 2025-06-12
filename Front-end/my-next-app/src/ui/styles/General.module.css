@@ -3,7 +3,7 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+ 
 html {
   min-height: 100vh;
 }
@@ -39,13 +39,10 @@ body {
 }
 .white-light {
   box-shadow: 0 0 120px rgba(255, 255, 255, 0.447);
-
-  /* box-shadow: 0 0 15px rgb(255, 255, 255); */
 }
 
 .small-shadow {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.281);
-  /* box-shadow: 0 0 15px rgb(255, 255, 255); */
 }
 .btn-delete {
   background: rgba(255, 255, 255, 0.052) !important;
@@ -92,8 +89,8 @@ body {
 }
 .quinary {
   background-color: rgba(0, 0, 0, 0.603);
-  backdrop-filter: blur(10px); /* Desfoca o que está atrás */
-  -webkit-backdrop-filter: blur(10px); /* Suporte para Safari */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .input-block {
   display: flex;
@@ -134,8 +131,8 @@ body {
   font-size: 11px;
 }
 .terciary {
-  backdrop-filter: blur(10px); /* Desfoca o que está atrás */
-  -webkit-backdrop-filter: blur(10px); /* Suporte para Safari */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   background-color: rgba(19, 19, 19, 0.575);
   color: white;
 }
@@ -198,10 +195,10 @@ footer {
 }
 
 .big-container {
-  position: absolute; /* ou fixed se quiser que fique fixo na tela */
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100%; /* Opcional: ocupar toda a largura */
+  width: 100%;
 }
 .logo {
   width: 35px;
@@ -224,7 +221,6 @@ footer {
   animation: fadeIn 1s ease-out;
 }
 
-/* Animações para aparecer/sumir suavemente */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -236,7 +232,6 @@ footer {
   }
 }
 
-/* Estilos para tipos diferentes de alerta */
 .alert-success {
   background-color: #d4eddabb;
   color: #210035;
@@ -259,4 +254,11 @@ footer {
   background-color: #d1ecf1;
   color: #0c5460;
   border: 1px solid #bee5eb;
+}
+
+.fine-transparent-border-bottom {
+  border-bottom: solid 1px rgba(255, 255, 255, 0.208);
+}
+.fine-transparent-border-top {
+  border-top: solid 1px rgba(255, 255, 255, 0.208);
 }

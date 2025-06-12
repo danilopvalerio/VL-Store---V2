@@ -34,7 +34,7 @@ interface Sale {
 }
 
 interface SalesListProps {
-  salesData?: Sale[]; // Tornando salesData opcional
+  salesData?: Sale[];
   idLoja: string;
 }
 
@@ -43,7 +43,7 @@ const ITEMS_PER_PAGE = 5;
 const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
   const [allSales, setAllSales] = useState<Sale[]>([]);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+s
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -81,7 +81,6 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
   }, [idLoja, currentPage, jwtToken]);
 
   useEffect(() => {
-    // Add any new sales from props to the list
     if (salesData && salesData.length > 0) {
       setAllSales((prevSales) => {
         const newSalesToAdd = salesData.filter(
@@ -187,6 +186,23 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
                               onClick={() => deleteSale(sale.id_venda)}
                             >
                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
+
+                             <button
+                              className="btn btn-sm"
+                              style={{
+                                backgroundColor: "#17a2b8",
+                                color: "white",
+                                border: "none",
+                                padding: "0.375rem 0.5rem",
+                                borderRadius: "50%",
+                                width: "32px",
+                                height: "32px",
+                              }}
+                              title="Visualizar"
+                              onClick={() => openModalWithSale(sale)}
+                            >
+                             <FontAwesomeIcon icon={faEye} />
                             </button>
                           </div>
                         </td>

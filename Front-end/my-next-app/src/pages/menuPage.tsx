@@ -123,7 +123,7 @@ const MenuPage: React.FC = () => {
           <button
             type="button"
             className="btn primaria col-9 col-lg-5 mb-2"
-            onClick={() => navigateTo("/cashier")}
+            onClick={() => navigateTo("/cashierPage")}
             disabled={isViewOnly}
           >
             Caixa

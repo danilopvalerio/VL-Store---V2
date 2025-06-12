@@ -1,0 +1,246 @@
+.pageContainer {
+  min-height: 100vh;
+  padding: 1.5rem;
+  color: white;
+  background: linear-gradient(
+    45deg,
+    rgb(12, 0, 44),
+    rgb(12, 0, 65),
+    rgb(89, 0, 22),
+    rgb(12, 0, 44)
+  );
+}
+
+.pageTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.pageSubtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.statusBox {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.statusIcon {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.statusLabel {
+  font-size: 0.75rem;
+}
+
+.statusValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.filterContainer {
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.filterGroup {
+  margin-bottom: 0;
+}
+
+.filterLabel {
+  display: block;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.caixasGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.circleBox {
+  background-color: rgba(0, 0, 0, 0.282);
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.208);
+}
+
+.borderLeftSuccess {
+  border-left: 4px solid #10B981;
+}
+
+.borderLeftDanger {
+  border-left: 4px solid #EF4444;
+}
+
+.textPrimary {
+  color: white;
+  font-weight: 600;
+}
+
+.textSecondary {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.textTertiary {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.textDanger {
+  color: #F87171;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.textAccent {
+  color: #60A5FA;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.statusBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.success {
+  background-color: #10B981;
+  color: white;
+}
+
+.danger {
+  background-color: #EF4444;
+  color: white;
+}
+
+.btnPrimary {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.btnPrimary:hover {
+  background-color: white;
+  box-shadow: 0 0 7px rgba(0, 0, 0, 0.532);
+  color: black;
+}
+
+.btnSecondary {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.btnSecondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.inputForm {
+  width: 100%;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.132);
+  color: white;
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+}
+
+.inputForm:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.255);
+}
+
+.inputForm:hover {
+  border-color: rgba(255, 255, 255, 0.255);
+}
+
+.inputForm::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Classes utilitárias */
+.flex {
+  display: flex;
+}
+
+.justifyBetween {
+  justify-content: space-between;
+}
+
+.itemsCenter {
+  align-items: center;
+}
+
+.itemsStart {
+  align-items: flex-start;
+}
+
+.mb3 {
+  margin-bottom: 0.75rem;
+}
+
+.mb4 {
+  margin-bottom: 1rem;
+}
+
+.mb6 {
+  margin-bottom: 1.5rem;
+}
+
+.grid {
+  display: grid;
+}
+
+.gridCols3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gap4 {
+  gap: 1rem;
+}
+
+.textCenter {
+  text-align: center;
+}
