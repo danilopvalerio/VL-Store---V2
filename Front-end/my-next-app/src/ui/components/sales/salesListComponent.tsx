@@ -203,20 +203,8 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
 
       {/* Seção de Filtros */}
       {showFilters && (
-        <div className="mb-4 quartenary p-3 rounded-lg">
+        <div className="mb-4 p-3 text-white rounded-lg">
           <div className="row g-3">
-            <div className="col-md-3">
-              <label className="form-label text-white-75 small">
-                Data da Venda
-              </label>
-              <input
-                type="date"
-                className="form-control input-form"
-                value={dataFiltro}
-                onChange={(e) => setDataFiltro(e.target.value)}
-              />
-            </div>
-
             <div className="col-md-3">
               <label className="form-label text-white-75 small">
                 Forma de Pagamento
@@ -226,11 +214,36 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
                 value={formaPagamentoFiltro}
                 onChange={(e) => setFormaPagamentoFiltro(e.target.value)}
               >
-                <option value="">Todas</option>
-                <option value="DINHEIRO">Dinheiro</option>
-                <option value="CARTAO_CREDITO">Cartão de Crédito</option>
-                <option value="CARTAO_DEBITO">Cartão de Débito</option>
-                <option value="PIX">PIX</option>
+                <option
+                  className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                  value=""
+                >
+                  Todas
+                </option>
+                <option
+                  className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                  value="DINHEIRO"
+                >
+                  Dinheiro
+                </option>
+                <option
+                  className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                  value="CARTAO_CREDITO"
+                >
+                  Cartão de Crédito
+                </option>
+                <option
+                  className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                  value="CARTAO_DEBITO"
+                >
+                  Cartão de Débito
+                </option>
+                <option
+                  className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                  value="PIX"
+                >
+                  PIX
+                </option>
               </select>
             </div>
 
@@ -279,12 +292,6 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
             </div>
 
             <div className="col-md-2 d-flex align-items-end gap-2">
-              <button
-                className="btn primaria btn-sm"
-                onClick={handleApplyFilters}
-              >
-                Filtrar
-              </button>
               <button
                 className="btn btn-outline-light btn-sm"
                 onClick={handleClearFilters}

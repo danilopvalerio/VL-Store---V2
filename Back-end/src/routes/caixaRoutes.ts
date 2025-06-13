@@ -72,7 +72,15 @@ router.post(
 
 // Listar movimentações de um caixa (paginado)
 router.get(
-  '/:id_caixa/movimentacoes',
+  '/:id_caixa/movimentacoes/all',
+  //   authenticateJWT,
+  //   autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
+  asyncHandler(caixaController.findAllMovimentacoesByCaixa.bind(caixaController)),
+);
+
+// Listar movimentações de um caixa (paginado)
+router.get(
+  '/:id_caixa/movimentacoes/',
   //   authenticateJWT,
   //   autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
   asyncHandler(caixaController.findMovimentacoesByCaixa.bind(caixaController)),

@@ -1,29 +1,45 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Lock, Plus } from 'lucide-react';
-import styles from '../../styles/cashierPage.module.css';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, Lock, Plus } from "lucide-react";
+import styles from "../../styles/cashierPage.module.css";
+import axios from "axios";
 
-// Interfaces de tipo
+// Tipos
 interface Movimentacao {
-  id: string;
-  tipo: 'ENTRADA' | 'SAIDA';
+  id_movimentacao: string;
+  tipo: "ENTRADA" | "SAIDA";
   valor: number;
   descricao: string;
-  dataHora: string;
-  responsavel: string;
-  id_venda?: string;
+  criado_em: string;
 }
 
 interface Caixa {
-  id: string;
-  status: 'ABERTO' | 'FECHADO';
+  id_caixa: string;
+  status: "ABERTO" | "FECHADO";
   entradas?: number;
   saidas?: number;
-  movimentacoes?: Movimentacao[];
+  saldo?: number; // Adicionado
   responsavel?: string;
   data_abertura?: string;
   hora_abertura?: string;
   hora_fechamento?: string | null;
+}
+
+interface MovimentacaoAllResponse {
+  success: boolean;
+  data: {
+    movimentacoes: Movimentacao[];
+    totalEntradas: number;
+    totalSaidas: number;
+    saldo: number;
+  };
+  totalItems: number;
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 interface CardInfoProps {
@@ -40,169 +56,233 @@ interface CashierDetailsProps {
 }
 
 interface MovimentacaoState {
-  tipo: 'ENTRADA' | 'SAIDA';
+  tipo: "ENTRADA" | "SAIDA";
   valor: string;
   descricao: string;
-  id_venda?: string;
 }
 
-// Função utilitária para formatar moeda
+// Funções úteis
 export const formatCurrency = (value: number | null | undefined): string => {
-  const numericValue = typeof value === 'number' ? value : 0;
-  return numericValue.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
+  const numericValue = typeof value === "number" ? value : 0;
+  return numericValue.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
   });
 };
 
-// Componente CardInfo
+const formatDateTime = (dateTimeString: string): string => {
+  try {
+    const date = new Date(dateTimeString);
+    return date.toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return dateTimeString;
+  }
+};
+
+// Componente: Card Info
 const CardInfo: React.FC<CardInfoProps> = ({ titulo, valor, className }) => (
   <div className={styles.box}>
     <div className={styles.textSecondary}>{titulo}</div>
-    <div className={`${className} ${styles.textPrimary}`} style={{ fontSize: '2rem' }}>{valor}</div>
+    <div
+      className={`${className} ${styles.textPrimary}`}
+      style={{ fontSize: "2rem" }}
+    >
+      {valor}
+    </div>
   </div>
 );
 
-// Componente principal
-const CashierDetails: React.FC<CashierDetailsProps> = ({ 
-  caixa, 
-  onBack, 
-  onUpdateCaixa, 
-  onCloseCaixa 
+// Componente Principal
+const CashierDetails: React.FC<CashierDetailsProps> = ({
+  caixa,
+  onBack,
+  onUpdateCaixa,
+  onCloseCaixa,
 }) => {
-  // Estados do componente
-  const [movimentacao, setMovimentacao] = useState<MovimentacaoState>({ 
-    tipo: 'ENTRADA', 
-    valor: '', 
-    descricao: '',
-    id_venda: ''
+  const [movimentacao, setMovimentacao] = useState<MovimentacaoState>({
+    tipo: "ENTRADA",
+    valor: "",
+    descricao: "",
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+  });
 
-  // Função para obter headers de autenticação
+  // Headers com token JWT
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     };
   };
 
-  // Função para adicionar movimentação
-  const handleAddMovimentacao = async () => {
-    if (!caixa?.id) {
-      setError("Caixa não encontrado ou ID inválido");
-      setTimeout(() => setError(""), 3000);
-      return;
-    }
-
-    const valorFloat = parseFloat(movimentacao.valor.replace(',', '.'));
-    if (isNaN(valorFloat) || !movimentacao.descricao) {
-      setError("Por favor, preencha o valor e a descrição corretamente.");
-      setTimeout(() => setError(""), 3000);
-      return;
-    }
-
+  // Carrega lista paginada de movimentações
+  const loadMovimentacoes = async () => {
+    setIsLoading(true);
     try {
-      const response = await axios.post<Movimentacao>(
-        `http://localhost:9700/api/caixas/${caixa.id}/movimentacoes`,
-        {
-          tipo: movimentacao.tipo,
-          valor: valorFloat,
-          descricao: movimentacao.descricao,
-          id_venda: movimentacao.id_venda || null,
-          responsavel: caixa.responsavel || "Sistema"
-        },
+      const response = await axios.get<PaginatedResponse<Movimentacao>>(
+        `http://localhost:9700/api/caixas/${caixa?.id_caixa}/movimentacoes?page=${pagination.page}&limit=${pagination.limit}`,
         { headers: getAuthHeaders() }
       );
-
-      const novaMovimentacao = response.data;
-
-      const caixaAtualizado: Caixa = {
-        ...caixa,
-        movimentacoes: [novaMovimentacao, ...(caixa.movimentacoes || [])],
-        entradas: movimentacao.tipo === 'ENTRADA' 
-          ? (caixa.entradas || 0) + valorFloat 
-          : (caixa.entradas || 0),
-        saidas: movimentacao.tipo === 'SAIDA' 
-          ? (caixa.saidas || 0) + valorFloat 
-          : (caixa.saidas || 0),
-      };
-
-      onUpdateCaixa(caixaAtualizado);
-      setMovimentacao({ 
-        tipo: 'ENTRADA', 
-        valor: '', 
-        descricao: '',
-        id_venda: ''
-      });
-      setSuccess("Movimentação adicionada com sucesso!");
-      setTimeout(() => setSuccess(""), 3000);
-      
+      setMovimentacoes(response.data.data);
+      setPagination((prev) => ({ ...prev, total: response.data.total }));
     } catch (err) {
-      console.error("Erro ao adicionar movimentação:", err);
-      setError(err.response?.data?.message || "Erro ao adicionar movimentação");
+      console.error("Erro ao carregar movimentações:", err);
+      setError("Erro ao carregar movimentações");
       setTimeout(() => setError(""), 3000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Função para fechar o caixa
-  const handleCloseCaixa = async () => {
-    if (!caixa?.id) {
-      setError("Caixa não encontrado ou ID inválido");
+  // Atualiza totais com base na nova rota /all
+  const atualizarTotais = async () => {
+    if (!caixa?.id_caixa) return;
+
+    try {
+      const response = await axios.get<MovimentacaoAllResponse>(
+        `http://localhost:9700/api/caixas/${caixa.id_caixa}/movimentacoes/all`,
+        { headers: getAuthHeaders() }
+      );
+
+      if (response.data.success) {
+        const { totalEntradas, totalSaidas, saldo } = response.data.data;
+        onUpdateCaixa({
+          ...caixa!,
+          entradas: totalEntradas,
+          saidas: totalSaidas,
+          saldo: saldo,
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao carregar resumo do caixa:", err);
+    }
+  };
+
+  // Valida e transforma o valor inserido
+  const validateAndParseValue = (value: string): number | null => {
+    const cleanValue = value.trim().replace(",", ".");
+    const numericValue = parseFloat(cleanValue);
+    return isNaN(numericValue) ? null : Math.round(numericValue * 100) / 100;
+  };
+
+  // Adicionar nova movimentação
+  const handleAddMovimentacao = async () => {
+    if (!caixa?.id_caixa) return;
+
+    const valorFloat = validateAndParseValue(movimentacao.valor);
+    if (valorFloat === null || valorFloat <= 0) {
+      setError("Insira um valor numérico válido maior que zero.");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+    if (!movimentacao.descricao.trim()) {
+      setError("Insira uma descrição.");
       setTimeout(() => setError(""), 3000);
       return;
     }
 
-    if (window.confirm('Tem certeza que deseja fechar o caixa?')) {
+    setIsLoading(true);
+    try {
+      await axios.post(
+        `http://localhost:9700/api/caixas/${caixa.id_caixa}/movimentacoes`,
+        { ...movimentacao, valor: valorFloat },
+        { headers: getAuthHeaders() }
+      );
+      setMovimentacao({ tipo: "ENTRADA", valor: "", descricao: "" });
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      await atualizarTotais();
+      setSuccess("Movimentação adicionada com sucesso!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      console.error("Erro ao adicionar movimentação:", err);
+      setError(
+        err.response?.data?.message || "Erro ao adicionar movimentação."
+      );
+      setTimeout(() => setError(""), 5000);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fechar o caixa
+  const handleCloseCaixa = async () => {
+    if (!caixa?.id_caixa) return;
+    if (window.confirm("Tem certeza que deseja fechar o caixa?")) {
+      setIsLoading(true);
       try {
         const response = await axios.patch<Caixa>(
-          `http://localhost:9700/api/caixas/${caixa.id}/fechar`,
-          {
-            hora_fechamento: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-          },
+          `http://localhost:9700/api/caixas/${caixa.id_caixa}/fechar`,
+          { hora_fechamento: new Date().toISOString() },
           { headers: getAuthHeaders() }
         );
-    
-        const caixaFechado = response.data;
-        onCloseCaixa(caixaFechado);
-        
+        onCloseCaixa(response.data);
         setSuccess("Caixa fechado com sucesso!");
         setTimeout(() => setSuccess(""), 3000);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Erro ao fechar caixa:", err);
-        setError(err.response?.data?.message || "Erro ao fechar caixa");
+        setError(err.response?.data?.message || "Erro ao fechar caixa.");
         setTimeout(() => setError(""), 3000);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
 
-  // Calcula o saldo atual
-  const saldo = (caixa?.entradas || 0) - (caixa?.saidas || 0);
+  // Efeito para carregar dados iniciais
+  useEffect(() => {
+    if (caixa?.id_caixa) {
+      loadMovimentacoes();
+      atualizarTotais();
+    }
+  }, [caixa?.id_caixa, pagination.page, pagination.limit]);
+
+  const saldo = caixa?.saldo ?? 0;
+
+  const handlePageChange = (newPage: number) =>
+    setPagination({ ...pagination, page: newPage });
 
   if (!caixa) return <div>Carregando detalhes do caixa...</div>;
 
   return (
     <>
-      {/* Cabeçalho */}
-      <div className={`${styles.flex} ${styles.justifyBetween} ${styles.itemsCenter} ${styles.mb6}`}>
-        <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={onBack}>
+      <div
+        className={`${styles.flex} ${styles.justifyBetween} ${styles.itemsCenter} ${styles.mb6}`}
+      >
+        <button
+          className={`${styles.btn} ${styles.btnSecondary}`}
+          onClick={onBack}
+          disabled={isLoading}
+        >
           <ArrowLeft size={16} /> Voltar
         </button>
         <h2 className={styles.pageTitle}>Detalhes do Caixa</h2>
-        {caixa.status === 'ABERTO' && (
-          <button className={`${styles.btn} ${styles.btnDanger}`} onClick={handleCloseCaixa} disabled={!caixa?.id}>
-            <Lock size={16} /> Fechar Caixa
+        {caixa.status === "ABERTO" && (
+          <button
+            className={`${styles.btn} ${styles.btnDanger}`}
+            onClick={handleCloseCaixa}
+            disabled={isLoading}
+          >
+            <Lock size={16} /> {isLoading ? "Fechando..." : "Fechar Caixa"}
           </button>
         )}
       </div>
 
-      {/* Mensagens de feedback */}
       {error && (
-        <div className={`${styles.alert} ${styles.alertDanger}`}>
-          {error}
-        </div>
+        <div className={`${styles.alert} ${styles.alertDanger}`}>{error}</div>
       )}
       {success && (
         <div className={`${styles.alert} ${styles.alertSuccess}`}>
@@ -210,85 +290,179 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
         </div>
       )}
 
-      {/* Cartões de informações */}
-      <div className={`${styles.grid} ${styles.gap4} ${styles.mb6}`} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-        <CardInfo titulo="Total de Entradas" valor={formatCurrency(caixa.entradas)} className={styles.textSuccess} />
-        <CardInfo titulo="Total de Saídas" valor={formatCurrency(caixa.saidas)} className={styles.textDanger} />
-        <CardInfo titulo="Saldo Atual" valor={formatCurrency(saldo)} className={styles.textAccent} />
+      <div
+        className={`${styles.grid} ${styles.gap4} ${styles.mb6}`}
+        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}
+      >
+        <CardInfo
+          titulo="Total de Entradas"
+          valor={formatCurrency(caixa.entradas)}
+          className={styles.textSuccess}
+        />
+        <CardInfo
+          titulo="Total de Saídas"
+          valor={formatCurrency(caixa.saidas)}
+          className={styles.textDanger}
+        />
+        <CardInfo
+          titulo="Saldo Atual"
+          valor={formatCurrency(saldo)}
+          className={styles.textAccent}
+        />
       </div>
 
-      {/* Formulário de movimentação (apenas para caixa aberto) */}
-      {caixa.status === 'ABERTO' && (
+      {caixa.status === "ABERTO" && (
         <div className={`${styles.box} ${styles.mb6}`}>
-          <h3 className={`${styles.pageTitle} ${styles.mb4}`} style={{ fontSize: '1.25rem' }}>Adicionar Movimentação</h3>
-          <div className={`${styles.grid} ${styles.gap4} ${styles.itemsCenter}`} style={{ gridTemplateColumns: '1fr 1fr 2fr 1fr 0.5fr' }}>
-            <select 
-              className={styles.inputForm} 
-              value={movimentacao.tipo} 
-              onChange={(e) => setMovimentacao({ ...movimentacao, tipo: e.target.value as 'ENTRADA' | 'SAIDA' })}
+          <h3
+            className={`${styles.pageTitle} ${styles.mb4}`}
+            style={{ fontSize: "1.25rem" }}
+          >
+            Adicionar Movimentação
+          </h3>
+          <div
+            className={`${styles.grid} ${styles.gap4} ${styles.itemsCenter}`}
+            style={{ gridTemplateColumns: "1fr 1fr 2fr 0.5fr" }}
+          >
+            <select
+              className={styles.inputForm}
+              value={movimentacao.tipo}
+              onChange={(e) =>
+                setMovimentacao({
+                  ...movimentacao,
+                  tipo: e.target.value as "ENTRADA" | "SAIDA",
+                })
+              }
+              disabled={isLoading}
             >
-              <option value="ENTRADA">Entrada</option>
-              <option value="SAIDA">Saída</option>
+              <option
+                className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                value="ENTRADA"
+              >
+                Entrada
+              </option>
+              <option
+                className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                value="SAIDA"
+              >
+                Saída
+              </option>
             </select>
-            <input 
-              type="text" 
-              placeholder="Valor (R$)" 
-              className={styles.inputForm} 
-              value={movimentacao.valor} 
-              onChange={(e) => setMovimentacao({ ...movimentacao, valor: e.target.value })} 
-            />
-            <input 
-              type="text" 
-              placeholder="Descrição" 
-              className={styles.inputForm} 
-              value={movimentacao.descricao} 
-              onChange={(e) => setMovimentacao({ ...movimentacao, descricao: e.target.value })} 
+            <input
+              type="text"
+              placeholder="Valor (ex: 80,00)"
+              className={styles.inputForm}
+              value={movimentacao.valor}
+              onChange={(e) =>
+                setMovimentacao({ ...movimentacao, valor: e.target.value })
+              }
+              disabled={isLoading}
             />
             <input
               type="text"
-              placeholder="ID Venda (opcional)"
+              placeholder="Descrição"
               className={styles.inputForm}
-              value={movimentacao.id_venda || ''}
-              onChange={(e) => setMovimentacao({ ...movimentacao, id_venda: e.target.value })}
+              value={movimentacao.descricao}
+              onChange={(e) =>
+                setMovimentacao({ ...movimentacao, descricao: e.target.value })
+              }
+              disabled={isLoading}
             />
-            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleAddMovimentacao}>
-              <Plus size={16} />
+            <button
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              onClick={handleAddMovimentacao}
+              disabled={isLoading}
+            >
+              {isLoading ? "..." : <Plus size={16} />}
             </button>
           </div>
         </div>
       )}
 
-      {/* Tabela de movimentações */}
       <div className={styles.box}>
-        <h3 className={`${styles.pageTitle} ${styles.mb4}`} style={{ fontSize: '1.25rem' }}>Últimas Movimentações</h3>
-        <table className={styles.dataTable}>
-          <thead>
-            <tr>
-              <th>Data/Hora</th>
-              <th>Tipo</th>
-              <th>Descrição</th>
-              <th>Valor</th>
-              <th>Responsável</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(caixa.movimentacoes ?? []).map((mov) => (
-              <tr key={mov.id}>
-                <td>{mov.dataHora}</td>
-                <td>
-                  <span className={`${styles.statusBadge} ${mov.tipo === 'ENTRADA' ? styles.success : styles.danger}`}>
-                    {mov.tipo}
-                  </span>
-                </td>
-                <td>{mov.descricao}</td>
-                <td className={mov.tipo === 'ENTRADA' ? styles.textSuccess : styles.textDanger}>
-                  {formatCurrency(mov.valor)}
-                </td>
-                <td>{mov.responsavel}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <h3
+          className={`${styles.pageTitle} ${styles.mb4}`}
+          style={{ fontSize: "1.25rem" }}
+        >
+          Histórico de Movimentações
+        </h3>
+        {movimentacoes.length === 0 ? (
+          <p className={styles.textSecondary}>
+            Nenhuma movimentação registrada ainda.
+          </p>
+        ) : (
+          <>
+            <div className={styles.tableContainer}>
+              <table className={styles.dataTable}>
+                <thead>
+                  <tr>
+                    <th>Data/Hora</th>
+                    <th>Tipo</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {movimentacoes.map((mov) => (
+                    <tr key={mov.id_movimentacao}>
+                      <td>{formatDateTime(mov.criado_em)}</td>
+                      <td>
+                        <span
+                          className={`${styles.statusBadge} ${
+                            mov.tipo === "ENTRADA"
+                              ? styles.success
+                              : styles.danger
+                          }`}
+                        >
+                          {mov.tipo}
+                        </span>
+                      </td>
+                      <td>{mov.descricao}</td>
+                      <td
+                        className={
+                          mov.tipo === "ENTRADA"
+                            ? styles.textSuccess
+                            : styles.textDanger
+                        }
+                      >
+                        {formatCurrency(mov.valor)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div
+              className={`${styles.flex} ${styles.justifyBetween} ${styles.itemsCenter} ${styles.mt4}`}
+            >
+              <button
+                className={`${styles.btn} ${styles.btnSecondary}`}
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page === 1 || isLoading}
+                title={
+                  pagination.page === 1 ? "Você está na primeira página" : ""
+                }
+              >
+                Anterior
+              </button>
+
+              <button
+                className={`${styles.btn} ${styles.btnSecondary}`}
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={
+                  pagination.page * pagination.limit >= pagination.total ||
+                  isLoading
+                }
+                title={
+                  pagination.page * pagination.limit >= pagination.total
+                    ? "Não há mais páginas"
+                    : ""
+                }
+              >
+                Próxima
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </>
   );

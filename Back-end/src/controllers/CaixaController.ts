@@ -383,6 +383,55 @@ export default class CaixaController {
     }
   }
 
+  async findAllMovimentacoesByCaixa(req: Request, res: Response) {
+    const { id_caixa } = req.params;
+    try {
+      const caixa = await this.caixaRepositorio.findOneBy({ id_caixa });
+      if (!caixa) {
+        return res.status(404).json({
+          success: false,
+          error: 'Caixa não encontrado',
+          message: 'Caixa não encontrado',
+        });
+      }
+
+      const movimentacoes = await this.movimentacaoRepositorio.find({
+        where: { id_caixa },
+        relations: ['venda'],
+        order: { criado_em: 'DESC' },
+      });
+
+      // Garantindo que os valores sejam somados como números
+      const totalEntradas = movimentacoes
+        .filter((m) => m.tipo === TipoMovimentacao.ENTRADA)
+        .reduce((sum, m) => sum + Number(m.valor), 0);
+
+      const totalSaidas = movimentacoes
+        .filter((m) => m.tipo === TipoMovimentacao.SAIDA)
+        .reduce((sum, m) => sum + Number(m.valor), 0);
+
+      const saldo = totalEntradas - totalSaidas;
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          movimentacoes,
+          totalEntradas,
+          totalSaidas,
+          saldo,
+        },
+        totalItems: movimentacoes.length,
+      });
+    } catch (error) {
+      console.error('Erro ao buscar todas as movimentações:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar movimentações',
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      });
+    }
+  }
+
   async findMovimentacoesByCaixa(req: Request, res: Response) {
     const { id_caixa } = req.params;
     const { page = '1', limit = '10' } = req.query;

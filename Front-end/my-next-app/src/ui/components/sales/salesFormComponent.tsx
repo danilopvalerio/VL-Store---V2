@@ -424,100 +424,106 @@ const SalesForm: React.FC<SalesFormProps> = ({
           <div className="row g-2 align-items-baseline">
             <div className="col-md-5">
               <div className="d-flex flex-column">
-              <label
-                htmlFor="produtoVenda"
-                className="form-label text-white-75 small mb-1" style={{ height: "20px" }}
-              >
-                Produto
-              </label>
-              <div className="d-flex align-items-center" style={{ height: "38px" }}>
-              <input
-                type="text"
-                className="form-control input-form border-end-0"
-                placeholder="Buscar produto..."
-                style={{ height: "100%" }}
-                value={produtoSearchTerm}
-                onChange={(e) => {
-                  setProdutoSearchTerm(e.target.value);
-                  setShowProductDropdown(true);
-                }}
-                onFocus={() => setShowProductDropdown(true)}
-                onBlur={() =>
-                  setTimeout(() => setShowProductDropdown(false), 200)
-                }
-              />
-              {showProductDropdown && (
-                <ul
-                  className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
-                  style={{
-                    maxHeight: "250px",
-                    overflowY: "auto",
-                  }}
+                <label
+                  htmlFor="produtoVenda"
+                  className="form-label text-white-75 small mb-1"
+                  style={{ height: "20px" }}
                 >
-                  {filteredProducts.length === 0 ? (
-                    <li className="list-group-item text-white bg-dark">
-                      Nenhum produto encontrado
-                    </li>
-                  ) : (
-                    filteredProducts.map((p) => (
-                      <li
-                        key={p.id_variacao}
-                        className="list-group-item bg-dark text-white cursor-pointer hover-light"
-                        onClick={() => {
-                          setProdutoSelecionadoId(p.id_variacao);
-                          setProdutoSearchTerm(
-                            `${p.produto.nome} - ${p.descricao_variacao}`
-                          );
-                          setShowProductDropdown(false);
-                        }}
-                      >
-                        {p.produto.nome} (REF: {p.produto.referencia}) -{" "}
-                        {p.descricao_variacao}
-                      </li>
-                    ))
+                  Produto
+                </label>
+                <div
+                  className="d-flex align-items-center"
+                  style={{ height: "38px" }}
+                >
+                  <input
+                    type="text"
+                    className="form-control input-form border-end-0"
+                    placeholder="Buscar produto..."
+                    style={{ height: "100%" }}
+                    value={produtoSearchTerm}
+                    onChange={(e) => {
+                      setProdutoSearchTerm(e.target.value);
+                      setShowProductDropdown(true);
+                    }}
+                    onFocus={() => setShowProductDropdown(true)}
+                    onBlur={() =>
+                      setTimeout(() => setShowProductDropdown(false), 200)
+                    }
+                  />
+                  {showProductDropdown && (
+                    <ul
+                      className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                      style={{
+                        maxHeight: "250px",
+                        overflowY: "auto",
+                      }}
+                    >
+                      {filteredProducts.length === 0 ? (
+                        <li className="list-group-item text-white bg-dark">
+                          Nenhum produto encontrado
+                        </li>
+                      ) : (
+                        filteredProducts.map((p) => (
+                          <li
+                            key={p.id_variacao}
+                            className="list-group-item bg-dark text-white cursor-pointer hover-light"
+                            onClick={() => {
+                              setProdutoSelecionadoId(p.id_variacao);
+                              setProdutoSearchTerm(
+                                `${p.produto.nome} - ${p.descricao_variacao}`
+                              );
+                              setShowProductDropdown(false);
+                            }}
+                          >
+                            {p.produto.nome} (REF: {p.produto.referencia}) -{" "}
+                            {p.descricao_variacao}
+                          </li>
+                        ))
+                      )}
+                    </ul>
                   )}
-                </ul>
-              )}
-              </div>
+                </div>
               </div>
             </div>
             <div className="col-md-2">
               <div className="d-flex flex-column">
-              <label
-                htmlFor="quantidadeProduto"
-                className="form-label text-white-75 small mb-1" style={{ height: "20px" }}
-              >
-                Quantidade
-              </label>
-              <input
-                type="number"
-                className="form-control input-form"
-                id="quantidadeProduto"
-                value={quantidadeProduto}
-                style={{ height: "38px", padding: "0.375rem 0.5rem" }}
-                onChange={(e) =>
-                  setQuantidadeProduto(parseInt(e.target.value, 10) || 1)
-                }
-                min="1"
-              />
+                <label
+                  htmlFor="quantidadeProduto"
+                  className="form-label text-white-75 small mb-1"
+                  style={{ height: "20px" }}
+                >
+                  Quantidade
+                </label>
+                <input
+                  type="number"
+                  className="form-control input-form"
+                  id="quantidadeProduto"
+                  value={quantidadeProduto}
+                  style={{ height: "38px", padding: "0.375rem 0.5rem" }}
+                  onChange={(e) =>
+                    setQuantidadeProduto(parseInt(e.target.value, 10) || 1)
+                  }
+                  min="1"
+                />
               </div>
             </div>
             <div className="col-md-2">
               <div className="d-flex flex-column">
-              <label
-                htmlFor="precoUnitario"
-                className="form-label text-white-75 small mb-1" style={{ height: "20px" }}
-              >
-                Preço Un.
-              </label>
-              <input
-                type="text"
-                className="form-control input-form"
-                id="precoUnitario"
-                value={precoUnitario ? `R$ ${precoUnitario}` : ""}
-                style={{ height: "38px", padding: "0.375rem 0.5rem" }}
-                readOnly
-              />
+                <label
+                  htmlFor="precoUnitario"
+                  className="form-label text-white-75 small mb-1"
+                  style={{ height: "20px" }}
+                >
+                  Preço Un.
+                </label>
+                <input
+                  type="text"
+                  className="form-control input-form"
+                  id="precoUnitario"
+                  value={precoUnitario ? `R$ ${precoUnitario}` : ""}
+                  style={{ height: "38px", padding: "0.375rem 0.5rem" }}
+                  readOnly
+                />
               </div>
             </div>
             <div className="col-md-2 d-flex flex-column">
@@ -525,10 +531,10 @@ const SalesForm: React.FC<SalesFormProps> = ({
               <button
                 type="button"
                 className="btn primaria d-flex align-items-center justify-content-center"
-                style={{ 
+                style={{
                   height: "38px",
                   padding: "0.375rem 0.75rem",
-                  lineHeight: "1.5"
+                  lineHeight: "1.5",
                 }}
                 onClick={handleAdicionarProdutoVenda}
               >
