@@ -1,53 +1,21 @@
-  import React, { useState, useMemo } from 'react';
+  import React, { useState, useMemo, useEffect } from 'react';
   import CashierList from '../ui/components/cashier/cashierListComponent';
   import CashierDetails from '../ui/components/cashier/cashierDetailsComponent';
   import styles from '../ui/styles/cashierPage.module.css';
-
-const caixasIniciais = [
-  {
-    id: 1,
-    dataAbertura: '12/06/2025',
-    horaAbertura: '08:00',
-    responsavel: 'João Silva',
-    status: 'ABERTO',
-    entradas: 2450.00,
-    saidas: 150.00,
-    movimentacoes: [
-      { id: 1, dataHora: '12/06/2025 08:30', tipo: 'ENTRADA', descricao: 'Venda #001 - Tênis Nike Air', valor: 350.00, responsavel: 'João Silva' },
-      { id: 2, dataHora: '12/06/2025 09:15', tipo: 'ENTRADA', descricao: 'Venda #002 - Camiseta', valor: 80.00, responsavel: 'João Silva' },
-      { id: 3, dataHora: '12/06/2025 10:00', tipo: 'SAIDA', descricao: 'Pagamento de fornecedor', valor: 150.00, responsavel: 'João Silva' },
-    ]
-  },
-  {
-    id: 2,
-    dataAbertura: '11/06/2025',
-    horaAbertura: '09:30',
-    responsavel: 'Maria Santos',
-    status: 'ABERTO',
-    entradas: 950.00,
-    saidas: 0.00,
-    movimentacoes: [
-       { id: 1, dataHora: '11/06/2025 09:45', tipo: 'ENTRADA', descricao: 'Venda #101 - Boné', valor: 50.00, responsavel: 'Maria Santos' },
-    ]
-  },
-  {
-    id: 3,
-    dataAbertura: '11/06/2025',
-    horaAbertura: '08:00',
-    dataFechamento: '11/06/2025',
-    horaFechamento: '18:00',
-    responsavel: 'Carlos Oliveira',
-    status: 'FECHADO',
-    entradas: 3200.00,
-    saidas: 300.00,
-    movimentacoes: []
-  }
-];
-
+import { useRouter } from 'next/router';
+import axios from 'axios';
 
   const CashierPage = () => {
-    const [caixas, setCaixas] = useState(caixasIniciais);
+    const [caixas, setCaixas] = useState([]);
     const [selectedCashier, setSelectedCashier] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(true);
+    const router = useRouter();
+    
+      const LIMIT: number = 6;
     
     const [filtroResponsavel, setFiltroResponsavel] = useState('');
 
@@ -65,6 +33,103 @@ const caixasIniciais = [
         caixa.responsavel.toLowerCase().includes(filtroResponsavel.toLowerCase())
       );
     }, [caixas, filtroResponsavel]);
+
+
+    const handleSearch = async (page = 1) => {
+  const jwtToken = localStorage.getItem("jwtToken");
+  const userData = localStorage.getItem("userData");
+
+  if (!jwtToken || !userData) {
+    router.push("/initialPage");
+    return;
+  }
+
+  const parsedData = JSON.parse(userData);
+  const idLoja = parsedData.id_loja;
+
+  try {
+    const response = await axios.get(
+      `http://localhost:9700/api/caixas/loja/${idLoja}?page=${page}`,
+      {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      }
+    );
+
+    setCaixas(response.data.data);
+    setTotalItems(response.data.count);
+    setTotalPages(response.data.totalPages);
+    setCurrentPage(response.data.page);
+  } catch (error) {
+    console.error("Erro ao buscar caixas:", error);
+  }
+};
+
+const fetchCashiers = async (page: number) => {
+  const jwtToken = localStorage.getItem("jwtToken");
+  const userData = localStorage.getItem("userData");
+
+  if (!jwtToken || !userData) {
+    router.push("/initialPage");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const parsedData = JSON.parse(userData);
+    const idLoja = parsedData.id_loja;
+
+    const response = await axios.get(
+      `http://localhost:9700/api/caixas/loja/${idLoja}?page=${page}`,
+      {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        timeout: 2000,
+      }
+    );
+
+    setCaixas(response.data.data);
+    setCurrentPage(response.data.page);
+    setTotalPages(response.data.totalPages);
+    setTotalItems(response.data.totalItems);
+  } catch (error) {
+    console.error("Erro ao carregar caixas:", error);
+  } finally {
+    setLoading(false); // Garante que o loading seja desativado mesmo em caso de erro
+  }
+};
+
+  useEffect(() => {
+      fetchCashiers(1);
+    }, [router]);
+  
+    const handleClearSearch = () => {
+      setSearchTerm("");
+      fetchCashiers(1);
+    };
+  
+    const handleNextPage = () => {
+      if (currentPage < totalPages) {
+        if (searchTerm.trim() !== "") {
+          handleSearch(currentPage + 1);
+        } else {
+          fetchCashiers(currentPage + 1);
+        }
+      }
+    };
+  
+    const handlePrevPage = () => {
+      if (currentPage > 1) {
+        if (searchTerm.trim() !== "") {
+          handleSearch(currentPage - 1);
+        } else {
+          fetchCashiers(currentPage - 1);
+        }
+      }
+    };
     
     return (
       <div className={styles.pageContainer}>
