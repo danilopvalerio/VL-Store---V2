@@ -372,28 +372,21 @@ export default class VendaController {
       forma_pagamento, // Filtro opcional
       data_inicio, // Filtro opcional
       data_fim, // Filtro opcional
+      status, // Filtro opcional por status
+      valor_min, // Filtro opcional por valor mínimo
+      valor_max, // Filtro opcional por valor máximo
     } = req.query;
 
     try {
       const skip = (Number(page) - 1) * Number(limit);
 
-      // Criar query builder base
-      const query = this.vendaRepositorio
-        .createQueryBuilder('venda')
-        .leftJoinAndSelect('venda.itens', 'itens')
-        .leftJoinAndSelect('itens.variacao', 'variacao')
-        .leftJoinAndSelect('venda.funcionario', 'funcionario')
-        .orderBy('venda.data_hora', 'DESC');
-
-      // Filtro por loja (obrigatório)
+      // 1. Obter funcionários da loja para filtrar vendas
       const funcionarios = await this.funcionarioRepositorio.find({
         where: { id_loja },
         select: ['id_funcionario'],
       });
 
-      const funcionarioIds = funcionarios.map((f) => f.id_funcionario);
-
-      if (funcionarioIds.length === 0) {
+      if (funcionarios.length === 0) {
         return res.status(200).json({
           success: true,
           data: [],
@@ -403,15 +396,29 @@ export default class VendaController {
         });
       }
 
-      query.where('venda.id_funcionario IN (:...funcionarioIds)', { funcionarioIds });
+      const funcionarioIds = funcionarios.map((f) => f.id_funcionario);
 
-      // Filtros adicionais
+      // 2. Construir query com filtros dinâmicos
+      const query = this.vendaRepositorio
+        .createQueryBuilder('venda')
+        .leftJoinAndSelect('venda.itens', 'itens')
+        .leftJoinAndSelect('itens.variacao', 'variacao')
+        .leftJoinAndSelect('venda.funcionario', 'funcionario')
+        .where('venda.id_funcionario IN (:...funcionarioIds)', { funcionarioIds })
+        .orderBy('venda.data_hora', 'DESC');
+
+      // Aplicar filtros adicionais se fornecidos
       if (funcionario_id) {
-        query.andWhere('venda.id_funcionario = :funcionario_id', { funcionario_id });
+        query.andWhere('venda.id_funcionario = :funcionario_id', {
+          funcionario_id: funcionario_id as string,
+        });
       }
 
       if (forma_pagamento) {
-        query.andWhere('venda.forma_pagamento = :forma_pagamento', { forma_pagamento });
+        const formaPagamentoMapeada = this.mapFormaPagamento(forma_pagamento as string);
+        query.andWhere('venda.forma_pagamento = :forma_pagamento', {
+          forma_pagamento: formaPagamentoMapeada,
+        });
       }
 
       if (data_inicio && data_fim) {
@@ -419,17 +426,56 @@ export default class VendaController {
           data_inicio: new Date(data_inicio as string),
           data_fim: new Date(data_fim as string),
         });
+      } else if (data_inicio) {
+        query.andWhere('venda.data_hora >= :data_inicio', {
+          data_inicio: new Date(data_inicio as string),
+        });
+      } else if (data_fim) {
+        query.andWhere('venda.data_hora <= :data_fim', {
+          data_fim: new Date(data_fim as string),
+        });
       }
 
-      // Executar query paginada
+      if (status) {
+        query.andWhere('venda.status = :status', {
+          status: status as string,
+        });
+      }
+
+      if (valor_min) {
+        query.andWhere('venda.total >= :valor_min', {
+          valor_min: Number(valor_min),
+        });
+      }
+
+      if (valor_max) {
+        query.andWhere('venda.total <= :valor_max', {
+          valor_max: Number(valor_max),
+        });
+      }
+
+      // 3. Executar query paginada
       const [vendas, total] = await query.skip(skip).take(Number(limit)).getManyAndCount();
 
+      // 4. Formatar resposta
       return res.status(200).json({
         success: true,
         data: vendas,
         page: Number(page),
+        limit: Number(limit),
         totalPages: Math.ceil(total / Number(limit)),
         totalItems: total,
+        filtersApplied: {
+          ...(funcionario_id && { funcionario_id }),
+          ...(forma_pagamento && { forma_pagamento }),
+          ...((data_inicio || data_fim) && {
+            data_inicio: data_inicio?.toString(),
+            data_fim: data_fim?.toString(),
+          }),
+          ...(status && { status }),
+          ...(valor_min && { valor_min: Number(valor_min) }),
+          ...(valor_max && { valor_max: Number(valor_max) }),
+        },
       });
     } catch (error) {
       console.error('Erro ao buscar vendas paginadas:', error);

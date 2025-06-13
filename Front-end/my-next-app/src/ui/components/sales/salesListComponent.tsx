@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import SalesDetail from "../sales/salesDetailComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEye,
+  faEdit,
+  faTrash,
+  faFilter,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { Sale } from "../../../domain/interfaces/sale-interface";
 
 interface SalesListProps {
@@ -21,36 +27,92 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
 
+  // Estados para filtros
+  const [showFilters, setShowFilters] = useState(false);
+  const [dataFiltro, setDataFiltro] = useState<string>("");
+  const [formaPagamentoFiltro, setFormaPagamentoFiltro] = useState<string>("");
+  const [vendedorSearchTerm, setVendedorSearchTerm] = useState<string>("");
+  const [vendedorSelecionadoId, setVendedorSelecionadoId] =
+    useState<string>("");
+  const [showVendedorDropdown, setShowVendedorDropdown] =
+    useState<boolean>(false);
+  const [vendedoresDisponiveis, setVendedoresDisponiveis] = useState<any[]>([]);
+
   const jwtToken = localStorage.getItem("jwtToken");
 
+  // Buscar vendedores para o filtro
   useEffect(() => {
-    const fetchSales = async () => {
+    const fetchVendedores = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
         const response = await axios.get(
-          `http://localhost:9700/api/vendas/loja/${idLoja}/paginado?page=${currentPage}&limit=${ITEMS_PER_PAGE}`,
+          `http://localhost:9700/api/funcionarios/loja/${idLoja}`,
           {
             headers: { Authorization: `Bearer ${jwtToken}` },
           }
         );
-
         if (response.data?.success) {
-          setAllSales(response.data.data || []);
-          setTotalPages(response.data.totalPages || 1);
-          console.log(response.data);
+          setVendedoresDisponiveis(response.data.data || []);
         }
       } catch (err) {
-        console.error("Erro ao buscar vendas:", err);
-        setError("Não foi possível carregar as vendas do servidor.");
-      } finally {
-        setLoading(false);
+        console.error("Erro ao buscar vendedores:", err);
       }
     };
 
-    fetchSales();
-  }, [idLoja, currentPage, jwtToken]);
+    if (idLoja && jwtToken) {
+      fetchVendedores();
+    }
+  }, [idLoja, jwtToken]);
+
+  const fetchSales = async (page: number = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Construir parâmetros de filtro
+      let url = `http://localhost:9700/api/vendas/loja/${idLoja}/paginado?page=${page}&limit=${ITEMS_PER_PAGE}`;
+
+      const params = new URLSearchParams();
+      if (dataFiltro) {
+        // Formatar data para o backend (assumindo formato YYYY-MM-DD)
+        params.append("data", dataFiltro);
+      }
+      if (vendedorSelecionadoId) {
+        params.append("funcionario_id", vendedorSelecionadoId);
+      }
+      if (formaPagamentoFiltro) {
+        params.append("forma_pagamento", formaPagamentoFiltro);
+      }
+
+      if (params.toString()) {
+        url += `&${params.toString()}`;
+      }
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      });
+
+      if (response.data?.success) {
+        setAllSales(response.data.data || []);
+        setTotalPages(response.data.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("Erro ao buscar vendas:", err);
+      setError("Não foi possível carregar as vendas do servidor.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSales(currentPage);
+  }, [
+    idLoja,
+    currentPage,
+    jwtToken,
+    dataFiltro,
+    vendedorSelecionadoId,
+    formaPagamentoFiltro,
+  ]);
 
   useEffect(() => {
     if (salesData && salesData.length > 0) {
@@ -62,6 +124,18 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
       });
     }
   }, [salesData]);
+
+  // Filtrar vendedores para dropdown
+  const filteredVendedores = useMemo(() => {
+    if (!vendedorSearchTerm.trim()) return vendedoresDisponiveis;
+
+    const term = vendedorSearchTerm.toLowerCase();
+    return vendedoresDisponiveis.filter(
+      (v) =>
+        v.nome.toLowerCase().includes(term) ||
+        (v.cargo && v.cargo.toLowerCase().includes(term))
+    );
+  }, [vendedorSearchTerm, vendedoresDisponiveis]);
 
   const openModalWithSale = (sale: Sale) => {
     setSelectedSale(sale);
@@ -96,13 +170,195 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
     }
   };
 
+  const handleApplyFilters = () => {
+    setCurrentPage(1);
+    fetchSales(1);
+  };
+
+  const handleClearFilters = () => {
+    setDataFiltro("");
+    setFormaPagamentoFiltro("");
+    setVendedorSearchTerm("");
+    setVendedorSelecionadoId("");
+    setCurrentPage(1);
+    fetchSales(1);
+  };
+
+  const handleVendedorSelect = (vendedor: any) => {
+    setVendedorSelecionadoId(vendedor.id_funcionario);
+    setVendedorSearchTerm(
+      `${vendedor.nome}${vendedor.cargo ? ` (${vendedor.cargo})` : ""}`
+    );
+    setShowVendedorDropdown(false);
+  };
+
   return (
-    <div className="quinary p-5 pb-4 mb-5 mx-auto white-light-small  w-75 rounded-5">
-      <div className="mb-4 mx-auto text-center">
-        <h5 className="mb-0  text-white">
+    <div className="quinary p-5 pb-4 mb-5 mx-auto white-light-small w-75 rounded-5">
+      <div className="mb-4 mx-auto text-center d-flex justify-content-between align-items-center">
+        <h5 className="mb-0 text-white">
           <i className="fas fa-list-ul mr-2"></i>Vendas Registradas
         </h5>
+        <button
+          className="btn btn-outline-light btn-sm"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          <FontAwesomeIcon icon={faFilter} className="mr-2" />
+          {showFilters ? "Ocultar" : "Filtros"}
+        </button>
       </div>
+
+      {/* Seção de Filtros */}
+      {showFilters && (
+        <div className="mb-4 quartenary p-3 rounded-lg">
+          <div className="row g-3">
+            <div className="col-md-3">
+              <label className="form-label text-white-75 small">
+                Data da Venda
+              </label>
+              <input
+                type="date"
+                className="form-control input-form"
+                value={dataFiltro}
+                onChange={(e) => setDataFiltro(e.target.value)}
+              />
+            </div>
+
+            <div className="col-md-3">
+              <label className="form-label text-white-75 small">
+                Forma de Pagamento
+              </label>
+              <select
+                className="form-control custom-select input-form"
+                value={formaPagamentoFiltro}
+                onChange={(e) => setFormaPagamentoFiltro(e.target.value)}
+              >
+                <option value="">Todas</option>
+                <option value="DINHEIRO">Dinheiro</option>
+                <option value="CARTAO_CREDITO">Cartão de Crédito</option>
+                <option value="CARTAO_DEBITO">Cartão de Débito</option>
+                <option value="PIX">PIX</option>
+              </select>
+            </div>
+
+            <div className="col-md-4 position-relative">
+              <label className="form-label text-white-75 small">Vendedor</label>
+              <input
+                type="text"
+                className="form-control input-form"
+                placeholder="Buscar vendedor..."
+                value={vendedorSearchTerm}
+                onChange={(e) => {
+                  setVendedorSearchTerm(e.target.value);
+                  setShowVendedorDropdown(true);
+                }}
+                onFocus={() => setShowVendedorDropdown(true)}
+                onBlur={() =>
+                  setTimeout(() => setShowVendedorDropdown(false), 200)
+                }
+              />
+              {showVendedorDropdown && (
+                <ul
+                  className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
+                  style={{
+                    maxHeight: "250px",
+                    overflowY: "auto",
+                    zIndex: 1000,
+                  }}
+                >
+                  {filteredVendedores.length === 0 ? (
+                    <li className="list-group-item text-white bg-dark">
+                      Nenhum vendedor encontrado
+                    </li>
+                  ) : (
+                    filteredVendedores.map((v) => (
+                      <li
+                        key={v.id_funcionario}
+                        className="list-group-item bg-dark text-white cursor-pointer hover-light"
+                        onClick={() => handleVendedorSelect(v)}
+                      >
+                        {v.nome} {v.cargo && `(${v.cargo})`}
+                      </li>
+                    ))
+                  )}
+                </ul>
+              )}
+            </div>
+
+            <div className="col-md-2 d-flex align-items-end gap-2">
+              <button
+                className="btn primaria btn-sm"
+                onClick={handleApplyFilters}
+              >
+                Filtrar
+              </button>
+              <button
+                className="btn btn-outline-light btn-sm"
+                onClick={handleClearFilters}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+          </div>
+
+          {/* Indicadores de filtros ativos */}
+          {(dataFiltro || vendedorSelecionadoId || formaPagamentoFiltro) && (
+            <div className="mt-3">
+              <small className="text-white-75">Filtros ativos:</small>
+              <div className="d-flex flex-wrap gap-2 mt-1">
+                {dataFiltro && (
+                  <span className="badge bg-primary">
+                    Data:{" "}
+                    {new Date(dataFiltro + "T00:00:00").toLocaleDateString(
+                      "pt-BR"
+                    )}
+                    <button
+                      className="btn btn-link p-0 ml-1 text-white"
+                      style={{ fontSize: "0.8em" }}
+                      onClick={() => {
+                        setDataFiltro("");
+                        handleApplyFilters();
+                      }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {formaPagamentoFiltro && (
+                  <span className="badge bg-primary">
+                    Pagamento: {formaPagamentoFiltro.replace("_", " ")}
+                    <button
+                      className="btn btn-link p-0 ml-1 text-white"
+                      style={{ fontSize: "0.8em" }}
+                      onClick={() => {
+                        setFormaPagamentoFiltro("");
+                        handleApplyFilters();
+                      }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {vendedorSelecionadoId && (
+                  <span className="badge bg-primary">
+                    Vendedor: {vendedorSearchTerm}
+                    <button
+                      className="btn btn-link p-0 ml-1 text-white"
+                      style={{ fontSize: "0.8em" }}
+                      onClick={() => {
+                        setVendedorSelecionadoId("");
+                        setVendedorSearchTerm("");
+                        handleApplyFilters();
+                      }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {loading && (
         <div className="text-center text-white py-4">Carregando vendas...</div>
