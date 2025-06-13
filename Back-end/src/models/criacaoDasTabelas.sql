@@ -8,6 +8,7 @@ CREATE TABLE loja (
     telefone VARCHAR(11) NOT NULL
 );
 
+
 CREATE TABLE Produto (
     referencia VARCHAR(100) PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
