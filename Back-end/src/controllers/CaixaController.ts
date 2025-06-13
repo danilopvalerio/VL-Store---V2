@@ -402,7 +402,6 @@ export default class CaixaController {
 
       const [movimentacoes, total] = await this.movimentacaoRepositorio.findAndCount({
         where: { id_caixa },
-        relations: ['venda', 'caixa'],
         order: { criado_em: 'DESC' },
         skip,
         take: Number(limit),
