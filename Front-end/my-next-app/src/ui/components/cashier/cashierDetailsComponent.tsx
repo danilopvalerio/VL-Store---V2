@@ -1,49 +1,85 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Lock, Plus } from 'lucide-react';
 import styles from '../../styles/cashierPage.module.css';
+import Movimentacao from '../../../../../../Back-end/src/models/Movimentacao'
 
-export const formatCurrency = (value: number | null | undefined): string => {
-  const numericValue = typeof value === 'number' ? value : 0;
+  export const formatCurrency = (value: number | null | undefined): string => {
+    const numericValue = typeof value === 'number' ? value : 0;
+    return numericValue.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+  };
 
-  return numericValue.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  });
-};
+  function calcularSaldo(
+  movimentacoes: Movimentacao[],
+  saldoInicial: number = 0,
+): number {
+  return movimentacoes.reduce((saldoAcumulado, movimentacao) => {
+    if (movimentacao.tipo === 'ENTRADA') {
+      return saldoAcumulado + movimentacao.valor;
+    } else {
+      return saldoAcumulado - movimentacao.valor;
+    }
+    return saldoAcumulado;
+  }, saldoInicial);
+}
 
 const CardInfo = ({ titulo, valor, className }) => (
-    <div className={styles.box}>
-        <div className={styles.textSecondary}>{titulo}</div>
-        <div className={`${className} ${styles.textPrimary}`} style={{fontSize: '2rem'}}>{valor}</div>
-    </div>
+  <div className={styles.box}>
+    <div className={styles.textSecondary}>{titulo}</div>
+    <div className={`${className} ${styles.textPrimary}`} style={{ fontSize: '2rem' }}>{valor}</div>
+  </div>
 );
 
-const CashierDetails = ({ caixa, onBack, onUpdateCaixa }) => {
-  if (!caixa) {
-    return <div>Carregando detalhes do caixa...</div>; 
-  }
+const CashierDetails = ({ caixa, onBack, onUpdateCaixa, onCloseCaixa }) => {
+  if (!caixa) return <div>Carregando detalhes do caixa...</div>;
+
   const [movimentacao, setMovimentacao] = useState({ tipo: 'ENTRADA', valor: '', descricao: '' });
 
   const handleAddMovimentacao = () => {
     const valorFloat = parseFloat(movimentacao.valor.replace(',', '.'));
     if (!valorFloat || !movimentacao.descricao) {
-        alert("Por favor, preencha o valor e a descrição.");
-        return;
+      alert("Por favor, preencha o valor e a descrição.");
+      return;
     }
     const novaMovimentacao = {
-        id: Date.now(), dataHora: new Date().toLocaleString('pt-BR'),
-        tipo: movimentacao.tipo, descricao: movimentacao.descricao,
-        valor: valorFloat, responsavel: caixa.responsavel
+      id: Date.now(),
+      dataHora: new Date().toLocaleString('pt-BR'),
+      tipo: movimentacao.tipo,
+      descricao: movimentacao.descricao,
+      valor: valorFloat,
+      responsavel: caixa.responsavel,
     };
-    const caixaAtualizado = { ...caixa, movimentacoes: [novaMovimentacao, ...caixa.movimentacoes] };
-    if (movimentacao.tipo === 'ENTRADA') caixaAtualizado.entradas += valorFloat;
-    else caixaAtualizado.saidas += valorFloat;
-    
+
+    let novasEntradas = caixa.entradas || 0;
+    let novasSaidas = caixa.saidas || 0;
+
+    if (movimentacao.tipo === 'ENTRADA') {
+      novasEntradas += valorFloat;
+    } else if (movimentacao.tipo === 'SAIDA') {
+      novasSaidas += valorFloat;
+    }
+
+    const caixaAtualizado = {
+      ...caixa,
+      movimentacoes: [novaMovimentacao, ...(caixa.movimentacoes || [])],
+      entradas: novasEntradas,
+      saidas: novasSaidas,
+    };
+
     onUpdateCaixa(caixaAtualizado);
     setMovimentacao({ tipo: 'ENTRADA', valor: '', descricao: '' });
   };
-  
-  const saldo = caixa.entradas - caixa.saidas;
+
+  const handleCloseCaixa = () => {
+    if (window.confirm('Tem certeza que deseja fechar o caixa?')) {
+      const caixaFechado = { ...caixa, status: 'FECHADO' };
+      onCloseCaixa(caixaFechado);
+    }
+  };
+
+  const saldo = (caixa.entradas || 0) - (caixa.saidas || 0);
 
   return (
     <>
@@ -53,13 +89,13 @@ const CashierDetails = ({ caixa, onBack, onUpdateCaixa }) => {
         </button>
         <h2 className={styles.pageTitle}>Detalhes do Caixa</h2>
         {caixa.status === 'ABERTO' && (
-          <button className={`${styles.btn} ${styles.btnDanger}`}>
+          <button className={`${styles.btn} ${styles.btnDanger}`} onClick={handleCloseCaixa}>
             <Lock size={16} /> Fechar Caixa
           </button>
         )}
       </div>
 
-      <div className={`${styles.grid} ${styles.gap4} ${styles.mb6}`} style={{gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'}}>
+      <div className={`${styles.grid} ${styles.gap4} ${styles.mb6}`} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
         <CardInfo titulo="Total de Entradas" valor={formatCurrency(caixa.entradas)} className={styles.textSuccess} />
         <CardInfo titulo="Total de Saídas" valor={formatCurrency(caixa.saidas)} className={styles.textDanger} />
         <CardInfo titulo="Saldo Atual" valor={formatCurrency(saldo)} className={styles.textAccent} />
@@ -67,39 +103,39 @@ const CashierDetails = ({ caixa, onBack, onUpdateCaixa }) => {
 
       {caixa.status === 'ABERTO' && (
         <div className={`${styles.box} ${styles.mb6}`}>
-          <h3 className={`${styles.pageTitle} ${styles.mb4}`} style={{fontSize: '1.25rem'}}>Adicionar Movimentação</h3>
-          <div className={`${styles.grid} ${styles.gap4} ${styles.itemsCenter}`} style={{gridTemplateColumns: '1fr 1fr 2fr 0.5fr'}}>
-            <select className={styles.inputForm} value={movimentacao.tipo} onChange={(e) => setMovimentacao({...movimentacao, tipo: e.target.value})}>
-              <option value="ENTRADA">Entrada</option> <option value="SAIDA">Saída</option>
+          <h3 className={`${styles.pageTitle} ${styles.mb4}`} style={{ fontSize: '1.25rem' }}>Adicionar Movimentação</h3>
+          <div className={`${styles.grid} ${styles.gap4} ${styles.itemsCenter}`} style={{ gridTemplateColumns: '1fr 1fr 2fr 0.5fr' }}>
+            <select className={styles.inputForm} value={movimentacao.tipo} onChange={(e) => setMovimentacao({ ...movimentacao, tipo: e.target.value })}>
+              <option value="ENTRADA">Entrada</option>
+              <option value="SAIDA">Saída</option>
             </select>
-            <input type="text" placeholder="Valor (R$)" className={styles.inputForm} value={movimentacao.valor} onChange={(e) => setMovimentacao({...movimentacao, valor: e.target.value})} />
-            <input type="text" placeholder="Descrição da movimentação" className={styles.inputForm} value={movimentacao.descricao} onChange={(e) => setMovimentacao({...movimentacao, descricao: e.target.value})} />
-            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleAddMovimentacao}><Plus size={16}/></button>
+            <input type="text" placeholder="Valor (R$)" className={styles.inputForm} value={movimentacao.valor} onChange={(e) => setMovimentacao({ ...movimentacao, valor: e.target.value })} />
+            <input type="text" placeholder="Descrição da movimentação" className={styles.inputForm} value={movimentacao.descricao} onChange={(e) => setMovimentacao({ ...movimentacao, descricao: e.target.value })} />
+            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleAddMovimentacao}><Plus size={16} /></button>
           </div>
         </div>
       )}
 
       <div className={styles.box}>
-        <h3 className={`${styles.pageTitle} ${styles.mb4}`} style={{fontSize: '1.25rem'}}>Últimas Movimentações</h3>
+        <h3 className={`${styles.pageTitle} ${styles.mb4}`} style={{ fontSize: '1.25rem' }}>Últimas Movimentações</h3>
         <table className={styles.dataTable}>
-          <thead><tr><th>Data/Hora</th><th>Tipo</th><th>Descrição</th><th>Valor</th><th>Responsável</th></tr></thead>
+          <thead>
+            <tr><th>Data/Hora</th><th>Tipo</th><th>Descrição</th><th>Valor</th><th>Responsável</th></tr>
+          </thead>
           <tbody>
             {(caixa.movimentacoes ?? []).map((mov) => (
-            <tr key={mov.id}>
-              <td>{mov.dataHora}</td>
-              <td>
-                <span className={`${styles.statusBadge} ${mov.tipo === 'ENTRADA' ? styles.success : styles.danger}`}>
-                  {mov.tipo}
-                </span>
-              </td>
-              <td>{mov.descricao}</td>
-              <td className={mov.tipo === 'ENTRADA' ? styles.textSuccess : styles.textDanger}>
-                {formatCurrency(mov.valor)}
-              </td>
-              <td>{mov.responsavel}</td>
-            </tr>
-          ))}
-
+              <tr key={mov.id}>
+                <td>{mov.dataHora}</td>
+                <td>
+                  <span className={`${styles.statusBadge} ${mov.tipo === 'ENTRADA' ? styles.success : styles.danger}`}>{mov.tipo}</span>
+                </td>
+                <td>{mov.descricao}</td>
+                <td className={mov.tipo === 'ENTRADA' ? styles.textSuccess : styles.textDanger}>
+                  {formatCurrency(mov.valor)}
+                </td>
+                <td>{mov.responsavel}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

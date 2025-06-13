@@ -27,21 +27,33 @@ const CaixaCard = ({ caixa, onSelect }) => {
       <div className={`${styles.flex} ${styles.justifyBetween} ${styles.itemsCenter} ${styles.mb4}`}>
         <div>
           <div className={styles.textPrimary}>{caixa.responsavel}</div>
-          <div className={styles.textSecondary}>Aberto em: {caixa.dataAbertura} às {caixa.horaAbertura}</div>
+          <div className={styles.textSecondary}>Aberto em: {caixa.data_abertura} às {caixa.hora_abertura}</div>
         </div>
         <span className={`${styles.statusBadge} ${isAberto ? styles.success : styles.danger}`}>{caixa.status}</span>
       </div>
       <div className={`${styles.grid} ${styles.gap4} ${styles.textCenter}`} style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <InfoItem label="Entradas" value={formatCurrency(caixa.entradas)} className={styles.textSuccess} />
         <InfoItem label="Saídas" value={formatCurrency(caixa.saidas)} className={styles.textDanger} />
-        <InfoItem label={isAberto ? 'Saldo Atual' : 'Saldo Final'} value={formatCurrency(caixa.entradas - caixa.saidas)} className={styles.textAccent} />
+        <InfoItem label={isAberto ? 'Saldo Atual' : 'Saldo Final'} value={formatCurrency((caixa.entradas || 0) - (caixa.saidas || 0))} className={styles.textAccent} />
       </div>
     </div>
   );
 };
 
-const CashierList = ({ caixas, onSelectCaixa }) => {
+const CashierList = ({ caixas, onSelectCaixa, onFilter }) => {
   const [showModal, setShowModal] = useState(false);
+  const [status, setStatus] = useState('');
+  const [responsavel, setResponsavel] = useState('');
+
+  const handleFilter = () => {
+    onFilter(status, responsavel);
+  };
+
+  const handleClear = () => {
+    setStatus('');
+    setResponsavel('');
+    onFilter('', '');
+  };
 
   return (
     <>
@@ -59,19 +71,35 @@ const CashierList = ({ caixas, onSelectCaixa }) => {
         <div className={`${styles.grid} ${styles.gap4} ${styles.itemsCenter}`} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Status</label>
-            <select className={styles.inputForm}>
-              <option>Todos</option>
-              <option>Aberto</option>
-              <option>Fechado</option>
+            <select
+              className={styles.inputForm}
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="">Todos</option>
+              <option value="ABERTO">Aberto</option>
+              <option value="FECHADO">Fechado</option>
             </select>
           </div>
+
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Responsável</label>
-            <input type="text" placeholder="Buscar por nome..." className={styles.inputForm} />
+            <input
+              type="text"
+              placeholder="Buscar por nome..."
+              className={styles.inputForm}
+              value={responsavel}
+              onChange={(e) => setResponsavel(e.target.value)}
+            />
           </div>
+
           <div className={`${styles.flex} ${styles.gap2}`} style={{ paddingTop: '1.5rem' }}>
-            <button className={`${styles.btn} ${styles.btnPrimary} ${styles.wFull}`}><Search size={16} />Filtrar</button>
-            <button className={`${styles.btn} ${styles.btnSecondary} ${styles.wFull}`}><X size={16} />Limpar</button>
+            <button onClick={handleFilter} className={`${styles.btn} ${styles.btnPrimary} ${styles.wFull}`}>
+              <Search size={16} />Filtrar
+            </button>
+            <button onClick={handleClear} className={`${styles.btn} ${styles.btnSecondary} ${styles.wFull}`}>
+              <X size={16} />Limpar
+            </button>
           </div>
         </div>
       </div>
@@ -82,16 +110,15 @@ const CashierList = ({ caixas, onSelectCaixa }) => {
         ))}
       </div>
 
-     {showModal && (
-  <NewCashier
-    onCancel={() => setShowModal(false)}
-    onSave={(data) => {
-      console.log(data);
-      setShowModal(false);
-    }}
-  />
-)}
-
+      {showModal && (
+        <NewCashier
+          onCancel={() => setShowModal(false)}
+          onSave={(data) => {
+            console.log(data);
+            setShowModal(false);
+          }}
+        />
+      )}
     </>
   );
 };

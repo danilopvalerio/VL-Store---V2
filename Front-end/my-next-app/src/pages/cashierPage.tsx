@@ -13,11 +13,12 @@ import axios from 'axios';
     const [totalItems, setTotalItems] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
+    const [filtroStatus, setFiltroStatus] = useState('');
+    const [filtroResponsavel, setFiltroResponsavel] = useState('');
+
     const router = useRouter();
     
       const LIMIT: number = 6;
-    
-    const [filtroResponsavel, setFiltroResponsavel] = useState('');
 
     const handleUpdateCaixa = (updatedCashier) => {
       const newCashiersList = caixas.map(c => c.id === updatedCashier.id ? updatedCashier : c);
@@ -66,7 +67,7 @@ import axios from 'axios';
   }
 };
 
-const fetchCashiers = async (page: number) => {
+const fetchCashiers = async (page: number, status = '', responsavel = '') => {
   const jwtToken = localStorage.getItem("jwtToken");
   const userData = localStorage.getItem("userData");
 
@@ -78,11 +79,15 @@ const fetchCashiers = async (page: number) => {
   setLoading(true);
 
   try {
-    const parsedData = JSON.parse(userData);
-    const idLoja = parsedData.id_loja;
+    const { id_loja } = JSON.parse(userData);
+
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (responsavel) params.append('responsavel', responsavel);
+    params.append('page', String(page));
 
     const response = await axios.get(
-      `http://localhost:9700/api/caixas/loja/${idLoja}?page=${page}`,
+      `http://localhost:9700/api/caixas/loja/${id_loja}?${params.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
@@ -98,8 +103,14 @@ const fetchCashiers = async (page: number) => {
   } catch (error) {
     console.error("Erro ao carregar caixas:", error);
   } finally {
-    setLoading(false); // Garante que o loading seja desativado mesmo em caso de erro
+    setLoading(false);
   }
+};
+
+const handleApplyFilters = (status: string, responsavel: string) => {
+  setFiltroStatus(status);
+  setFiltroResponsavel(responsavel);
+  fetchCashiers(1, status, responsavel);
 };
 
   useEffect(() => {
@@ -143,7 +154,8 @@ const fetchCashiers = async (page: number) => {
           <CashierList
             caixas={caixasFiltrados}
             onSelectCaixa={(caixa) => setSelectedCashier(caixa)}
-          />
+            onFilter={handleApplyFilters}
+/>
         )}
       </div>
     );
