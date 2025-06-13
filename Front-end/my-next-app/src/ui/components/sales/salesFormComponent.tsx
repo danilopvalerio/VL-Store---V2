@@ -32,6 +32,7 @@ interface SalePayload {
   itens: { id_variacao: string; quantidade: number; preco_unitario: number }[];
   desconto: number;
   acrescimo: number;
+  id_caixa?: string;
 }
 
 // Interface de Props

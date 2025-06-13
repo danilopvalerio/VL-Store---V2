@@ -4,7 +4,6 @@ import SalesDetail from "../sales/salesDetailComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEye,
-  faEdit,
   faTrash,
   faFilter,
   faTimes,
@@ -26,8 +25,6 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-
-  // Estados para filtros
   const [showFilters, setShowFilters] = useState(false);
   const [dataFiltro, setDataFiltro] = useState<string>("");
   const [formaPagamentoFiltro, setFormaPagamentoFiltro] = useState<string>("");
@@ -40,7 +37,6 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
 
   const jwtToken = localStorage.getItem("jwtToken");
 
-  // Buscar vendedores para o filtro
   useEffect(() => {
     const fetchVendedores = async () => {
       try {
@@ -68,12 +64,10 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
       setLoading(true);
       setError(null);
 
-      // Construir parâmetros de filtro
       let url = `http://localhost:9700/api/vendas/loja/${idLoja}/paginado?page=${page}&limit=${ITEMS_PER_PAGE}`;
 
       const params = new URLSearchParams();
       if (dataFiltro) {
-        // Formatar data para o backend (assumindo formato YYYY-MM-DD)
         params.append("data", dataFiltro);
       }
       if (vendedorSelecionadoId) {
@@ -300,7 +294,6 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
             </div>
           </div>
 
-          {/* Indicadores de filtros ativos */}
           {(dataFiltro || vendedorSelecionadoId || formaPagamentoFiltro) && (
             <div className="mt-3">
               <small className="text-white-75">Filtros ativos:</small>

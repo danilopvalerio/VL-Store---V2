@@ -1,12 +1,22 @@
-  import React, { useState, useMemo, useEffect } from 'react';
+  import React, { useState, useMemo, useEffect, useCallback } from 'react';
   import CashierList from '../ui/components/cashier/cashierListComponent';
   import CashierDetails from '../ui/components/cashier/cashierDetailsComponent';
   import styles from '../ui/styles/cashierPage.module.css';
-import { useRouter } from 'next/router';
-import axios from 'axios';
+  import { useRouter } from 'next/router';
+  import axios from 'axios';
+import Funcionario from '../../../../Back-end/src/models/Funcionario';
+
+interface Caixa {
+  id: string;
+  status: 'ABERTO' | 'FECHADO';
+  funcionario_responsavel: Funcionario;
+  entradas?: number;
+  saidas?: number;
+  movimentacoes?: any[];
+}
 
   const CashierPage = () => {
-    const [caixas, setCaixas] = useState([]);
+    const [caixas, setCaixas] = useState<Caixa[]>([]);
     const [selectedCashier, setSelectedCashier] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -26,14 +36,26 @@ import axios from 'axios';
       setSelectedCashier(updatedCashier);
     };
 
-    const caixasFiltrados = useMemo(() => {
-      if (!filtroResponsavel) {
-        return caixas;
-      }
-      return caixas.filter(caixa => 
-        caixa.responsavel.toLowerCase().includes(filtroResponsavel.toLowerCase())
-      );
-    }, [caixas, filtroResponsavel]);
+    const handleCloseCaixa = (caixaFechado: any) => {
+      handleUpdateCaixa(caixaFechado); 
+      setSelectedCashier(null);
+    };
+
+  const caixasFiltrados = useMemo(() => {
+  return caixas.filter(caixa => {
+    // Verifica se o objeto e subobjetos existem
+    const nomeResponsavel = caixa?.funcionario_responsavel?.nome?.toLowerCase() || '';
+    
+    // Aplica filtro de status se fornecido
+    const statusMatch = !filtroStatus || caixa.status === filtroStatus;
+    
+    // Aplica filtro de responsavel se fornecido
+    const responsavelMatch = !filtroResponsavel || 
+      nomeResponsavel.includes(filtroResponsavel.toLowerCase());
+    
+    return statusMatch && responsavelMatch;
+  });
+}, [caixas, filtroStatus, filtroResponsavel]);
 
 
     const handleSearch = async (page = 1) => {
@@ -96,7 +118,17 @@ const fetchCashiers = async (page: number, status = '', responsavel = '') => {
       }
     );
 
-    setCaixas(response.data.data);
+    const caixasFormatados = response.data.data.map(caixa => ({
+      ...caixa,
+      funcionario_responsavel: {
+        nome: caixa.funcionario_responsavel?.nome || 'Não informado',
+      },
+      entradas: caixa.entradas || 0,
+      saidas: caixa.saidas || 0,
+      status: caixa.status || 'FECHADO'
+    }));
+
+    setCaixas(caixasFormatados);
     setCurrentPage(response.data.page);
     setTotalPages(response.data.totalPages);
     setTotalItems(response.data.totalItems);
@@ -107,48 +139,44 @@ const fetchCashiers = async (page: number, status = '', responsavel = '') => {
   }
 };
 
-const handleApplyFilters = (status: string, responsavel: string) => {
-  setFiltroStatus(status);
-  setFiltroResponsavel(responsavel);
-  fetchCashiers(1, status, responsavel);
-};
+const handleApplyFilters = useCallback((status: string, responsavel: string) => {
+    setFiltroStatus(status);
+    setFiltroResponsavel(responsavel);
+    fetchCashiers(1, status, responsavel);
+  }, []);
+
+  const pushBackToMenu = () => {
+    router.push("menuPage");
+  };
 
   useEffect(() => {
       fetchCashiers(1);
     }, [router]);
-  
-    const handleClearSearch = () => {
-      setSearchTerm("");
-      fetchCashiers(1);
-    };
-  
-    const handleNextPage = () => {
-      if (currentPage < totalPages) {
-        if (searchTerm.trim() !== "") {
-          handleSearch(currentPage + 1);
-        } else {
-          fetchCashiers(currentPage + 1);
-        }
-      }
-    };
-  
-    const handlePrevPage = () => {
-      if (currentPage > 1) {
-        if (searchTerm.trim() !== "") {
-          handleSearch(currentPage - 1);
-        } else {
-          fetchCashiers(currentPage - 1);
-        }
-      }
-    };
     
     return (
+      <>
+       <div className="d-flex justify-content-between align-items-center flex-column">
+        <header className="header-panel position-relative">
+        <button
+          className="btn primaria position-absolute top-0 end-0 px-3 py-1 shadow"
+          onClick={pushBackToMenu}
+        >
+          Voltar
+        </button>
+        <img
+          className="img logo"
+          src="/vl-store-logo-white.svg"
+          alt="VL Store Logo"
+        />
+      </header>
+      </div>
       <div className={styles.pageContainer}>
         {selectedCashier ? (
           <CashierDetails
             caixa={selectedCashier} 
             onBack={() => setSelectedCashier(null)}
             onUpdateCaixa={handleUpdateCaixa}
+            onCloseCaixa={handleCloseCaixa}
           />
         ) : (
           <CashierList
@@ -158,7 +186,8 @@ const handleApplyFilters = (status: string, responsavel: string) => {
 />
         )}
       </div>
-    );
-  };
+    </>
+  );
+};
 
   export default CashierPage;

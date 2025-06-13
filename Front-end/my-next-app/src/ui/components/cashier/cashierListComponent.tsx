@@ -18,7 +18,11 @@ const InfoItem = ({ label, value, className }) => (
 );
 
 const CaixaCard = ({ caixa, onSelect }) => {
-  const isAberto = caixa.status === 'ABERTO';
+  const isAberto = caixa?.status === 'ABERTO';
+  const responsavel = caixa?.funcionario_responsavel.nome || 'Não informado';
+  const dataAbertura = caixa?.data_abertura || 'Data não disponível';
+  const horaAbertura = caixa?.hora_abertura || 'Hora não disponível';
+
   return (
     <div
       className={`${styles.box} ${styles.boxHover} ${isAberto ? styles.borderLeftSuccess : styles.borderLeftDanger} ${styles.cursorPointer}`}
@@ -26,15 +30,23 @@ const CaixaCard = ({ caixa, onSelect }) => {
     >
       <div className={`${styles.flex} ${styles.justifyBetween} ${styles.itemsCenter} ${styles.mb4}`}>
         <div>
-          <div className={styles.textPrimary}>{caixa.responsavel}</div>
-          <div className={styles.textSecondary}>Aberto em: {caixa.data_abertura} às {caixa.hora_abertura}</div>
+          <div className={styles.textPrimary}>{responsavel}</div>
+          <div className={styles.textSecondary}>Aberto em: {dataAbertura} às {horaAbertura}</div>
         </div>
-        <span className={`${styles.statusBadge} ${isAberto ? styles.success : styles.danger}`}>{caixa.status}</span>
+        {caixa?.status && (
+          <span className={`${styles.statusBadge} ${isAberto ? styles.success : styles.danger}`}>
+            {caixa.status}
+          </span>
+        )}
       </div>
       <div className={`${styles.grid} ${styles.gap4} ${styles.textCenter}`} style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-        <InfoItem label="Entradas" value={formatCurrency(caixa.entradas)} className={styles.textSuccess} />
-        <InfoItem label="Saídas" value={formatCurrency(caixa.saidas)} className={styles.textDanger} />
-        <InfoItem label={isAberto ? 'Saldo Atual' : 'Saldo Final'} value={formatCurrency((caixa.entradas || 0) - (caixa.saidas || 0))} className={styles.textAccent} />
+        <InfoItem label="Entradas" value={formatCurrency(caixa?.entradas)} className={styles.textSuccess} />
+        <InfoItem label="Saídas" value={formatCurrency(caixa?.saidas)} className={styles.textDanger} />
+        <InfoItem 
+          label={isAberto ? 'Saldo Atual' : 'Saldo Final'} 
+          value={formatCurrency((caixa?.entradas || 0) - (caixa?.saidas || 0))} 
+          className={styles.textAccent} 
+        />
       </div>
     </div>
   );
