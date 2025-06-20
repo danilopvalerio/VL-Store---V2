@@ -415,7 +415,6 @@ export default class CaixaController {
       return res.status(200).json({
         success: true,
         data: {
-          movimentacoes,
           totalEntradas,
           totalSaidas,
           saldo,

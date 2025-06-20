@@ -3,7 +3,6 @@ import { ArrowLeft, Lock, Plus } from "lucide-react";
 import styles from "../../styles/cashierPage.module.css";
 import axios from "axios";
 
-// Tipos
 interface Movimentacao {
   id_movimentacao: string;
   tipo: "ENTRADA" | "SAIDA";
@@ -17,7 +16,7 @@ interface Caixa {
   status: "ABERTO" | "FECHADO";
   entradas?: number;
   saidas?: number;
-  saldo?: number; // Adicionado
+  saldo?: number;
   responsavel?: string;
   data_abertura?: string;
   hora_abertura?: string;
@@ -61,7 +60,6 @@ interface MovimentacaoState {
   descricao: string;
 }
 
-// Funções úteis
 export const formatCurrency = (value: number | null | undefined): string => {
   const numericValue = typeof value === "number" ? value : 0;
   return numericValue.toLocaleString("pt-BR", {
@@ -85,7 +83,6 @@ const formatDateTime = (dateTimeString: string): string => {
   }
 };
 
-// Componente: Card Info
 const CardInfo: React.FC<CardInfoProps> = ({ titulo, valor, className }) => (
   <div className={styles.box}>
     <div className={styles.textSecondary}>{titulo}</div>
@@ -98,7 +95,6 @@ const CardInfo: React.FC<CardInfoProps> = ({ titulo, valor, className }) => (
   </div>
 );
 
-// Componente Principal
 const CashierDetails: React.FC<CashierDetailsProps> = ({
   caixa,
   onBack,
@@ -120,7 +116,6 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
     total: 0,
   });
 
-  // Headers com token JWT
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return {
@@ -129,15 +124,20 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
     };
   };
 
-  // Carrega lista paginada de movimentações
-  const loadMovimentacoes = async () => {
+    const loadMovimentacoes = async () => {
     setIsLoading(true);
     try {
       const response = await axios.get<PaginatedResponse<Movimentacao>>(
         `http://localhost:9700/api/caixas/${caixa?.id_caixa}/movimentacoes?page=${pagination.page}&limit=${pagination.limit}`,
         { headers: getAuthHeaders() }
       );
-      setMovimentacoes(response.data.data);
+      const movimentacoes = response.data.data;
+      const movimentacoesParaExibir = movimentacoes.map((mov: any) => ({
+        ...mov,
+        valor: parseFloat(mov.valor)
+      }));
+      setMovimentacoes(movimentacoesParaExibir);
+
       setPagination((prev) => ({ ...prev, total: response.data.total }));
     } catch (err) {
       console.error("Erro ao carregar movimentações:", err);
@@ -146,9 +146,8 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+    };
 
-  // Atualiza totais com base na nova rota /all
   const atualizarTotais = async () => {
     if (!caixa?.id_caixa) return;
 
@@ -172,14 +171,12 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
     }
   };
 
-  // Valida e transforma o valor inserido
   const validateAndParseValue = (value: string): number | null => {
     const cleanValue = value.trim().replace(",", ".");
     const numericValue = parseFloat(cleanValue);
     return isNaN(numericValue) ? null : Math.round(numericValue * 100) / 100;
   };
 
-  // Adicionar nova movimentação
   const handleAddMovimentacao = async () => {
     if (!caixa?.id_caixa) return;
 
@@ -218,7 +215,6 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
     }
   };
 
-  // Fechar o caixa
   const handleCloseCaixa = async () => {
     if (!caixa?.id_caixa) return;
     if (window.confirm("Tem certeza que deseja fechar o caixa?")) {
@@ -242,7 +238,6 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
     }
   };
 
-  // Efeito para carregar dados iniciais
   useEffect(() => {
     if (caixa?.id_caixa) {
       loadMovimentacoes();

@@ -3,6 +3,35 @@ import { Search, Plus, X } from "lucide-react";
 import styles from "../../styles/cashierPage.module.css";
 import NewCashier from "./openNewCashierComponent";
 
+interface Seller {
+  id_funcionario: string;
+  nome: string;
+  cargo?: string;
+}
+
+interface Caixa {
+  id_caixa: string;
+  status: 'ABERTO' | 'FECHADO';
+  funcionario_responsavel: {
+      nome: string;
+  };
+  entradas: number;
+  saidas: number;
+  saldo: number;
+  data_abertura?: string;
+  hora_abertura?: string;
+}
+
+interface CashierListProps {
+  caixas: Caixa[];
+  onSelectCaixa: (caixa: Caixa) => void;
+  vendedoresDisponiveis: Seller[];
+  id_loja: string;
+  onFilter: (status: string, responsavel: string) => void;
+  isLoading?: boolean;
+  onSaveNewCashier: (data: any) => Promise<void>;
+}
+
 const formatCurrency = (value: number | null | undefined): string => {
   if (value === null || typeof value !== "number") {
     return "R$ 0,00";
@@ -73,7 +102,7 @@ const CaixaCard = ({ caixa, onSelect }) => {
   );
 };
 
-const CashierList = ({ caixas, onSelectCaixa, onFilter }) => {
+const CashierList: React.FC<CashierListProps> = ({ caixas, onSelectCaixa, onFilter, vendedoresDisponiveis, id_loja, onSaveNewCashier }) => {
   const [showModal, setShowModal] = useState(false);
   const [status, setStatus] = useState("");
   const [responsavel, setResponsavel] = useState("");
@@ -86,6 +115,11 @@ const CashierList = ({ caixas, onSelectCaixa, onFilter }) => {
     setStatus("");
     setResponsavel("");
     onFilter("", "");
+  };
+
+    const handleNewCashierSave = async (data: any) => {
+    await onSaveNewCashier(data);
+    setShowModal(false);
   };
 
   return (
@@ -181,7 +215,7 @@ const CashierList = ({ caixas, onSelectCaixa, onFilter }) => {
       >
         {caixas.map((caixa) => (
           <CaixaCard
-            key={caixa.id}
+            key={`${caixa.id_caixa}-${caixa.data_abertura}`}
             caixa={caixa}
             onSelect={() => onSelectCaixa(caixa)}
           />
@@ -191,10 +225,10 @@ const CashierList = ({ caixas, onSelectCaixa, onFilter }) => {
       {showModal && (
         <NewCashier
           onCancel={() => setShowModal(false)}
-          onSave={(data) => {
-            console.log(data);
-            setShowModal(false);
-          }}
+          vendedoresDisponiveis={vendedoresDisponiveis}
+          id_loja={id_loja}
+          onSave={handleNewCashierSave}
+          
         />
       )}
     </>

@@ -4,20 +4,30 @@
   import styles from '../ui/styles/cashierPage.module.css';
   import { useRouter } from 'next/router';
   import axios from 'axios';
-import Funcionario from '../../../../Back-end/src/models/Funcionario';
 
 interface Caixa {
-  id: string;
+  id_caixa: string;
+  id_loja: string;
   status: 'ABERTO' | 'FECHADO';
-  funcionario_responsavel: Funcionario;
-  entradas?: number;
-  saidas?: number;
-  movimentacoes?: any[];
+  funcionario_responsavel: {
+      nome: string;
+  };
+  entradas: number;
+  saidas: number;
+  saldo: number;
+  data_abertura?: string;
+  hora_abertura?: string;
+}
+
+interface Seller {
+  id_funcionario: string;
+  nome: string;
+  cargo?: string;
 }
 
   const CashierPage = () => {
     const [caixas, setCaixas] = useState<Caixa[]>([]);
-    const [selectedCashier, setSelectedCashier] = useState(null);
+    const [selectedCashier, setSelectedCashier] = useState<Caixa | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
@@ -25,31 +35,35 @@ interface Caixa {
     const [loading, setLoading] = useState(true);
     const [filtroStatus, setFiltroStatus] = useState('');
     const [filtroResponsavel, setFiltroResponsavel] = useState('');
+    const [vendedoresDisponiveis, setVendedoresDisponiveis] = useState<Seller[]>(
+      []
+    );
+    const [idloja, setIdloja] = useState("");
 
     const router = useRouter();
     
       const LIMIT: number = 6;
 
-    const handleUpdateCaixa = (updatedCashier) => {
-      const newCashiersList = caixas.map(c => c.id === updatedCashier.id ? updatedCashier : c);
-      setCaixas(newCashiersList);
+  const handleUpdateCaixa = useCallback((updatedCashier: Caixa) => {
+    setCaixas(prevCaixas =>
+      prevCaixas.map(c => (c.id_caixa === updatedCashier.id_caixa ? updatedCashier : c))
+    );
+    if (selectedCashier && selectedCashier.id_caixa === updatedCashier.id_caixa) {
       setSelectedCashier(updatedCashier);
-    };
+    }
+  }, [selectedCashier]);
 
-    const handleCloseCaixa = (caixaFechado: any) => {
-      handleUpdateCaixa(caixaFechado); 
-      setSelectedCashier(null);
-    };
+  const handleCloseCaixa = useCallback((caixaFechado: Caixa) => {
+    handleUpdateCaixa(caixaFechado);
+    setSelectedCashier(null);
+  }, [handleUpdateCaixa]);
 
   const caixasFiltrados = useMemo(() => {
   return caixas.filter(caixa => {
-    // Verifica se o objeto e subobjetos existem
     const nomeResponsavel = caixa?.funcionario_responsavel?.nome?.toLowerCase() || '';
     
-    // Aplica filtro de status se fornecido
     const statusMatch = !filtroStatus || caixa.status === filtroStatus;
     
-    // Aplica filtro de responsavel se fornecido
     const responsavelMatch = !filtroResponsavel || 
       nomeResponsavel.includes(filtroResponsavel.toLowerCase());
     
@@ -58,92 +72,143 @@ interface Caixa {
 }, [caixas, filtroStatus, filtroResponsavel]);
 
 
-    const handleSearch = async (page = 1) => {
-  const jwtToken = localStorage.getItem("jwtToken");
-  const userData = localStorage.getItem("userData");
+  const fetchCashiers = useCallback(async (page: number, status = '', responsavel = '') => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    const userData = localStorage.getItem("userData");
 
-  if (!jwtToken || !userData) {
-    router.push("/initialPage");
-    return;
-  }
+    if (!jwtToken || !userData) {
+      router.push("/initialPage");
+      return;
+    }
 
-  const parsedData = JSON.parse(userData);
-  const idLoja = parsedData.id_loja;
+    setLoading(true);
 
-  try {
-    const response = await axios.get(
-      `http://localhost:9700/api/caixas/loja/${idLoja}?page=${page}`,
-      {
+    try {
+      const { id_loja } = JSON.parse(userData);
+
+      const params = new URLSearchParams();
+      if (status) params.append('status', status);
+      if (responsavel) params.append('responsavel', responsavel);
+      params.append('page', String(page));
+      params.append('limit', String(LIMIT));
+
+      const response = await axios.get(
+        `http://localhost:9700/api/caixas/loja/${id_loja}?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          timeout: 10000,
+        }
+      );
+
+      const uniqueCaixas: Caixa[] = response.data.data.reduce((acc: Caixa[], current: any) => {
+
+        const formattedCaixa: Caixa = {
+            id_caixa: current.id_caixa,
+            id_loja: current.id_loja,
+            status: current.status,
+            funcionario_responsavel: current.funcionario_responsavel || { nome: 'Não informado' },
+            data_abertura: current.data_abertura,
+            hora_abertura: current.hora_abertura,
+            entradas: 0,
+            saidas: 0,
+            saldo: 0,
+        };
+
+        const x = acc.find(item => item.id_caixa === formattedCaixa.id_caixa);
+        if (!x) {
+          return acc.concat([formattedCaixa]);
+        } else {
+          return acc;
+        }
+      }, []);
+
+      const caixasComTotaisPromises = uniqueCaixas.map(async (caixaOriginal: Caixa) => {
+        try {
+          const totaisResponse = await axios.get(
+            `http://localhost:9700/api/caixas/${caixaOriginal.id_caixa}/movimentacoes/all`,
+            {
+              headers: {
+                Authorization: `Bearer ${jwtToken}`,
+              },
+              timeout: 10000,
+            }
+          );
+
+          if (totaisResponse.data.success) {
+            const { totalEntradas, totalSaidas, saldo } = totaisResponse.data.data;
+            return {
+              ...caixaOriginal,
+              entradas: totalEntradas,
+              saidas: totalSaidas,
+              saldo: saldo,
+            };
+          }
+        } catch (error) {
+          console.error(`Erro ao carregar totais para o caixa ${caixaOriginal.id_caixa}:`, error);
+          return {
+              ...caixaOriginal,
+              entradas: 0,
+              saidas: 0,
+              saldo: 0,
+          };
+        }
+        return {
+            ...caixaOriginal,
+            entradas: 0,
+            saidas: 0,
+            saldo: 0,
+        };
+      });
+
+      const caixasAtualizados = await Promise.all(caixasComTotaisPromises);
+
+      const parsedData = JSON.parse(userData);
+        const idLoja = parsedData.id_loja;
+        setIdloja(idLoja);
+
+      const vendedoresRes = await axios.get(`http://localhost:9700/api/funcionarios/loja/${idLoja}`,
+        {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
         },
+        timeout: 10000,
+        }
+      );   
+
+      if (vendedoresRes.data?.success) {
+        setVendedoresDisponiveis(vendedoresRes.data.data);
       }
-    );
 
-    setCaixas(response.data.data);
-    setTotalItems(response.data.count);
-    setTotalPages(response.data.totalPages);
-    setCurrentPage(response.data.page);
-  } catch (error) {
-    console.error("Erro ao buscar caixas:", error);
-  }
-};
+      setCaixas(caixasAtualizados);
+      setCurrentPage(response.data.page);
+      setTotalPages(response.data.totalPages);
+      setTotalItems(response.data.totalItems);
 
-const fetchCashiers = async (page: number, status = '', responsavel = '') => {
-  const jwtToken = localStorage.getItem("jwtToken");
-  const userData = localStorage.getItem("userData");
+    } catch (error) {
+      console.error("Erro ao carregar caixas:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [router, LIMIT]);
 
-  if (!jwtToken || !userData) {
-    router.push("/initialPage");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const { id_loja } = JSON.parse(userData);
-
-    const params = new URLSearchParams();
-    if (status) params.append('status', status);
-    if (responsavel) params.append('responsavel', responsavel);
-    params.append('page', String(page));
-
-    const response = await axios.get(
-      `http://localhost:9700/api/caixas/loja/${id_loja}?${params.toString()}`,
-      {
-        headers: {
-          Authorization: `Bearer ${jwtToken}`,
-        },
-        timeout: 2000,
-      }
-    );
-
-    const caixasFormatados = response.data.data.map(caixa => ({
-      ...caixa,
-      funcionario_responsavel: {
-        nome: caixa.funcionario_responsavel?.nome || 'Não informado',
-      },
-      entradas: caixa.entradas || 0,
-      saidas: caixa.saidas || 0,
-      status: caixa.status || 'FECHADO'
-    }));
-
-    setCaixas(caixasFormatados);
-    setCurrentPage(response.data.page);
-    setTotalPages(response.data.totalPages);
-    setTotalItems(response.data.totalItems);
-  } catch (error) {
-    console.error("Erro ao carregar caixas:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
-const handleApplyFilters = useCallback((status: string, responsavel: string) => {
+  const handleApplyFilters = useCallback((status: string, responsavel: string) => {
     setFiltroStatus(status);
     setFiltroResponsavel(responsavel);
     fetchCashiers(1, status, responsavel);
   }, []);
+
+
+  const handleBackToList = useCallback(() => {
+      setSelectedCashier(null);
+      fetchCashiers(currentPage, filtroStatus, filtroResponsavel);
+  }, [fetchCashiers, currentPage, filtroStatus, filtroResponsavel]);
+
+    const handleSaveNewCashier = useCallback(async (newlyCreatedCashier: any) => {
+
+    await fetchCashiers(currentPage, filtroStatus, filtroResponsavel);
+  }, [fetchCashiers, currentPage, filtroStatus, filtroResponsavel]);
 
   const pushBackToMenu = () => {
     router.push("menuPage");
@@ -173,8 +238,8 @@ const handleApplyFilters = useCallback((status: string, responsavel: string) => 
       <div className={styles.pageContainer}>
         {selectedCashier ? (
           <CashierDetails
-            caixa={selectedCashier} 
-            onBack={() => setSelectedCashier(null)}
+            caixa={selectedCashier}
+            onBack={handleBackToList}
             onUpdateCaixa={handleUpdateCaixa}
             onCloseCaixa={handleCloseCaixa}
           />
@@ -182,8 +247,11 @@ const handleApplyFilters = useCallback((status: string, responsavel: string) => 
           <CashierList
             caixas={caixasFiltrados}
             onSelectCaixa={(caixa) => setSelectedCashier(caixa)}
+            vendedoresDisponiveis={vendedoresDisponiveis}
+            id_loja={idloja}
             onFilter={handleApplyFilters}
-/>
+            onSaveNewCashier={handleSaveNewCashier}
+          />
         )}
       </div>
     </>
