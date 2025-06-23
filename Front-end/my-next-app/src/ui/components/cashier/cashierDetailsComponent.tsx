@@ -222,7 +222,7 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
       try {
         const response = await axios.patch<Caixa>(
           `http://localhost:9700/api/caixas/${caixa.id_caixa}/fechar`,
-          { hora_fechamento: new Date().toISOString() },
+          { hora_fechamento: new Date().toTimeString().split(' ')[0] },
           { headers: getAuthHeaders() }
         );
         onCloseCaixa(response.data);

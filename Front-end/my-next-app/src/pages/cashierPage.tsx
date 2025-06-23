@@ -53,11 +53,6 @@ interface Seller {
     }
   }, [selectedCashier]);
 
-  const handleCloseCaixa = useCallback((caixaFechado: Caixa) => {
-    handleUpdateCaixa(caixaFechado);
-    setSelectedCashier(null);
-  }, [handleUpdateCaixa]);
-
   const caixasFiltrados = useMemo(() => {
   return caixas.filter(caixa => {
     const nomeResponsavel = caixa?.funcionario_responsavel?.nome?.toLowerCase() || '';
@@ -192,6 +187,11 @@ interface Seller {
       setLoading(false);
     }
   }, [router, LIMIT]);
+
+  const handleCloseCaixa = useCallback(() => {
+  setSelectedCashier(null);
+  fetchCashiers(currentPage, filtroStatus, filtroResponsavel);
+}, [fetchCashiers, currentPage, filtroStatus, filtroResponsavel]);
 
   const handleApplyFilters = useCallback((status: string, responsavel: string) => {
     setFiltroStatus(status);

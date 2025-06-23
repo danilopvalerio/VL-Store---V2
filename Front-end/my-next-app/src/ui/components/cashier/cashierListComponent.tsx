@@ -189,7 +189,7 @@ const CashierList: React.FC<CashierListProps> = ({ caixas, onSelectCaixa, onFilt
 
           <div
             className={`${styles.flex} ${styles.gap2}`}
-            style={{ paddingTop: "1.5rem" }}
+            style={{ paddingTop: "0.35rem" }}
           >
             <button
               onClick={handleFilter}
