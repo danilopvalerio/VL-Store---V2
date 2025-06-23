@@ -8,6 +8,7 @@ import funcionarioRoutes from './routes/funcionarioRoutes';
 import vendaRoutes from './routes/vendaRoutes';
 import generalRoutes from './routes/generalRoutes';
 import caixaRoutes from './routes/caixaRoutes';
+import relatorioRoutes from './routes/relatorioRoutes';
 
 dotenv.config();
 
@@ -61,6 +62,7 @@ class App {
     this.app.use('/api/produtos', produtoRoutes);
     this.app.use('/api/vendas', vendaRoutes);
     this.app.use('/api/caixas', caixaRoutes);
+    this.app.use('/api/relatorios', relatorioRoutes);
   }
 
   private errorHandling(): void {
