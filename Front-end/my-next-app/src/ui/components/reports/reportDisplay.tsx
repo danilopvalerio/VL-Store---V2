@@ -1,293 +1,371 @@
-import React, { useState, useEffect } from 'react';
-import { Download, ArrowLeft, Calendar, FileText } from 'lucide-react';
-import "../../styles/ReportDisplay.module.css"
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import styles from "../../styles/ReportDisplay.module.css";
+import "../../styles/General.module.css";
 
-const ReportDisplay = ({ reportType = 'produtos-mais-vendidos' }) => {
-  const [reportData, setReportData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+interface ReportData {
+  [key: string]: any;
+}
 
-  const reportConfigs = {
-    'produtos-mais-vendidos': {
-      title: 'Produtos Mais Vendidos',
-      icon: <FileText size={24} />,
-      description: 'Ranking dos produtos com maior volume de vendas'
-    },
-    'relatorio-vendas-por-periodo': {
-      title: 'Relatório de Vendas por Período',
-      icon: <Calendar size={24} />,
-      description: 'Análise detalhada das vendas em período específico'
-    },
-    'relatorio-financeiro': {
-      title: 'Relatório Financeiro',
-      icon: <FileText size={24} />,
-      description: 'Resumo financeiro e indicadores econômicos'
-    },
-    'top-10-produtos-vendas-em-dinheiro': {
-      title: 'Top 10 Produtos - Vendas em Dinheiro',
-      icon: <FileText size={24} />,
-      description: 'Produtos mais vendidos com pagamento em dinheiro'
-    },
-    'estoque-baixo': {
-      title: 'Estoque Baixo',
-      icon: <FileText size={24} />,
-      description: 'Produtos com estoque abaixo do limite mínimo'
-    },
-    'mais-vendidos': {
-      title: 'Mais Vendidos',
-      icon: <FileText size={24} />,
-      description: 'Produtos com maior saída no período'
+interface ReportConfig {
+  title: string;
+  endpoint: string;
+  requiresPeriod?: boolean;
+  requiresLimit?: boolean;
+  columns: Array<{
+    key: string;
+    label: string;
+    type?: 'currency' | 'number' | 'text';
+  }>;
+}
+
+interface ReportFilters {
+  id_loja: string;
+  dataInicio: string;
+  dataFim: string;
+  limite?: string;
+}
+
+const REPORT_CONFIGS: { [key: string]: ReportConfig } = {
+  'produtos-mais-vendidos': {
+    title: 'Produtos Mais Vendidos',
+    endpoint: 'produtos-mais-vendidos',
+    requiresPeriod: true,
+    columns: [
+      { key: 'nome', label: 'Produto', type: 'text' },
+      { key: 'referencia', label: 'Referência', type: 'text' },
+      { key: 'quantidade_vendida', label: 'Unidades Vendidas', type: 'number' }
+    ]
+  },
+  'ranking-funcionarios': {
+    title: 'Ranking de Funcionários',
+    endpoint: 'ranking-funcionarios',
+    requiresPeriod: true,
+    columns: [
+      { key: 'nome', label: 'Funcionário', type: 'text' },
+      { key: 'total_vendas', label: 'Total Vendido', type: 'currency' }
+    ]
+  },
+  'financeiro': {
+    title: 'Relatório Financeiro',
+    endpoint: 'total-entradas-saidas',
+    requiresPeriod: true,
+    columns: [
+      { key: 'entradas', label: 'Total de Entradas', type: 'currency' },
+      { key: 'saidas', label: 'Total de Saídas', type: 'currency' },
+      { key: 'saldo', label: 'Saldo', type: 'currency' }
+    ]
+  },
+  'vendas-forma-pagamento': {
+    title: 'Vendas por Forma de Pagamento',
+    endpoint: 'vendas-forma-pagamento',
+    requiresPeriod: true,
+    columns: [
+      { key: 'forma_pagamento', label: 'Forma de Pagamento', type: 'text' },
+      { key: 'total', label: 'Total Arrecadado', type: 'currency' },
+      { key: 'quantidade', label: 'Qtd. Transações', type: 'number' }
+    ]
+  },
+  'estoque-baixo': {
+    title: 'Produtos com Estoque Baixo',
+    endpoint: 'estoque-baixo',
+    requiresLimit: true,
+    columns: [
+      { key: 'referencia', label: 'Referência', type: 'text' },
+      { key: 'nome', label: 'Produto', type: 'text' },
+      { key: 'quantidade', label: 'Estoque Total', type: 'number' }
+    ]
+  }
+};
+
+const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<ReportData[]>([]);
+  const [error, setError] = useState('');
+  const [filters, setFilters] = useState<ReportFilters>({
+    id_loja: '1',
+    dataInicio: '',
+    dataFim: '',
+    limite: '7'
+  });
+
+  const config = REPORT_CONFIGS[reportType];
+
+  if (!config) {
+    return <div>Tipo de relatório não encontrado</div>;
+  }
+
+  const fetchReportData = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Validação dos filtros
+      if (config.requiresPeriod && (!filters.dataInicio || !filters.dataFim)) {
+        setError('As datas de início e fim são obrigatórias');
+        setLoading(false);
+        return;
+      }
+
+      const params = new URLSearchParams();
+      
+      if (config.requiresPeriod) {
+        params.append('dataInicio', filters.dataInicio);
+        params.append('dataFim', filters.dataFim);
+      }
+      
+      if (config.requiresLimit && filters.limite) {
+        params.append('limite', filters.limite);
+      }
+
+      const url = `http://localhost:9700/api/relatorios/loja/${filters.id_loja}/${config.endpoint}?${params.toString()}`;
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success === false) {
+        throw new Error(result.message || 'Erro ao carregar relatório');
+      }
+
+      setData(Array.isArray(result.data) ? result.data : [result.data]);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro inesperado');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Dados de exemplo para demonstração
-  const generateMockData = (type) => {
-    const baseData = {
-      generatedAt: new Date().toLocaleString('pt-BR'),
-      period: 'Junho 2025'
+const downloadPDF = async () => {
+  try {
+    const params = new URLSearchParams({
+      tipo: reportType,
+      id_loja: filters.id_loja,
+      ...Object.fromEntries(
+        Object.entries(filters).filter(([key]) => key !== 'id_loja'))
+    });
+
+    const configRequest = {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     };
 
-    switch (type) {
-      case 'produtos-mais-vendidos':
-        return {
-          ...baseData,
-          items: [
-            { rank: 1, produto: 'Camiseta Infantil Rosa', vendas: 145, valor: 'R$ 2.175,00' },
-            { rank: 2, produto: 'Shorts Jeans Azul', vendas: 132, valor: 'R$ 1.980,00' },
-            { rank: 3, produto: 'Vestido Floral', vendas: 118, valor: 'R$ 2.360,00' },
-            { rank: 4, produto: 'Tênis Esportivo', vendas: 95, valor: 'R$ 4.275,00' },
-            { rank: 5, produto: 'Jaqueta de Moletom', vendas: 87, valor: 'R$ 2.610,00' }
-          ]
-        };
-      
-      case 'relatorio-financeiro':
-        return {
-          ...baseData,
-          summary: {
-            totalVendas: 'R$ 45.230,50',
-            totalCusto: 'R$ 28.145,30',
-            lucroLiquido: 'R$ 17.085,20',
-            margemLucro: '37.8%'
-          },
-          breakdown: [
-            { categoria: 'Roupas Femininas', vendas: 'R$ 22.150,00', participacao: '49%' },
-            { categoria: 'Roupas Masculinas', vendas: 'R$ 15.680,50', participacao: '35%' },
-            { categoria: 'Acessórios', vendas: 'R$ 7.400,00', participacao: '16%' }
-          ]
-        };
+    const response = await fetch(
+      `http://localhost:9700/api/relatorios/loja/${filters.id_loja}/pdf?${params.toString()}`,
+      configRequest
+    );
 
+    if (!response.ok) {
+      throw new Error('Erro ao gerar PDF');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${config.title.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (err) {
+    setError('Erro ao fazer download do PDF');
+  }
+};
+
+  const formatValue = (value: any, type?: string) => {
+    if (value === null || value === undefined) return '-';
+    
+    switch (type) {
+      case 'currency':
+        return new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        }).format(parseFloat(value));
+      case 'number':
+        return new Intl.NumberFormat('pt-BR').format(value);
       default:
-        return {
-          ...baseData,
-          items: [
-            { id: 1, description: 'Item de demonstração 1', value: 'R$ 150,00' },
-            { id: 2, description: 'Item de demonstração 2', value: 'R$ 250,00' },
-            { id: 3, description: 'Item de demonstração 3', value: 'R$ 180,00' }
-          ]
-        };
+        return value;
     }
   };
 
-  useEffect(() => {
-    // Simular carregamento de dados
-    setLoading(true);
-    setTimeout(() => {
-      try {
-        const data = generateMockData(reportType);
-        setReportData(data);
-        setLoading(false);
-      } catch (err) {
-        setError('Erro ao carregar relatório');
-        setLoading(false);
-      }
-    }, 1000);
-  }, [reportType]);
-
-  const handleDownloadPDF = () => {
-    // Aqui você implementaria a lógica real de download do PDF
-    alert('Funcionalidade de download em desenvolvimento');
-  };
-
-  const handleBack = () => {
-    alert('Voltar para página de relatórios');
-  };
-
-  const currentReport = reportConfigs[reportType];
-
-  if (loading) {
-    return (
-      <div className="page-container">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Carregando relatório...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !currentReport) {
-    return (
-      <div className="page-container">
-        <div className="error-container">
-          <h2>Erro</h2>
-          <p>{error || 'Relatório não encontrado'}</p>
-          <button className="btn-primary" onClick={handleBack}>
-            Voltar aos Relatórios
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="page-container">
-      {/* Header */}
-      <header className="report-header">
-        <div className="header-content">
-          <button className="btn-back" onClick={handleBack}>
-            <ArrowLeft size={20} />
-            Voltar
-          </button>
-          <div className="logo-container">
-            <img src="/logo.png" alt="VL Store" className="logo" />
-          </div>
-          <div className="header-spacer"></div>
-        </div>
+    <>
+      <Head>
+        <title>VL Store - {config.title}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </Head>
+
+      <div className={styles.pageContainer}>
+          <header className="header-panel">
+        <button
+          id="menu-page-return"
+          className="btn primaria position-fixed top-0 end-0 m-2 shadow"
+          onClick={() => router.push('/reportsPage')}
+        >
+          Voltar
+        </button>
+        <img className="img logo" src="/vl-store-logo-white.svg" />
       </header>
 
-      {/* Report Content */}
-      <main className="report-main">
-        <div className="report-card">
-          {/* Report Title */}
-          <div className="report-title-section">
-            <div className="report-icon">
-              {currentReport.icon}
-            </div>
-            <div className="report-title-info">
-              <h1 className="report-title">{currentReport.title}</h1>
-              <p className="report-description">{currentReport.description}</p>
-              <div className="report-meta">
-                <span>Gerado em: {reportData.generatedAt}</span>
-                <span>Período: {reportData.period}</span>
+        {/* Conteúdo Principal */}
+        <main className={styles.reportMain}>
+          <div className={styles.reportCard}>
+            {/* Seção de Título */}
+            <section className={styles.reportTitleSection}>
+              <div className={styles.reportIcon}>
+                <span style={{ fontSize: '1.5rem' }}>📊</span>
               </div>
-            </div>
-          </div>
-
-          {/* Report Actions */}
-          <div className="report-actions">
-            <button className="btn-primary btn-download" onClick={handleDownloadPDF}>
-              <Download size={18} />
-              Download PDF
-            </button>
-          </div>
-
-          {/* Report Data */}
-          <div className="report-content">
-            {reportType === 'relatorio-financeiro' && reportData.summary ? (
-              <>
-                <div className="financial-summary">
-                  <h3>Resumo Financeiro</h3>
-                  <div className="summary-grid">
-                    <div className="summary-item">
-                      <span className="summary-label">Total de Vendas</span>
-                      <span className="summary-value">{reportData.summary.totalVendas}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">Total de Custos</span>
-                      <span className="summary-value">{reportData.summary.totalCusto}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">Lucro Líquido</span>
-                      <span className="summary-value profit">{reportData.summary.lucroLiquido}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">Margem de Lucro</span>
-                      <span className="summary-value">{reportData.summary.margemLucro}</span>
-                    </div>
-                  </div>
+              <div className={styles.reportTitleInfo}>
+                <h1 className={styles.reportTitle}>{config.title}</h1>
+                <p className={styles.reportDescription}>Relatório detalhado do sistema</p>
+                <div className={styles.reportMeta}>
+                  <span>Loja: {filters.id_loja}</span>
+                  {config.requiresPeriod && filters.dataInicio && (
+                    <span>Período: {filters.dataInicio} a {filters.dataFim}</span>
+                  )}
                 </div>
+              </div>
+            </section>
 
-                <div className="breakdown-section">
-                  <h3>Vendas por Categoria</h3>
-                  <div className="table-container">
-                    <table className="report-table">
-                      <thead>
-                        <tr>
-                          <th>Categoria</th>
-                          <th>Vendas</th>
-                          <th>Participação</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reportData.breakdown.map((item, index) => (
-                          <tr key={index}>
-                            <td>{item.categoria}</td>
-                            <td>{item.vendas}</td>
-                            <td>{item.participacao}</td>
-                          </tr>
+            {/* Seção de Ações */}
+            <section className={styles.reportActions}>
+              <button
+                className={`${styles.btnPrimary} ${styles.btnDownload}`}
+                onClick={downloadPDF}
+                disabled={loading || data.length === 0}
+              >
+                📄 Download PDF
+              </button>
+            </section>
+
+            {/* Seção de Filtros */}
+            <section className={styles.filterSection}>
+              <div className="row g-3">
+                {config.requiresPeriod && (
+                  <>
+                    <div className="col-md-3">
+                      <label htmlFor="dataInicio" className={styles.filterLabel}>Data Início</label>
+                      <input
+                        type="date"
+                        className={styles.filterInput}
+                        id="dataInicio"
+                        value={filters.dataInicio}
+                        onChange={(e) => setFilters({...filters, dataInicio: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label htmlFor="dataFim" className={styles.filterLabel}>Data Fim</label>
+                      <input
+                        type="date"
+                        className={styles.filterInput}
+                        id="dataFim"
+                        value={filters.dataFim}
+                        onChange={(e) => setFilters({...filters, dataFim: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+                
+                {config.requiresLimit && (
+                  <div className="col-md-3">
+                    <label htmlFor="limite" className={styles.filterLabel}>Limite de Estoque</label>
+                    <input
+                      type="number"
+                      className={styles.filterInput}
+                      id="limite"
+                      value={filters.limite}
+                      onChange={(e) => setFilters({...filters, limite: e.target.value})}
+                      min="1"
+                    />
+                  </div>
+                )}
+                
+                <div className="col-md-3">
+                  <button
+                    className={styles.btnPrimary}
+                    onClick={fetchReportData}
+                    disabled={loading}
+                    style={{ marginTop: '1.8rem' }}
+                  >
+                    {loading ? 'Carregando...' : 'Gerar Relatório'}
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Seção de Resultados */}
+            <section className={styles.reportContent}>
+              {error && (
+                <div className={styles.errorContainer}>
+                  <div className={styles.alertDanger}>{error}</div>
+                </div>
+              )}
+
+              {loading && (
+                <div className={styles.loadingContainer}>
+                  <div className={styles.loadingSpinner}></div>
+                  <p>Gerando relatório...</p>
+                </div>
+              )}
+
+              {!loading && data.length > 0 && (
+                <div className={styles.tableContainer}>
+                  <table className={styles.reportTable}>
+                    <thead>
+                      <tr>
+                        {config.columns.map((col) => (
+                          <th key={col.key}>{col.label}</th>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </>
-            ) : reportData.items ? (
-              <div className="table-container">
-                <table className="report-table">
-                  <thead>
-                    <tr>
-                      {reportType === 'produtos-mais-vendidos' ? (
-                        <>
-                          <th>Posição</th>
-                          <th>Produto</th>
-                          <th>Vendas</th>
-                          <th>Valor Total</th>
-                        </>
-                      ) : (
-                        <>
-                          <th>ID</th>
-                          <th>Descrição</th>
-                          <th>Valor</th>
-                        </>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reportData.items.map((item, index) => (
-                      <tr key={index}>
-                        {reportType === 'produtos-mais-vendidos' ? (
-                          <>
-                            <td className="rank-cell">#{item.rank}</td>
-                            <td>{item.produto}</td>
-                            <td>{item.vendas}</td>
-                            <td>{item.valor}</td>
-                          </>
-                        ) : (
-                          <>
-                            <td>{item.id}</td>
-                            <td>{item.description}</td>
-                            <td>{item.value}</td>
-                          </>
-                        )}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="no-data">
-                <p>Nenhum dado disponível para este relatório.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
+                    </thead>
+                    <tbody>
+                      {data.map((row, index) => (
+                        <tr key={index}>
+                          {config.columns.map((col) => (
+                            <td key={col.key}>
+                              {formatValue(row[col.key], col.type)}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
-      {/* Footer */}
-      <footer className="report-footer">
-        <p>© 2025 VL Store. Todos os direitos reservados.</p>
-      </footer>
-    </div>
+              {!loading && data.length === 0 && !error && (
+                <div className={styles.noData}>
+                  <div style={{ fontSize: '4rem' }}>📊</div>
+                  <h3>Nenhum dado encontrado</h3>
+                  <p>Configure os filtros e clique em "Gerar Relatório" para visualizar os dados.</p>
+                </div>
+              )}
+            </section>
+          </div>
+        </main>
+
+        {/* Rodapé */}
+        <footer className={styles.reportFooter}>
+          <p>&copy; {new Date().getFullYear()} VL Store. Todos os direitos reservados.</p>
+        </footer>
+      </div>
+    </>
   );
 };
 

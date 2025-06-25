@@ -1,47 +1,50 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState } from "react";
-// 1. Importando o novo CSS Module específico para esta página
+import ReportDisplay from "./../ui/components/reports/reportDisplay";
 import styles from "../ui/styles/ReportsPage.module.css";
-import "../../public/css/general.css";
+import "../ui/styles/General.module.css";
 
 const ReportsPage: React.FC = () => {
   const router = useRouter();
-  // O estado isViewOnly será usado para desabilitar botões específicos
   const [isViewOnly, setIsViewOnly] = useState(false);
+  const { reportType } = router.query;
 
-  // Array com os dados dos relatórios para um código mais limpo
+  if (reportType) {
+    return <ReportDisplay reportType={reportType as string} />;
+  }
+
   const reportButtons = [
     {
       label: "Produtos mais vendidos",
-      path: "/productsReportPage", // Exemplo de rota
+      path: "/reportsPage?reportType=produtos-mais-vendidos",
       disabled: false,
     },
     {
       label: "Ranking de vendas de funcionários",
-      path: "/employeeSalesReportPage", // Exemplo de rota
+      path: "/reportsPage?reportType=ranking-funcionarios",
       disabled: isViewOnly,
     },
     {
       label: "Relatório financeiro",
-      path: "/financialReportPage", // Exemplo de rota
+      path: "/reportsPage?reportType=financeiro",
       disabled: isViewOnly,
     },
     {
       label: "Total de vendas por forma de pagamento",
-      path: "/paymentMethodsReportPage", // Exemplo de rota
+      path: "/reportsPage?reportType=vendas-forma-pagamento",
       disabled: false,
     },
     {
       label: "Estoque baixo",
-      path: "/lowStockReportPage", // Exemplo de rota
+      path: "/reportsPage?reportType=estoque-baixo",
       disabled: false,
     },
     {
-      label: "Voltar para o Menu", // Adicionei um botão de voltar mais proeminente
+      label: "Voltar para o Menu",
       path: "/menuPage",
       disabled: false,
-      isSecondary: true, // Estilo diferente para o botão de voltar
+      isSecondary: true,
     },
   ];
 
@@ -52,7 +55,6 @@ const ReportsPage: React.FC = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
-      {/* Container principal que centraliza todo o conteúdo na página */}
       <div className={styles.pageContainer}>
         <header className={styles.header}>
           <img
@@ -62,9 +64,7 @@ const ReportsPage: React.FC = () => {
           />
         </header>
 
-        {/* O card principal com o efeito de vidro */}
         <main className={styles.reportsCard}>
-          {/* Seção dos Títulos */}
           <section className={styles.titleSection}>
             <h1 className={styles.title}>VL Store</h1>
             <h2 className={styles.subtitle}>Página de Relatórios</h2>
@@ -75,7 +75,9 @@ const ReportsPage: React.FC = () => {
               <button
                 key={index}
                 type="button"
-                className={`${styles.reportButton} ${button.isSecondary ? styles.secondaryButton : ''}`}
+                className={`${styles.reportButton} ${
+                  button.isSecondary ? styles.secondaryButton : ""
+                }`}
                 onClick={() => router.push(button.path)}
                 disabled={button.disabled}
               >
@@ -84,10 +86,12 @@ const ReportsPage: React.FC = () => {
             ))}
           </section>
         </main>
-        
-        {/* Adicionei um footer para consistência, pode remover se não quiser */}
+
         <footer className={styles.footer}>
-            <p>&copy; {new Date().getFullYear()} VL Store. Todos os direitos reservados.</p>
+          <p>
+            &copy; {new Date().getFullYear()} VL Store. Todos os direitos
+            reservados.
+          </p>
         </footer>
       </div>
     </>
