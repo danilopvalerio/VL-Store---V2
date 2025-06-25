@@ -55,4 +55,11 @@ router.get(
   asyncHandler(relatorioController.getProdutosComEstoqueBaixo.bind(relatorioController)),
 );
 
+router.get(
+    '/loja/:id_loja/pdf',
+    authenticateJWT,
+    autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
+    asyncHandler(relatorioController.gerarRelatorioPDF.bind(relatorioController))
+);
+
 export default router;
