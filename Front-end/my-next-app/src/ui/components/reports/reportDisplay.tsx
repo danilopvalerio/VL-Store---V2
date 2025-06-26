@@ -171,6 +171,17 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
 
 const downloadPDF = async () => {
   try {
+    const token = localStorage.getItem('token');
+
+    // --- VERIFICAÇÃO ADICIONADA AQUI ---
+    // Se não houver token, interrompa a execução e informe o usuário.
+    if (!token) {
+      setError('Sessão expirada ou inválida. Por favor, faça login novamente.');
+      // Opcional: redirecionar para a página de login.
+      // window.location.href = '/login'; 
+      return; 
+    }
+
     const params = new URLSearchParams({
       tipo: reportType,
       id_loja: filters.id_loja,
@@ -180,7 +191,7 @@ const downloadPDF = async () => {
 
     const configRequest = {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${token}` // Usar a variável 'token'
       }
     };
 
@@ -190,6 +201,10 @@ const downloadPDF = async () => {
     );
 
     if (!response.ok) {
+      // Se o erro for de autorização, pode ser que o token seja inválido no back-end
+      if (response.status === 401 || response.status === 403) {
+         throw new Error('Não autorizado. Seu token pode ter expirado.');
+      }
       throw new Error('Erro ao gerar PDF');
     }
 
@@ -203,7 +218,8 @@ const downloadPDF = async () => {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
   } catch (err) {
-    setError('Erro ao fazer download do PDF');
+    // Usar err.message para exibir uma mensagem mais específica
+    setError(err.message || 'Erro ao fazer download do PDF');
   }
 };
 

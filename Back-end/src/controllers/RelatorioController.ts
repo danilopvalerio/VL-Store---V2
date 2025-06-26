@@ -91,7 +91,7 @@ export default class RelatorioController {
         .orderBy('total_vendido', 'DESC')
         .getRawMany();
 
-      return res.status(200).json({ success: true, data: relatorio });
+      return res.status(200).json({ success: true, data: relatorio});
     } catch (error) {
       console.error('Erro ao gerar relatório de ranking de funcionários:', error);
       return res.status(500).json({ success: false, message: 'Erro interno no servidor.' });

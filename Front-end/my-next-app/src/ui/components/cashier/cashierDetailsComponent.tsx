@@ -247,6 +247,11 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
 
   const saldo = caixa?.saldo ?? 0;
 
+const hasNextPage = pagination.page * pagination.limit < pagination.total;
+const hasPreviousPage = pagination.page > 1;
+
+if (!caixa) return <div>Carregando detalhes do caixa...</div>;
+
   const handlePageChange = (newPage: number) =>
     setPagination({ ...pagination, page: newPage });
 
@@ -429,32 +434,24 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
             <div
               className={`${styles.flex} ${styles.justifyBetween} ${styles.itemsCenter} ${styles.mt4}`}
             >
-              <button
-                className={`${styles.btn} ${styles.btnSecondary}`}
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page === 1 || isLoading}
-                title={
-                  pagination.page === 1 ? "Você está na primeira página" : ""
-                }
-              >
-                Anterior
-              </button>
-
-              <button
-                className={`${styles.btn} ${styles.btnSecondary}`}
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={
-                  pagination.page * pagination.limit >= pagination.total ||
-                  isLoading
-                }
-                title={
-                  pagination.page * pagination.limit >= pagination.total
-                    ? "Não há mais páginas"
-                    : ""
-                }
-              >
-                Próxima
-              </button>
+              {hasPreviousPage && (
+                <button
+                  className={`${styles.btn} ${styles.btnSecondary}`}
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={isLoading}
+                >
+                  Anterior
+                </button>
+              )}
+              {hasNextPage && (
+                <button
+                  className={`${styles.btn} ${styles.btnSecondary}`}
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={isLoading}
+                >
+                  Próxima
+                </button>
+              )}
             </div>
           </>
         )}
