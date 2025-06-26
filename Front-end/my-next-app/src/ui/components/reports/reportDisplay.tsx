@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../../styles/ReportDisplay.module.css";
 import "../../styles/General.module.css";
 
@@ -33,9 +33,9 @@ const REPORT_CONFIGS: { [key: string]: ReportConfig } = {
     endpoint: 'produtos-mais-vendidos',
     requiresPeriod: true,
     columns: [
-      { key: 'nome', label: 'Produto', type: 'text' },
-      { key: 'referencia', label: 'Referência', type: 'text' },
-      { key: 'quantidade_vendida', label: 'Unidades Vendidas', type: 'number' }
+      { key: 'nome_produto', label: 'Produto', type: 'text' },
+      { key: 'referencia_produto', label: 'Referência', type: 'text' },
+      { key: 'total_unidades_vendidas', label: 'Unidades Vendidas', type: 'number' }
     ]
   },
   'ranking-funcionarios': {
@@ -43,8 +43,8 @@ const REPORT_CONFIGS: { [key: string]: ReportConfig } = {
     endpoint: 'ranking-funcionarios',
     requiresPeriod: true,
     columns: [
-      { key: 'nome', label: 'Funcionário', type: 'text' },
-      { key: 'total_vendas', label: 'Total Vendido', type: 'currency' }
+      { key: 'nome_funcionario', label: 'Funcionário', type: 'text' },
+      { key: 'total_vendido', label: 'Total Vendido', type: 'currency' }
     ]
   },
   'financeiro': {
@@ -52,8 +52,8 @@ const REPORT_CONFIGS: { [key: string]: ReportConfig } = {
     endpoint: 'total-entradas-saidas',
     requiresPeriod: true,
     columns: [
-      { key: 'entradas', label: 'Total de Entradas', type: 'currency' },
-      { key: 'saidas', label: 'Total de Saídas', type: 'currency' },
+      { key: 'total_entradas', label: 'Total de Entradas', type: 'currency' },
+      { key: 'total_saidas', label: 'Total de Saídas', type: 'currency' },
       { key: 'saldo', label: 'Saldo', type: 'currency' }
     ]
   },
@@ -63,8 +63,8 @@ const REPORT_CONFIGS: { [key: string]: ReportConfig } = {
     requiresPeriod: true,
     columns: [
       { key: 'forma_pagamento', label: 'Forma de Pagamento', type: 'text' },
-      { key: 'total', label: 'Total Arrecadado', type: 'currency' },
-      { key: 'quantidade', label: 'Qtd. Transações', type: 'number' }
+      { key: 'total_arrecadado', label: 'Total Arrecadado', type: 'currency' },
+      { key: 'quantidade_transacoes', label: 'Qtd. Transações', type: 'number' }
     ]
   },
   'estoque-baixo': {
@@ -74,7 +74,7 @@ const REPORT_CONFIGS: { [key: string]: ReportConfig } = {
     columns: [
       { key: 'referencia', label: 'Referência', type: 'text' },
       { key: 'nome', label: 'Produto', type: 'text' },
-      { key: 'quantidade', label: 'Estoque Total', type: 'number' }
+      { key: 'estoque_total', label: 'Estoque Total', type: 'number' }
     ]
   }
 };
@@ -85,7 +85,7 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
   const [data, setData] = useState<ReportData[]>([]);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState<ReportFilters>({
-    id_loja: '1',
+    id_loja: '',
     dataInicio: '',
     dataFim: '',
     limite: '7'
@@ -93,16 +93,37 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
 
   const config = REPORT_CONFIGS[reportType];
 
+   useEffect(() => {
+    const userDataString = localStorage.getItem("userData");
+
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      if (userData && userData.id_loja) {
+        setFilters(prevFilters => ({
+          ...prevFilters,
+          id_loja: userData.id_loja,
+        }));
+      }
+    } else {
+      console.error("Dados do usuário não encontrados no localStorage.");
+      setError("Não foi possível identificar a loja. Por favor, faça o login novamente.");
+    }
+  }, []);
+
   if (!config) {
     return <div>Tipo de relatório não encontrado</div>;
   }
 
   const fetchReportData = async () => {
+    if (!filters.id_loja) {
+        setError('ID da loja não encontrado. Verifique se está logado.');
+        return;
+    }
+
     setLoading(true);
     setError('');
     
     try {
-      // Validação dos filtros
       if (config.requiresPeriod && (!filters.dataInicio || !filters.dataFim)) {
         setError('As datas de início e fim são obrigatórias');
         setLoading(false);
@@ -221,14 +242,9 @@ const downloadPDF = async () => {
         <img className="img logo" src="/vl-store-logo-white.svg" />
       </header>
 
-        {/* Conteúdo Principal */}
         <main className={styles.reportMain}>
           <div className={styles.reportCard}>
-            {/* Seção de Título */}
             <section className={styles.reportTitleSection}>
-              <div className={styles.reportIcon}>
-                <span style={{ fontSize: '1.5rem' }}>📊</span>
-              </div>
               <div className={styles.reportTitleInfo}>
                 <h1 className={styles.reportTitle}>{config.title}</h1>
                 <p className={styles.reportDescription}>Relatório detalhado do sistema</p>
@@ -241,18 +257,16 @@ const downloadPDF = async () => {
               </div>
             </section>
 
-            {/* Seção de Ações */}
             <section className={styles.reportActions}>
               <button
                 className={`${styles.btnPrimary} ${styles.btnDownload}`}
                 onClick={downloadPDF}
                 disabled={loading || data.length === 0}
               >
-                📄 Download PDF
+                Download PDF
               </button>
             </section>
 
-            {/* Seção de Filtros */}
             <section className={styles.filterSection}>
               <div className="row g-3">
                 {config.requiresPeriod && (
@@ -309,7 +323,6 @@ const downloadPDF = async () => {
               </div>
             </section>
 
-            {/* Seção de Resultados */}
             <section className={styles.reportContent}>
               {error && (
                 <div className={styles.errorContainer}>
@@ -360,7 +373,6 @@ const downloadPDF = async () => {
           </div>
         </main>
 
-        {/* Rodapé */}
         <footer className={styles.reportFooter}>
           <p>&copy; {new Date().getFullYear()} VL Store. Todos os direitos reservados.</p>
         </footer>
