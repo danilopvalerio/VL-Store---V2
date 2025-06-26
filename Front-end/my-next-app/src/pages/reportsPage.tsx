@@ -40,12 +40,6 @@ const ReportsPage: React.FC = () => {
       path: "/reportsPage?reportType=estoque-baixo",
       disabled: false,
     },
-    {
-      label: "Voltar para o Menu",
-      path: "/menuPage",
-      disabled: false,
-      isSecondary: true,
-    },
   ];
 
   return (
@@ -54,15 +48,22 @@ const ReportsPage: React.FC = () => {
         <title>VL Store - Relatórios</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
+      <header className="header-panel position-relative">
+            <button
+              className="btn primaria position-absolute top-0 end-0 px-3 py-1 shadow"
+              onClick={() => router.push("/menuPage")}
+            >
+              Voltar
+            </button>
+            <img
+              className="img logo"
+              src="/vl-store-logo-white.svg"
+              alt="VL Store Logo"
+            />
+          </header>
 
       <div className={styles.pageContainer}>
-        <header className={styles.header}>
-          <img
-            src="/vl-store-logo-white.svg"
-            alt="VL Store Logo"
-            className={styles.logo}
-          />
-        </header>
+        
 
         <main className={styles.reportsCard}>
           <section className={styles.titleSection}>
@@ -75,8 +76,7 @@ const ReportsPage: React.FC = () => {
               <button
                 key={index}
                 type="button"
-                className={`${styles.reportButton} ${
-                  button.isSecondary ? styles.secondaryButton : ""
+                className={`${styles.reportButton} ${""
                 }`}
                 onClick={() => router.push(button.path)}
                 disabled={button.disabled}

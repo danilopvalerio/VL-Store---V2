@@ -85,7 +85,7 @@ const MenuPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return null; // Ou um componente de loading
+    return null;
   }
 
   return (
@@ -126,7 +126,7 @@ const MenuPage: React.FC = () => {
             onClick={() => navigateTo("/cashierPage")}
             disabled={isViewOnly}
           >
-            Caixa
+            Caixas
           </button>
           <button
             type="button"
