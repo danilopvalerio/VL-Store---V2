@@ -71,7 +71,7 @@ const StoreRegistration: React.FC = () => {
         "A senha deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma letra minúscula, um número e um caractere especial."
       );
       return;
-    } 
+    }
 
     const storeData: StoreRegistrationData = {
       nome: storeName,

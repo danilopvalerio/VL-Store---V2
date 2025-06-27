@@ -195,13 +195,6 @@ const ModalFooter = ({ onClose }: ModalFooterProps) => (
       className="btn primaria mx-2 footerButton"
       onClick={onClose}
     >
-      <i className="fas fa-times mr-1"></i>Editar
-    </button>
-    <button
-      type="button"
-      className="btn primaria mx-2 footerButton"
-      onClick={onClose}
-    >
       <i className="fas fa-times mr-1"></i>Fechar
     </button>
   </div>

@@ -311,3 +311,17 @@ footer {
 .table tbody tr {
   border: none !important;
 }
+
+/* Estiliza o select quando a opção placeholder está ativa */
+.form-control.placeholder-selected {
+  color: #a0aec0; /* Um cinza claro para o texto do placeholder */
+  background-color: #2d3748; /* Cor de fundo escura que combine com seu tema */
+  border-color: #4a5568; /* Cor da borda que combine */
+}
+
+/* Garante que o fundo não fique branco ao ser desabilitado */
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: #482d2d3c !important; /* Use !important se necessário para sobrescrever o Bootstrap */
+  opacity: 0.7;
+}

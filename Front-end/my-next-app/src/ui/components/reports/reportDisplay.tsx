@@ -18,7 +18,7 @@ interface ReportConfig {
   columns: Array<{
     key: string;
     label: string;
-    type?: 'currency' | 'number' | 'text';
+    type?: "currency" | "number" | "text";
   }>;
   // Configuração para o gráfico
   chartConfig?: {
@@ -36,89 +36,97 @@ interface ReportFilters {
 }
 
 const REPORT_CONFIGS: { [key: string]: ReportConfig } = {
-  'produtos-mais-vendidos': {
-    title: 'Produtos Mais Vendidos',
-    endpoint: 'produtos-mais-vendidos',
+  "produtos-mais-vendidos": {
+    title: "Produtos Mais Vendidos",
+    endpoint: "produtos-mais-vendidos",
     requiresPeriod: true,
     columns: [
-      { key: 'nome_produto', label: 'Produto', type: 'text' },
-      { key: 'referencia_produto', label: 'Referência', type: 'text' },
-      { key: 'total_unidades_vendidas', label: 'Unidades Vendidas', type: 'number' }
+      { key: "nome_produto", label: "Produto", type: "text" },
+      { key: "referencia_produto", label: "Referência", type: "text" },
+      {
+        key: "total_unidades_vendidas",
+        label: "Unidades Vendidas",
+        type: "number",
+      },
     ],
     chartConfig: {
-      labelKey: 'nome_produto',
-      dataKey: 'total_unidades_vendidas',
-      datasetLabel: 'Unidades Vendidas'
-    }
+      labelKey: "nome_produto",
+      dataKey: "total_unidades_vendidas",
+      datasetLabel: "Unidades Vendidas",
+    },
   },
-  'ranking-funcionarios': {
-    title: 'Ranking de Funcionários',
-    endpoint: 'ranking-funcionarios',
+  "ranking-funcionarios": {
+    title: "Ranking de Funcionários",
+    endpoint: "ranking-funcionarios",
     requiresPeriod: true,
     columns: [
-      { key: 'nome_funcionario', label: 'Funcionário', type: 'text' },
-      { key: 'total_vendido', label: 'Total Vendido', type: 'currency' }
+      { key: "nome_funcionario", label: "Funcionário", type: "text" },
+      { key: "total_vendido", label: "Total Vendido", type: "currency" },
     ],
     chartConfig: {
-      labelKey: 'nome_funcionario',
-      dataKey: 'total_vendido',
-      datasetLabel: 'Total Vendido (R$)'
-    }
+      labelKey: "nome_funcionario",
+      dataKey: "total_vendido",
+      datasetLabel: "Total Vendido (R$)",
+    },
   },
-  'financeiro': {
-    title: 'Relatório Financeiro',
-    endpoint: 'total-entradas-saidas',
+  financeiro: {
+    title: "Relatório Financeiro",
+    endpoint: "total-entradas-saidas",
     requiresPeriod: true,
     columns: [
-      { key: 'total_entradas', label: 'Total de Entradas', type: 'currency' },
-      { key: 'total_saidas', label: 'Total de Saídas', type: 'currency' },
-      { key: 'saldo', label: 'Saldo', type: 'currency' }
+      { key: "total_entradas", label: "Total de Entradas", type: "currency" },
+      { key: "total_saidas", label: "Total de Saídas", type: "currency" },
+      { key: "saldo", label: "Saldo", type: "currency" },
     ],
     // Um gráfico de barras simples não se aplica bem aqui, pois temos apenas uma linha de dados.
     // Poderia ser um gráfico com 3 barras (Entradas, Saídas, Saldo), mas exigiria um tratamento de dados diferente.
   },
-  'vendas-forma-pagamento': {
-    title: 'Vendas por Forma de Pagamento',
-    endpoint: 'vendas-forma-pagamento',
+  "vendas-forma-pagamento": {
+    title: "Vendas por Forma de Pagamento",
+    endpoint: "vendas-forma-pagamento",
     requiresPeriod: true,
     columns: [
-      { key: 'forma_pagamento', label: 'Forma de Pagamento', type: 'text' },
-      { key: 'total_arrecadado', label: 'Total Arrecadado', type: 'currency' },
-      { key: 'quantidade_transacoes', label: 'Qtd. Transações', type: 'number' }
+      { key: "forma_pagamento", label: "Forma de Pagamento", type: "text" },
+      { key: "total_arrecadado", label: "Total Arrecadado", type: "currency" },
+      {
+        key: "quantidade_transacoes",
+        label: "Qtd. Transações",
+        type: "number",
+      },
     ],
     chartConfig: {
-      labelKey: 'forma_pagamento',
-      dataKey: 'total_arrecadado',
-      datasetLabel: 'Total Arrecadado (R$)'
-    }
+      labelKey: "forma_pagamento",
+      dataKey: "total_arrecadado",
+      datasetLabel: "Total Arrecadado (R$)",
+    },
   },
-  'estoque-baixo': {
-    title: 'Produtos com Estoque Baixo',
-    endpoint: 'estoque-baixo',
+  "estoque-baixo": {
+    title: "Produtos com Estoque Baixo",
+    endpoint: "estoque-baixo",
     requiresLimit: true,
     columns: [
-      { key: 'referencia', label: 'Referência', type: 'text' },
-      { key: 'nome', label: 'Produto', type: 'text' },
-      { key: 'estoque_total', label: 'Estoque Total', type: 'number' }
+      { key: "referencia", label: "Referência", type: "text" },
+      { key: "nome", label: "Produto", type: "text" },
+      { key: "estoque_total", label: "Estoque Total", type: "number" },
     ],
     chartConfig: {
-      labelKey: 'nome',
-      dataKey: 'estoque_total',
-      datasetLabel: 'Quantidade em Estoque'
-    }
-  }
+      labelKey: "nome",
+      dataKey: "estoque_total",
+      datasetLabel: "Quantidade em Estoque",
+    },
+  },
 };
 
 const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<ReportData[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [filters, setFilters] = useState<ReportFilters>({
-    id_loja: '',
-    dataInicio: '',
-    dataFim: '',
-    limite: '7'
+    id_loja: "",
+    dataInicio: "",
+    dataFim: "",
+    limite: "7",
   });
 
   const config = REPORT_CONFIGS[reportType];
@@ -126,7 +134,9 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: `${config?.title.toLowerCase().replace(/\s+/g, '-') || 'relatorio'}.pdf`,
+    documentTitle: `${
+      config?.title.toLowerCase().replace(/\s+/g, "-") || "relatorio"
+    }.pdf`,
     bodyClass: "report-print-body",
   });
 
@@ -135,11 +145,16 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
     if (userDataString) {
       const userData = JSON.parse(userDataString);
       if (userData && userData.id_loja) {
-        setFilters(prevFilters => ({ ...prevFilters, id_loja: userData.id_loja }));
+        setFilters((prevFilters) => ({
+          ...prevFilters,
+          id_loja: userData.id_loja,
+        }));
       }
     } else {
       console.error("Dados do usuário não encontrados no localStorage.");
-      setError("Não foi possível identificar a loja. Por favor, faça o login novamente.");
+      setError(
+        "Não foi possível identificar a loja. Por favor, faça o login novamente."
+      );
     }
   }, []);
 
@@ -149,31 +164,33 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
 
   const fetchReportData = async () => {
     if (!filters.id_loja) {
-      setError('ID da loja não encontrado. Verifique se está logado.');
+      setError("ID da loja não encontrado. Verifique se está logado.");
       return;
     }
     setLoading(true);
-    setError('');
+    setError("");
     try {
       if (config.requiresPeriod && (!filters.dataInicio || !filters.dataFim)) {
-        setError('As datas de início e fim são obrigatórias');
+        setError("As datas de início e fim são obrigatórias");
         setLoading(false);
         return;
       }
       const params = new URLSearchParams();
       if (config.requiresPeriod) {
-        params.append('dataInicio', filters.dataInicio);
-        params.append('dataFim', filters.dataFim);
+        params.append("dataInicio", filters.dataInicio);
+        params.append("dataFim", filters.dataFim);
       }
       if (config.requiresLimit && filters.limite) {
-        params.append('limite', filters.limite);
+        params.append("limite", filters.limite);
       }
-      const url = `http://localhost:9700/api/relatorios/loja/${filters.id_loja}/${config.endpoint}?${params.toString()}`;
+      const url = `http://localhost:9700/api/relatorios/loja/${
+        filters.id_loja
+      }/${config.endpoint}?${params.toString()}`;
       const response = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -181,23 +198,26 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
       }
       const result = await response.json();
       if (result.success === false) {
-        throw new Error(result.message || 'Erro ao carregar relatório');
+        throw new Error(result.message || "Erro ao carregar relatório");
       }
       setData(Array.isArray(result.data) ? result.data : [result.data]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro inesperado');
+      setError(err instanceof Error ? err.message : "Erro inesperado");
     } finally {
       setLoading(false);
     }
   };
 
   const formatValue = (value: any, type?: string) => {
-    if (value === null || value === undefined) return '-';
+    if (value === null || value === undefined) return "-";
     switch (type) {
-      case 'currency':
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(value));
-      case 'number':
-        return new Intl.NumberFormat('pt-BR').format(value);
+      case "currency":
+        return new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }).format(parseFloat(value));
+      case "number":
+        return new Intl.NumberFormat("pt-BR").format(value);
       default:
         return value;
     }
@@ -212,17 +232,17 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
 
       <div className={styles.pageContainer}>
         <header className="header-panel position-relative">
-            <button
-              className="btn primaria position-absolute top-0 end-0 px-3 py-1 shadow"
-              onClick={() => router.push("/menuPage")}
-            >
-              Voltar
-            </button>
-            <img
-              className="img logo"
-              src="/vl-store-logo-white.svg"
-              alt="VL Store Logo"
-            />
+          <button
+            className="btn primaria position-absolute top-0 end-0 px-3 py-1 shadow"
+            onClick={() => router.push("/reportsPage")}
+          >
+            Voltar
+          </button>
+          <img
+            className="img logo"
+            src="/vl-store-logo-white.svg"
+            alt="VL Store Logo"
+          />
         </header>
 
         <main className={styles.reportMain}>
@@ -230,11 +250,23 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
             <section className={styles.reportTitleSection}>
               <div className={styles.reportTitleInfo}>
                 <h1 className={styles.reportTitle}>{config.title}</h1>
-                <p className={styles.reportDescription}>Relatório detalhado do sistema</p>
+                <p className={styles.reportDescription}>
+                  Relatório detalhado do sistema
+                </p>
                 <div className={styles.reportMeta}>
                   <span>Loja: {filters.id_loja}</span>
                   {config.requiresPeriod && filters.dataInicio && (
-                    <span>Período: {new Date(filters.dataInicio).toLocaleDateString('pt-BR', {timeZone: 'UTC'})} a {new Date(filters.dataFim).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</span>
+                    <span>
+                      Período:{" "}
+                      {new Date(filters.dataInicio).toLocaleDateString(
+                        "pt-BR",
+                        { timeZone: "UTC" }
+                      )}{" "}
+                      a{" "}
+                      {new Date(filters.dataFim).toLocaleDateString("pt-BR", {
+                        timeZone: "UTC",
+                      })}
+                    </span>
                   )}
                 </div>
               </div>
@@ -255,52 +287,67 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
                 {config.requiresPeriod && (
                   <>
                     <div className="col-md-3">
-                      <label htmlFor="dataInicio" className={styles.filterLabel}>Data Início</label>
+                      <label
+                        htmlFor="dataInicio"
+                        className={styles.filterLabel}
+                      >
+                        Data Início
+                      </label>
                       <input
                         type="date"
                         className={styles.filterInput}
                         id="dataInicio"
                         value={filters.dataInicio}
-                        onChange={(e) => setFilters({...filters, dataInicio: e.target.value})}
+                        onChange={(e) =>
+                          setFilters({ ...filters, dataInicio: e.target.value })
+                        }
                         required
                       />
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="dataFim" className={styles.filterLabel}>Data Fim</label>
+                      <label htmlFor="dataFim" className={styles.filterLabel}>
+                        Data Fim
+                      </label>
                       <input
                         type="date"
                         className={styles.filterInput}
                         id="dataFim"
                         value={filters.dataFim}
-                        onChange={(e) => setFilters({...filters, dataFim: e.target.value})}
+                        onChange={(e) =>
+                          setFilters({ ...filters, dataFim: e.target.value })
+                        }
                         required
                       />
                     </div>
                   </>
                 )}
-                
+
                 {config.requiresLimit && (
                   <div className="col-md-3">
-                    <label htmlFor="limite" className={styles.filterLabel}>Limite de Estoque</label>
+                    <label htmlFor="limite" className={styles.filterLabel}>
+                      Limite de Estoque
+                    </label>
                     <input
                       type="number"
                       className={styles.filterInput}
                       id="limite"
                       value={filters.limite}
-                      onChange={(e) => setFilters({...filters, limite: e.target.value})}
+                      onChange={(e) =>
+                        setFilters({ ...filters, limite: e.target.value })
+                      }
                       min="1"
                     />
                   </div>
                 )}
-                
+
                 <div className="col-md-3">
                   <button
                     className={styles.btnPrimary}
                     onClick={fetchReportData}
                     disabled={loading}
-                    style={{ marginTop: '1.8rem' }}
+                    style={{ marginTop: "1.8rem" }}
                   >
-                    {loading ? 'Carregando...' : 'Gerar Relatório'}
+                    {loading ? "Carregando..." : "Gerar Relatório"}
                   </button>
                 </div>
               </div>
@@ -354,9 +401,12 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
 
               {!loading && data.length === 0 && !error && (
                 <div className={styles.noData}>
-                  <div style={{ fontSize: '4rem' }}>📊</div>
+                  <div style={{ fontSize: "4rem" }}>📊</div>
                   <h3>Nenhum dado encontrado</h3>
-                  <p>Configure os filtros e clique em &quot;Gerar Relatório&quot;  para visualizar os dados.</p>
+                  <p>
+                    Configure os filtros e clique em &quot;Gerar Relatório&quot;
+                    para visualizar os dados.
+                  </p>
                 </div>
               )}
             </section>
@@ -364,7 +414,10 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
         </main>
 
         <footer className={styles.reportFooter}>
-          <p>&copy; {new Date().getFullYear()} VL Store. Todos os direitos reservados.</p>
+          <p>
+            &copy; {new Date().getFullYear()} VL Store. Todos os direitos
+            reservados.
+          </p>
         </footer>
       </div>
     </>

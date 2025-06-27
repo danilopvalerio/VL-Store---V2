@@ -1,5 +1,5 @@
 import { AppDataSource } from './src/database/AppDataSource';
-import {appInstance as app} from './src/app'; // Importa a instância do Express configurada
+import { appInstance as app } from './src/app'; // Importa a instância do Express configurada
 
 const PORT = process.env.PORT || 3000;
 
@@ -7,7 +7,7 @@ async function iniciarServidor() {
   try {
     await AppDataSource.initialize();
     console.log('Conexão com o banco de dados estabelecida!');
-    
+
     app.listen(PORT, () => {
       console.log(`Servidor rodando na porta ${PORT}`);
       console.log(`Acesse: http://localhost:${PORT}`);

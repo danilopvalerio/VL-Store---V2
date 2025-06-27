@@ -23,41 +23,41 @@ const validarPeriodo = (dataInicioStr: any, dataFimStr: any): ValidacaoPeriodo =
       isValid: false,
       message: 'As datas de início e fim são obrigatórias.',
       dataInicio: new Date(), // Valor padrão
-      dataFim: new Date()     // Valor padrão
+      dataFim: new Date(), // Valor padrão
     };
   }
-  
+
   const dataInicio = new Date(dataInicioStr);
   const dataFim = new Date(dataFimStr);
-  
+
   // Verificação de datas inválidas
   if (isNaN(dataInicio.getTime()) || isNaN(dataFim.getTime())) {
     return {
       isValid: false,
       message: 'Formato de data inválido.',
       dataInicio: new Date(),
-      dataFim: new Date()
+      dataFim: new Date(),
     };
   }
-  
+
   // Verificação de intervalo
   if (dataInicio > dataFim) {
     return {
       isValid: false,
       message: 'A data de início não pode ser posterior à data de fim.',
       dataInicio,
-      dataFim
+      dataFim,
     };
   }
-  
+
   // Ajuste do horário
   dataFim.setHours(23, 59, 59, 999);
-  
+
   return {
     isValid: true,
     message: '',
     dataInicio,
-    dataFim
+    dataFim,
   };
 };
 
@@ -89,9 +89,10 @@ export default class RelatorioController {
         })
         .groupBy('funcionario.id_funcionario, funcionario.nome')
         .orderBy('total_vendido', 'DESC')
+        .limit(10) // <-- ADICIONE ESTA LINHA
         .getRawMany();
 
-      return res.status(200).json({ success: true, data: relatorio});
+      return res.status(200).json({ success: true, data: relatorio });
     } catch (error) {
       console.error('Erro ao gerar relatório de ranking de funcionários:', error);
       return res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
@@ -288,250 +289,262 @@ export default class RelatorioController {
       return res.status(500).json({ success: false, message: 'Erro interno no servidor.' });
     }
   }
-  
+
   async gerarRelatorioPDF(req: Request, res: Response) {
     const { tipo, id_loja, ...filters } = req.query;
-    
+
     try {
       let relatorioConfig: any;
-      
+
       switch (tipo) {
         case 'ranking-funcionarios':
           relatorioConfig = await this.configurarRelatorioFuncionarios(id_loja as string, filters);
           break;
-        
+
         case 'produtos-mais-vendidos':
           relatorioConfig = await this.configurarRelatorioProdutos(id_loja as string, filters);
           break;
-        
+
         case 'financeiro':
           relatorioConfig = await this.configurarRelatorioFinanceiro(id_loja as string, filters);
           break;
-        
+
         case 'vendas-forma-pagamento':
-          relatorioConfig = await this.configurarRelatorioFormaPagamento(id_loja as string, filters);
+          relatorioConfig = await this.configurarRelatorioFormaPagamento(
+            id_loja as string,
+            filters,
+          );
           break;
-        
+
         case 'estoque-baixo':
           relatorioConfig = await this.configurarRelatorioEstoque(id_loja as string, filters);
           break;
-        
+
         default:
           return res.status(400).json({ success: false, message: 'Tipo de relatório inválido' });
       }
-      
+
       // Gera o PDF
       const pdfBuffer = await this.gerarPDF(relatorioConfig);
-      
+
       // Configura a resposta
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=${relatorioConfig.fileName}`);
       return res.send(pdfBuffer);
-      
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
       return res.status(500).json({ success: false, message: 'Erro ao gerar PDF' });
     }
   }
-  
+
   // ==============================================
   // Métodos auxiliares para cada tipo de relatório
   // ==============================================
-  
+
   private async configurarRelatorioFinanceiro(id_loja: string, filters: any) {
     const validacao = validarPeriodo(filters.dataInicio, filters.dataFim);
-    
+
     if (!validacao.isValid) {
       throw new Error(validacao.message);
     }
-    
+
     // Agora pode usar diretamente, sem verificação adicional
     const { dataInicio, dataFim } = validacao;
-    
+
     try {
       // 1. Consultas paralelas com tipagem explícita
       const [totalVendas, totalEntradasManuais, totalSaidas] = await Promise.all([
         // Vendas completadas
         AppDataSource.getRepository(Venda)
-            .createQueryBuilder('venda')
-            .select('SUM(venda.total)', 'total')
-            .where('venda.id_loja = :id_loja', { id_loja })
-            .andWhere('venda.status = :status', { status: 'COMPLETADA' })
-            .andWhere('venda.data_hora BETWEEN :dataInicio AND :dataFim', {
-              dataInicio: validacao.dataInicio,
-              dataFim: validacao.dataFim
-            })
-            .getRawOne<{ total: string | null }>(), // Tipagem do resultado
-        
+          .createQueryBuilder('venda')
+          .select('SUM(venda.total)', 'total')
+          .where('venda.id_loja = :id_loja', { id_loja })
+          .andWhere('venda.status = :status', { status: 'COMPLETADA' })
+          .andWhere('venda.data_hora BETWEEN :dataInicio AND :dataFim', {
+            dataInicio: validacao.dataInicio,
+            dataFim: validacao.dataFim,
+          })
+          .getRawOne<{ total: string | null }>(), // Tipagem do resultado
+
         // Movimentações de entrada
         AppDataSource.getRepository(Movimentacao)
-            .createQueryBuilder('movimentacao')
-            .innerJoin('movimentacao.caixa', 'caixa')
-            .select('SUM(movimentacao.valor)', 'total')
-            .where('caixa.id_loja = :id_loja', { id_loja })
-            .andWhere('movimentacao.tipo = :tipo', { tipo: TipoMovimentacao.ENTRADA })
-            .andWhere('movimentacao.criado_em BETWEEN :dataInicio AND :dataFim', {
-              dataInicio: validacao.dataInicio,
-              dataFim: validacao.dataFim
-            })
-            .getRawOne<{ total: string | null }>(),
-        
+          .createQueryBuilder('movimentacao')
+          .innerJoin('movimentacao.caixa', 'caixa')
+          .select('SUM(movimentacao.valor)', 'total')
+          .where('caixa.id_loja = :id_loja', { id_loja })
+          .andWhere('movimentacao.tipo = :tipo', { tipo: TipoMovimentacao.ENTRADA })
+          .andWhere('movimentacao.criado_em BETWEEN :dataInicio AND :dataFim', {
+            dataInicio: validacao.dataInicio,
+            dataFim: validacao.dataFim,
+          })
+          .getRawOne<{ total: string | null }>(),
+
         // Movimentações de saída
         AppDataSource.getRepository(Movimentacao)
-            .createQueryBuilder('movimentacao')
-            .innerJoin('movimentacao.caixa', 'caixa')
-            .select('SUM(movimentacao.valor)', 'total')
-            .where('caixa.id_loja = :id_loja', { id_loja })
-            .andWhere('movimentacao.tipo = :tipo', { tipo: TipoMovimentacao.SAIDA })
-            .andWhere('movimentacao.criado_em BETWEEN :dataInicio AND :dataFim', {
-              dataInicio: validacao.dataInicio,
-              dataFim: validacao.dataFim
-            })
-            .getRawOne<{ total: string | null }>()
+          .createQueryBuilder('movimentacao')
+          .innerJoin('movimentacao.caixa', 'caixa')
+          .select('SUM(movimentacao.valor)', 'total')
+          .where('caixa.id_loja = :id_loja', { id_loja })
+          .andWhere('movimentacao.tipo = :tipo', { tipo: TipoMovimentacao.SAIDA })
+          .andWhere('movimentacao.criado_em BETWEEN :dataInicio AND :dataFim', {
+            dataInicio: validacao.dataInicio,
+            dataFim: validacao.dataFim,
+          })
+          .getRawOne<{ total: string | null }>(),
       ]);
-      
+
       // 2. Converter valores para número (tratando null/undefined)
       const toNumber = (value: string | null | undefined) => parseFloat(value || '0') || 0;
-      
+
       const totalVendasValue = toNumber(totalVendas?.total);
       const totalEntradasValue = toNumber(totalEntradasManuais?.total);
       const totalSaidasValue = toNumber(totalSaidas?.total);
-      
+
       // 3. Calcular totais
       const total_entradas = totalVendasValue + totalEntradasValue;
       const saldo = total_entradas - totalSaidasValue;
-      
+
       // 4. Retornar estrutura para o PDF
       return {
         title: 'Relatório Financeiro',
         fileName: 'relatorio-financeiro.pdf',
         columns: [
           { title: 'Descrição', dataKey: 'descricao' },
-          { title: 'Valor (R$)', dataKey: 'valor', format: 'currency' }
+          { title: 'Valor (R$)', dataKey: 'valor', format: 'currency' },
         ],
         data: [
           { descricao: 'Total de Vendas', valor: totalVendasValue },
           { descricao: 'Entradas Manuais', valor: totalEntradasValue },
           { descricao: 'Total de Saídas', valor: totalSaidasValue },
-          { descricao: 'Saldo Final', valor: saldo }
+          { descricao: 'Saldo Final', valor: saldo },
         ],
         filters: {
           periodo: `${validacao.dataInicio.toLocaleDateString()} a ${validacao.dataFim.toLocaleDateString()}`,
-          loja: id_loja
-        }
+          loja: id_loja,
+        },
       };
-      
     } catch (error) {
       console.error('Erro ao gerar relatório financeiro:', error);
       throw new Error('Falha ao processar relatório financeiro');
     }
   }
-  
+
   private async configurarRelatorioFormaPagamento(id_loja: string, filters: any) {
     const validacao = validarPeriodo(filters.dataInicio, filters.dataFim);
     if (!validacao.isValid || !validacao.dataInicio || !validacao.dataFim) {
       throw new Error(validacao.message || 'Período inválido');
     }
-    
+
     const data = await AppDataSource.getRepository(Venda)
-        .createQueryBuilder('venda')
-        // ... (consulta existente do getVendasPorFormaPagamento)
-        .getRawMany();
-    
+      .createQueryBuilder('venda')
+      // ... (consulta existente do getVendasPorFormaPagamento)
+      .getRawMany();
+
     return {
       title: 'Vendas por Forma de Pagamento',
       fileName: 'vendas-forma-pagamento.pdf',
       columns: [
         { title: 'Forma de Pagamento', dataKey: 'forma_pagamento' },
         { title: 'Total Arrecadado (R$)', dataKey: 'total_arrecadado', format: 'currency' },
-        { title: 'Qtd. Transações', dataKey: 'quantidade_transacoes' }
+        { title: 'Qtd. Transações', dataKey: 'quantidade_transacoes' },
       ],
       data,
       filters: {
         periodo: `${validacao.dataInicio.toLocaleDateString()} a ${validacao.dataFim.toLocaleDateString()}`,
-        loja: id_loja
-      }
+        loja: id_loja,
+      },
     };
   }
-  
+
   private async configurarRelatorioEstoque(id_loja: string, filters: any) {
     const limite = parseInt(filters.limite as string) || 7;
-    
+
     const data = await AppDataSource.getRepository(Produto)
-        .createQueryBuilder('produto')
-        // ... (consulta existente do getProdutosComEstoqueBaixo)
-        .getRawMany();
-    
+      .createQueryBuilder('produto')
+      // ... (consulta existente do getProdutosComEstoqueBaixo)
+      .getRawMany();
+
     return {
       title: 'Produtos com Estoque Baixo',
       fileName: 'estoque-baixo.pdf',
       columns: [
         { title: 'Referência', dataKey: 'referencia' },
         { title: 'Produto', dataKey: 'nome' },
-        { title: 'Estoque Total', dataKey: 'estoque_total' }
+        { title: 'Estoque Total', dataKey: 'estoque_total' },
       ],
       data,
       filters: {
         limite,
-        loja: id_loja
-      }
+        loja: id_loja,
+      },
     };
   }
-  
+
   private async configurarRelatorioFuncionarios(id_loja: string, filters: any) {
     const validacao = validarPeriodo(filters.dataInicio, filters.dataFim);
     if (!validacao.isValid) throw new Error(validacao.message);
-    
+
+    // Recupere a consulta completa que estava no seu método e adicione o .limit()
     const data = await AppDataSource.getRepository(Venda)
-        .createQueryBuilder('venda')
-        // ... (consulta existente do getRankingFuncionariosPorVenda)
-        .getRawMany();
-    
+      .createQueryBuilder('venda')
+      .select('funcionario.nome', 'nome_funcionario')
+      .addSelect('SUM(venda.total)', 'total_vendido')
+      .innerJoin('venda.funcionario', 'funcionario')
+      .where('venda.id_loja = :id_loja', { id_loja: id_loja })
+      .andWhere('venda.status = :status', { status: 'COMPLETADA' })
+      .andWhere('venda.data_hora BETWEEN :dataInicio AND :dataFim', {
+        dataInicio: validacao.dataInicio,
+        dataFim: validacao.dataFim,
+      })
+      .groupBy('funcionario.id_funcionario, funcionario.nome')
+      .orderBy('total_vendido', 'DESC')
+      .limit(10) // <-- ADICIONE ESTA LINHA AQUI TAMBÉM
+      .getRawMany();
+
     return {
-      title: 'Ranking de Funcionários',
-      fileName: 'ranking-funcionarios.pdf',
+      title: 'Top 10 - Ranking de Funcionários', // Opcional: mude o título
+      fileName: 'ranking-funcionarios-top10.pdf',
       columns: [
         { title: 'Funcionário', dataKey: 'nome_funcionario' },
-        { title: 'Total Vendido (R$)', dataKey: 'total_vendido', format: 'currency' }
+        { title: 'Total Vendido (R$)', dataKey: 'total_vendido', format: 'currency' },
       ],
       data,
       filters: {
         periodo: `${validacao.dataInicio.toLocaleDateString()} a ${validacao.dataFim.toLocaleDateString()}`,
-        loja: id_loja
-      }
+        loja: id_loja,
+      },
     };
   }
-  
+
   private async configurarRelatorioProdutos(id_loja: string, filters: any) {
     const validacao = validarPeriodo(filters.dataInicio, filters.dataFim);
     if (!validacao.isValid) throw new Error(validacao.message);
-    
+
     const data = await AppDataSource.getRepository(ItemVenda)
-        .createQueryBuilder('item_venda')
-        // ... (consulta existente do getProdutosMaisVendidos)
-        .getRawMany();
-    
+      .createQueryBuilder('item_venda')
+      // ... (consulta existente do getProdutosMaisVendidos)
+      .getRawMany();
+
     return {
       title: 'Produtos Mais Vendidos',
       fileName: 'produtos-mais-vendidos.pdf',
       columns: [
         { title: 'Produto', dataKey: 'nome_produto' },
         { title: 'Referência', dataKey: 'referencia_produto' },
-        { title: 'Qtd. Vendida', dataKey: 'total_unidades_vendidas' }
+        { title: 'Qtd. Vendida', dataKey: 'total_unidades_vendidas' },
       ],
       data,
       filters: {
         periodo: `${validacao.dataInicio.toLocaleDateString()} a ${validacao.dataFim.toLocaleDateString()}`,
-        loja: id_loja
-      }
+        loja: id_loja,
+      },
     };
   }
-  
-  
+
   // ==============================================
   // Gerador de PDF genérico
   // ==============================================
-  
+
   private async gerarPDF(config: {
     title: string;
     columns: { title: string; dataKey: string; format?: string }[];
@@ -540,47 +553,47 @@ export default class RelatorioController {
   }) {
     const doc = new jsPDF({
       orientation: 'landscape',
-      unit: 'mm'
+      unit: 'mm',
     });
-    
+
     // Cabeçalho
     doc.setFontSize(16);
     doc.text(config.title, 14, 20);
     doc.setFontSize(10);
     doc.text(`Período: ${config.filters.periodo}`, 14, 30);
     doc.text(`Loja: ${config.filters.loja}`, 14, 35);
-    
+
     // Preparar dados da tabela
-    const body = config.data.map(item =>
-        config.columns.map(col => {
-          if (col.format === 'currency') {
-            return `R$ ${parseFloat(item[col.dataKey]).toFixed(2)}`;
-          }
-          return item[col.dataKey];
-        })
+    const body = config.data.map((item) =>
+      config.columns.map((col) => {
+        if (col.format === 'currency') {
+          return `R$ ${parseFloat(item[col.dataKey]).toFixed(2)}`;
+        }
+        return item[col.dataKey];
+      }),
     );
-    
+
     // Gerar tabela
     (doc as any).autoTable({
-      head: [config.columns.map(col => col.title)],
+      head: [config.columns.map((col) => col.title)],
       body: body,
       startY: 40,
       margin: { top: 40 },
       styles: {
         fontSize: 8,
         cellPadding: 2,
-        overflow: 'linebreak'
+        overflow: 'linebreak',
       },
       columnStyles: {
         1: { cellWidth: 30 }, // Ajuste conforme necessário
-      }
+      },
     });
-    
+
     // Rodapé
     const date = new Date().toLocaleString();
     doc.setFontSize(8);
     doc.text(`Gerado em: ${date}`, 14, (doc as any).lastAutoTable.finalY + 10);
-    
+
     return doc.output('arraybuffer');
   }
 }
