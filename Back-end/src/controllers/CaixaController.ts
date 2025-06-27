@@ -72,6 +72,49 @@ export default class CaixaController {
     return { isValid: errors.length === 0, errors };
   }
 
+  async deleteCaixa(req: Request, res: Response) {
+    const { id } = req.params;
+
+    try {
+      const caixa = await this.caixaRepositorio.findOne({
+        where: { id_caixa: id },
+        relations: ['movimentacoes'],
+      });
+
+      if (!caixa) {
+        return res.status(404).json({
+          success: false,
+          error: 'Caixa não encontrado',
+          message: 'Caixa não encontrado para exclusão',
+        });
+      }
+
+      // Regra de negócio: não permitir exclusão se houver movimentações
+      if (caixa.movimentacoes && caixa.movimentacoes.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Exclusão não permitida',
+          message:
+            'Não é possível excluir um caixa que possui movimentações. Considere fechar o caixa em vez de excluí-lo.',
+        });
+      }
+
+      await this.caixaRepositorio.remove(caixa);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Caixa removido com sucesso',
+      });
+    } catch (error) {
+      console.error('Erro ao remover caixa:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao remover caixa',
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      });
+    }
+  }
+
   async abrirCaixaNovo(req: Request, res: Response) {
     const caixaDTO: CaixaDTO = req.body;
     const validacao = this.validarDadosCaixa(caixaDTO);

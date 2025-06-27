@@ -36,6 +36,13 @@ router.patch(
   asyncHandler(caixaController.fecharCaixa.bind(caixaController)),
 );
 
+router.delete(
+  '/:id',
+  //   authenticateJWT,
+  //   autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
+  asyncHandler(caixaController.deleteCaixa.bind(caixaController)),
+);
+
 // Obter caixa por ID
 router.get(
   '/:id',

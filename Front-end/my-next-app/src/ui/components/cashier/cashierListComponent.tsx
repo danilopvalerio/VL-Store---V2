@@ -11,9 +11,9 @@ interface Seller {
 
 interface Caixa {
   id_caixa: string;
-  status: 'ABERTO' | 'FECHADO';
+  status: "ABERTO" | "FECHADO";
   funcionario_responsavel: {
-      nome: string;
+    nome: string;
   };
   entradas: number;
   saidas: number;
@@ -22,6 +22,7 @@ interface Caixa {
   hora_abertura?: string;
 }
 
+// MODIFIED: Added onDeleteCashier and jwtToken props
 interface CashierListProps {
   caixas: Caixa[];
   onSelectCaixa: (caixa: Caixa) => void;
@@ -30,6 +31,8 @@ interface CashierListProps {
   onFilter: (status: string, responsavel: string) => void;
   isLoading?: boolean;
   onSaveNewCashier: (data: any) => Promise<void>;
+  onDeleteCashier: (id_caixa: string) => void; // Function to notify parent of deletion
+  jwtToken: string | null; // JWT token for authorization
 }
 
 const formatCurrency = (value: number | null | undefined): string => {
@@ -46,7 +49,8 @@ const InfoItem = ({ label, value, className }) => (
   </div>
 );
 
-const CaixaCard = ({ caixa, onSelect }) => {
+// MODIFIED: Added onDelete prop to CaixaCard
+const CaixaCard = ({ caixa, onSelect, onDelete }) => {
   const isAberto = caixa?.status === "ABERTO";
   const responsavel = caixa?.funcionario_responsavel.nome || "Não informado";
   const dataAbertura = caixa?.data_abertura || "Data não disponível";
@@ -68,15 +72,29 @@ const CaixaCard = ({ caixa, onSelect }) => {
             Aberto em: {dataAbertura} às {horaAbertura}
           </div>
         </div>
-        {caixa?.status && (
-          <span
-            className={`${styles.statusBadge} ${
-              isAberto ? styles.success : styles.danger
-            }`}
+        {/* MODIFIED: Wrapped status badge and added delete button */}
+        <div className={`${styles.flex} ${styles.itemsCenter} ${styles.gap2}`}>
+          {caixa?.status && (
+            <span
+              className={`${styles.statusBadge} ${
+                isAberto ? styles.success : styles.danger
+              }`}
+            >
+              {caixa.status}
+            </span>
+          )}
+          {/* NEW: Delete button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // Prevents the card's onSelect from firing
+              onDelete();
+            }}
+            className={`${styles.statusBadge} border-0 bg-danger text-white`}
+            title="Deletar Caixa"
           >
-            {caixa.status}
-          </span>
-        )}
+            <X size={18} />
+          </button>
+        </div>
       </div>
       <div
         className={`${styles.grid} ${styles.gap4} ${styles.textCenter}`}
@@ -102,7 +120,17 @@ const CaixaCard = ({ caixa, onSelect }) => {
   );
 };
 
-const CashierList: React.FC<CashierListProps> = ({ caixas, onSelectCaixa, onFilter, vendedoresDisponiveis, id_loja, onSaveNewCashier }) => {
+// MODIFIED: Destructured new props
+const CashierList: React.FC<CashierListProps> = ({
+  caixas,
+  onSelectCaixa,
+  onFilter,
+  vendedoresDisponiveis,
+  id_loja,
+  onSaveNewCashier,
+  onDeleteCashier,
+  jwtToken,
+}) => {
   const [showModal, setShowModal] = useState(false);
   const [status, setStatus] = useState("");
   const [responsavel, setResponsavel] = useState("");
@@ -117,9 +145,49 @@ const CashierList: React.FC<CashierListProps> = ({ caixas, onSelectCaixa, onFilt
     onFilter("", "");
   };
 
-    const handleNewCashierSave = async (data: any) => {
+  const handleNewCashierSave = async (data: any) => {
     await onSaveNewCashier(data);
     setShowModal(false);
+  };
+
+  // NEW: Function to handle the deletion logic and API call
+  const handleDeleteCashier = async (id_caixa: string) => {
+    if (!jwtToken) {
+      alert("Erro de autenticação. Por favor, faça login novamente.");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        "Tem certeza que deseja deletar este caixa? Esta ação não pode ser desfeita."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:9700/api/caixas/${id_caixa}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        alert("Caixa deletado com sucesso!");
+        // Notify the parent component to update the state
+        onDeleteCashier(id_caixa);
+      } else {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || "Falha ao deletar o caixa.");
+      }
+    } catch (error) {
+      console.error("Erro ao deletar caixa:", error);
+      alert(`Erro: ${error}`);
+    }
   };
 
   return (
@@ -155,24 +223,9 @@ const CashierList: React.FC<CashierListProps> = ({ caixas, onSelectCaixa, onFilt
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
-              <option
-                className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
-                value=""
-              >
-                Todos
-              </option>
-              <option
-                className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
-                value="ABERTO"
-              >
-                Aberto
-              </option>
-              <option
-                className="list-group position-absolute w-100 mt-1 z-index-dropdown bg-dark border border-secondary rounded shadow-sm"
-                value="FECHADO"
-              >
-                Fechado
-              </option>
+              <option value="">Todos</option>
+              <option value="ABERTO">Aberto</option>
+              <option value="FECHADO">Fechado</option>
             </select>
           </div>
 
@@ -213,11 +266,13 @@ const CashierList: React.FC<CashierListProps> = ({ caixas, onSelectCaixa, onFilt
         className={`${styles.grid} ${styles.gap4}`}
         style={{ gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}
       >
+        {/* MODIFIED: Added onDelete prop and updated key */}
         {caixas.map((caixa) => (
           <CaixaCard
-            key={`${caixa.id_caixa}-${caixa.data_abertura}`}
+            key={caixa.id_caixa}
             caixa={caixa}
             onSelect={() => onSelectCaixa(caixa)}
+            onDelete={() => handleDeleteCashier(caixa.id_caixa)}
           />
         ))}
       </div>
@@ -228,7 +283,6 @@ const CashierList: React.FC<CashierListProps> = ({ caixas, onSelectCaixa, onFilt
           vendedoresDisponiveis={vendedoresDisponiveis}
           id_loja={id_loja}
           onSave={handleNewCashierSave}
-          
         />
       )}
     </>
