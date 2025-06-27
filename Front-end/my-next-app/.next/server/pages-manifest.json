@@ -1,8 +1,13 @@
 {
   "/_app": "pages/_app.js",
   "/_document": "pages/_document.js",
+  "/accountPage": "pages/accountPage.js",
+  "/cashierPage": "pages/cashierPage.js",
+  "/employeesPage": "pages/employeesPage.js",
   "/initialPage": "pages/initialPage.js",
   "/loginPage": "pages/loginPage.js",
   "/menuPage": "pages/menuPage.js",
-  "/reportsPage": "pages/reportsPage.js"
+  "/productsPage": "pages/productsPage.js",
+  "/reportsPage": "pages/reportsPage.js",
+  "/salesPage": "pages/salesPage.js"
 }
