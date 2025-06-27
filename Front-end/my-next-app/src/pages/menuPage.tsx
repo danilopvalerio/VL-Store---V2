@@ -147,6 +147,7 @@ const MenuPage: React.FC = () => {
             type="button"
             className="btn primaria col-9 col-lg-5 mb-2"
             onClick={() => navigateTo("/reportsPage")}
+            disabled={isViewOnly}
           >
             Relatórios
           </button>

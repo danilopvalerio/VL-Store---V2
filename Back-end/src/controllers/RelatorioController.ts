@@ -6,7 +6,7 @@ import Venda from '../models/Venda';
 import ItemVenda from '../models/ItemVenda';
 import { Produto } from '../models/Produto';
 import { IsNull, Not } from 'typeorm';
-import Movimentacao, { TipoMovimentacao } from '../models/Movimentacao'; // Importe Movimentacao e o Enum
+import Movimentacao, { TipoMovimentacao } from '../models/Movimentacao';
 
 // Função auxiliar para validar as datas recebidas
 interface ValidacaoPeriodo {
@@ -16,25 +16,30 @@ interface ValidacaoPeriodo {
   dataFim: Date;
 }
 
+/**
+ * Função auxiliar ajustada para validar e formatar o período corretamente.
+ * Trata as strings 'AAAA-MM-DD' para cobrir o dia inteiro no fuso horário local.
+ */
 const validarPeriodo = (dataInicioStr: any, dataFimStr: any): ValidacaoPeriodo => {
   // Verificação obrigatória
   if (!dataInicioStr || !dataFimStr) {
     return {
       isValid: false,
       message: 'As datas de início e fim são obrigatórias.',
-      dataInicio: new Date(), // Valor padrão
-      dataFim: new Date(), // Valor padrão
+      dataInicio: new Date(),
+      dataFim: new Date(),
     };
   }
 
-  const dataInicio = new Date(dataInicioStr);
-  const dataFim = new Date(dataFimStr);
+  // Constrói a data com hora para forçar o fuso horário local e evitar ambiguidades do UTC
+  const dataInicio = new Date(`${dataInicioStr}T00:00:00`);
+  const dataFim = new Date(`${dataFimStr}T00:00:00`);
 
   // Verificação de datas inválidas
   if (isNaN(dataInicio.getTime()) || isNaN(dataFim.getTime())) {
     return {
       isValid: false,
-      message: 'Formato de data inválido.',
+      message: 'Formato de data inválido. Use AAAA-MM-DD.',
       dataInicio: new Date(),
       dataFim: new Date(),
     };
@@ -50,7 +55,10 @@ const validarPeriodo = (dataInicioStr: any, dataFimStr: any): ValidacaoPeriodo =
     };
   }
 
-  // Ajuste do horário
+  // Garante que o intervalo cubra o dia inteiro
+  // Define a data de início para o primeiro milissegundo do dia.
+  dataInicio.setHours(0, 0, 0, 0);
+  // Define a data de fim para o último milissegundo do dia.
   dataFim.setHours(23, 59, 59, 999);
 
   return {
@@ -89,7 +97,7 @@ export default class RelatorioController {
         })
         .groupBy('funcionario.id_funcionario, funcionario.nome')
         .orderBy('total_vendido', 'DESC')
-        .limit(10) // <-- ADICIONE ESTA LINHA
+        .limit(15)
         .getRawMany();
 
       return res.status(200).json({ success: true, data: relatorio });
@@ -129,6 +137,7 @@ export default class RelatorioController {
         })
         .groupBy('produto.referencia, produto.nome')
         .orderBy('total_unidades_vendidas', 'DESC')
+        .limit(15)
         .getRawMany();
 
       return res.status(200).json({ success: true, data: relatorio });
@@ -140,9 +149,6 @@ export default class RelatorioController {
 
   /**
    * Gera um relatório financeiro com o total de entradas, saídas e o saldo em um período.
-   * - Entradas: Vendas completadas + Movimentações manuais de 'ENTRADA'.
-   * - Saídas: Movimentações manuais de 'SAIDA'.
-   * - Saldo: Entradas - Saídas.
    */
   async getRelatorioFinanceiro(req: Request, res: Response) {
     const { id_loja } = req.params;
@@ -155,7 +161,6 @@ export default class RelatorioController {
     const { dataInicio, dataFim } = validacao;
 
     try {
-      // 1. Promessa para buscar o total de vendas completadas
       const totalVendasPromise = AppDataSource.getRepository(Venda)
         .createQueryBuilder('venda')
         .select('SUM(venda.total)', 'total')
@@ -167,10 +172,9 @@ export default class RelatorioController {
         })
         .getRawOne();
 
-      // 2. Promessa para buscar o total de movimentações de ENTRADA (ex: aportes)
       const totalEntradasManuaisPromise = AppDataSource.getRepository(Movimentacao)
         .createQueryBuilder('movimentacao')
-        .innerJoin('movimentacao.caixa', 'caixa') // Junta com Caixa para filtrar pela loja
+        .innerJoin('movimentacao.caixa', 'caixa')
         .select('SUM(movimentacao.valor)', 'total')
         .where('caixa.id_loja = :id_loja', { id_loja })
         .andWhere('movimentacao.tipo = :tipo', { tipo: TipoMovimentacao.ENTRADA })
@@ -180,10 +184,9 @@ export default class RelatorioController {
         })
         .getRawOne();
 
-      // 3. Promessa para buscar o total de movimentações de SAÍDA (ex: sangrias, pagamentos)
       const totalSaidasPromise = AppDataSource.getRepository(Movimentacao)
         .createQueryBuilder('movimentacao')
-        .innerJoin('movimentacao.caixa', 'caixa') // Junta com Caixa para filtrar pela loja
+        .innerJoin('movimentacao.caixa', 'caixa')
         .select('SUM(movimentacao.valor)', 'total')
         .where('caixa.id_loja = :id_loja', { id_loja })
         .andWhere('movimentacao.tipo = :tipo', { tipo: TipoMovimentacao.SAIDA })
@@ -193,19 +196,16 @@ export default class RelatorioController {
         })
         .getRawOne();
 
-      // Executa todas as consultas em paralelo
       const [resultadoVendas, resultadoEntradasManuais, resultadoSaidas] = await Promise.all([
         totalVendasPromise,
         totalEntradasManuaisPromise,
         totalSaidasPromise,
       ]);
 
-      // Converte os resultados para número, tratando casos de valor nulo
       const totalDeVendas = parseFloat(resultadoVendas?.total) || 0;
       const totalEntradasManuais = parseFloat(resultadoEntradasManuais?.total) || 0;
       const totalSaidas = parseFloat(resultadoSaidas?.total) || 0;
 
-      // Calcula os valores finais
       const total_entradas = totalDeVendas + totalEntradasManuais;
       const total_saidas = totalSaidas;
       const saldo = total_entradas - total_saidas;
@@ -261,8 +261,7 @@ export default class RelatorioController {
   }
 
   /**
-   * Lista produtos cujo estoque total (soma de todas as suas variações)
-   * está abaixo de um limite especificado (padrão: 7).
+   * Lista produtos cujo estoque total está abaixo de um limite.
    */
   async getProdutosComEstoqueBaixo(req: Request, res: Response) {
     const { id_loja } = req.params;
@@ -290,6 +289,9 @@ export default class RelatorioController {
     }
   }
 
+  /**
+   * Rota principal para gerar qualquer relatório em formato PDF.
+   */
   async gerarRelatorioPDF(req: Request, res: Response) {
     const { tipo, id_loja, ...filters } = req.query;
 
@@ -324,49 +326,45 @@ export default class RelatorioController {
           return res.status(400).json({ success: false, message: 'Tipo de relatório inválido' });
       }
 
-      // Gera o PDF
       const pdfBuffer = await this.gerarPDF(relatorioConfig);
 
-      // Configura a resposta
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=${relatorioConfig.fileName}`);
       return res.send(pdfBuffer);
     } catch (error) {
+      // Se o erro for de validação, envia a mensagem específica
+      if (
+        error instanceof Error &&
+        (error.message.includes('obrigatórias') || error.message.includes('inválido'))
+      ) {
+        return res.status(400).json({ success: false, message: error.message });
+      }
       console.error('Erro ao gerar PDF:', error);
-      return res.status(500).json({ success: false, message: 'Erro ao gerar PDF' });
+      return res.status(500).json({ success: false, message: 'Erro interno ao gerar PDF' });
     }
   }
 
   // ==============================================
-  // Métodos auxiliares para cada tipo de relatório
+  // Métodos auxiliares privados para configurar cada relatório
   // ==============================================
 
   private async configurarRelatorioFinanceiro(id_loja: string, filters: any) {
     const validacao = validarPeriodo(filters.dataInicio, filters.dataFim);
-
     if (!validacao.isValid) {
       throw new Error(validacao.message);
     }
-
-    // Agora pode usar diretamente, sem verificação adicional
     const { dataInicio, dataFim } = validacao;
 
     try {
-      // 1. Consultas paralelas com tipagem explícita
       const [totalVendas, totalEntradasManuais, totalSaidas] = await Promise.all([
-        // Vendas completadas
         AppDataSource.getRepository(Venda)
           .createQueryBuilder('venda')
           .select('SUM(venda.total)', 'total')
           .where('venda.id_loja = :id_loja', { id_loja })
           .andWhere('venda.status = :status', { status: 'COMPLETADA' })
-          .andWhere('venda.data_hora BETWEEN :dataInicio AND :dataFim', {
-            dataInicio: validacao.dataInicio,
-            dataFim: validacao.dataFim,
-          })
-          .getRawOne<{ total: string | null }>(), // Tipagem do resultado
+          .andWhere('venda.data_hora BETWEEN :dataInicio AND :dataFim', { dataInicio, dataFim })
+          .getRawOne<{ total: string | null }>(),
 
-        // Movimentações de entrada
         AppDataSource.getRepository(Movimentacao)
           .createQueryBuilder('movimentacao')
           .innerJoin('movimentacao.caixa', 'caixa')
@@ -374,12 +372,11 @@ export default class RelatorioController {
           .where('caixa.id_loja = :id_loja', { id_loja })
           .andWhere('movimentacao.tipo = :tipo', { tipo: TipoMovimentacao.ENTRADA })
           .andWhere('movimentacao.criado_em BETWEEN :dataInicio AND :dataFim', {
-            dataInicio: validacao.dataInicio,
-            dataFim: validacao.dataFim,
+            dataInicio,
+            dataFim,
           })
           .getRawOne<{ total: string | null }>(),
 
-        // Movimentações de saída
         AppDataSource.getRepository(Movimentacao)
           .createQueryBuilder('movimentacao')
           .innerJoin('movimentacao.caixa', 'caixa')
@@ -387,24 +384,19 @@ export default class RelatorioController {
           .where('caixa.id_loja = :id_loja', { id_loja })
           .andWhere('movimentacao.tipo = :tipo', { tipo: TipoMovimentacao.SAIDA })
           .andWhere('movimentacao.criado_em BETWEEN :dataInicio AND :dataFim', {
-            dataInicio: validacao.dataInicio,
-            dataFim: validacao.dataFim,
+            dataInicio,
+            dataFim,
           })
           .getRawOne<{ total: string | null }>(),
       ]);
 
-      // 2. Converter valores para número (tratando null/undefined)
       const toNumber = (value: string | null | undefined) => parseFloat(value || '0') || 0;
-
       const totalVendasValue = toNumber(totalVendas?.total);
       const totalEntradasValue = toNumber(totalEntradasManuais?.total);
       const totalSaidasValue = toNumber(totalSaidas?.total);
-
-      // 3. Calcular totais
       const total_entradas = totalVendasValue + totalEntradasValue;
       const saldo = total_entradas - totalSaidasValue;
 
-      // 4. Retornar estrutura para o PDF
       return {
         title: 'Relatório Financeiro',
         fileName: 'relatorio-financeiro.pdf',
@@ -419,25 +411,31 @@ export default class RelatorioController {
           { descricao: 'Saldo Final', valor: saldo },
         ],
         filters: {
-          periodo: `${validacao.dataInicio.toLocaleDateString()} a ${validacao.dataFim.toLocaleDateString()}`,
+          periodo: `${validacao.dataInicio.toLocaleDateString('pt-BR')} a ${validacao.dataFim.toLocaleDateString('pt-BR')}`,
           loja: id_loja,
         },
       };
     } catch (error) {
-      console.error('Erro ao gerar relatório financeiro:', error);
+      console.error('Erro ao configurar relatório financeiro:', error);
       throw new Error('Falha ao processar relatório financeiro');
     }
   }
 
   private async configurarRelatorioFormaPagamento(id_loja: string, filters: any) {
     const validacao = validarPeriodo(filters.dataInicio, filters.dataFim);
-    if (!validacao.isValid || !validacao.dataInicio || !validacao.dataFim) {
-      throw new Error(validacao.message || 'Período inválido');
-    }
+    if (!validacao.isValid) throw new Error(validacao.message);
 
+    const { dataInicio, dataFim } = validacao;
     const data = await AppDataSource.getRepository(Venda)
       .createQueryBuilder('venda')
-      // ... (consulta existente do getVendasPorFormaPagamento)
+      .select('venda.forma_pagamento', 'forma_pagamento')
+      .addSelect('SUM(venda.total)', 'total_arrecadado')
+      .addSelect('COUNT(venda.id_venda)', 'quantidade_transacoes')
+      .where('venda.id_loja = :id_loja', { id_loja })
+      .andWhere('venda.status = :status', { status: 'COMPLETADA' })
+      .andWhere('venda.data_hora BETWEEN :dataInicio AND :dataFim', { dataInicio, dataFim })
+      .groupBy('venda.forma_pagamento')
+      .orderBy('total_arrecadado', 'DESC')
       .getRawMany();
 
     return {
@@ -450,7 +448,7 @@ export default class RelatorioController {
       ],
       data,
       filters: {
-        periodo: `${validacao.dataInicio.toLocaleDateString()} a ${validacao.dataFim.toLocaleDateString()}`,
+        periodo: `${validacao.dataInicio.toLocaleDateString('pt-BR')} a ${validacao.dataFim.toLocaleDateString('pt-BR')}`,
         loja: id_loja,
       },
     };
@@ -461,7 +459,16 @@ export default class RelatorioController {
 
     const data = await AppDataSource.getRepository(Produto)
       .createQueryBuilder('produto')
-      // ... (consulta existente do getProdutosComEstoqueBaixo)
+      .select('produto.referencia', 'referencia')
+      .addSelect('produto.nome', 'nome')
+      .addSelect('SUM(variacao.quant_variacao)', 'estoque_total')
+      .leftJoin('produto.variacoes', 'variacao')
+      .where('produto.id_loja = :id_loja', { id_loja })
+      .groupBy('produto.referencia, produto.nome')
+      .having('SUM(variacao.quant_variacao) < :limite OR SUM(variacao.quant_variacao) IS NULL', {
+        limite,
+      })
+      .orderBy('estoque_total', 'ASC')
       .getRawMany();
 
     return {
@@ -484,33 +491,29 @@ export default class RelatorioController {
     const validacao = validarPeriodo(filters.dataInicio, filters.dataFim);
     if (!validacao.isValid) throw new Error(validacao.message);
 
-    // Recupere a consulta completa que estava no seu método e adicione o .limit()
+    const { dataInicio, dataFim } = validacao;
     const data = await AppDataSource.getRepository(Venda)
       .createQueryBuilder('venda')
       .select('funcionario.nome', 'nome_funcionario')
       .addSelect('SUM(venda.total)', 'total_vendido')
       .innerJoin('venda.funcionario', 'funcionario')
-      .where('venda.id_loja = :id_loja', { id_loja: id_loja })
+      .where('venda.id_loja = :id_loja', { id_loja })
       .andWhere('venda.status = :status', { status: 'COMPLETADA' })
-      .andWhere('venda.data_hora BETWEEN :dataInicio AND :dataFim', {
-        dataInicio: validacao.dataInicio,
-        dataFim: validacao.dataFim,
-      })
+      .andWhere('venda.data_hora BETWEEN :dataInicio AND :dataFim', { dataInicio, dataFim })
       .groupBy('funcionario.id_funcionario, funcionario.nome')
       .orderBy('total_vendido', 'DESC')
-      .limit(10) // <-- ADICIONE ESTA LINHA AQUI TAMBÉM
       .getRawMany();
 
     return {
-      title: 'Top 10 - Ranking de Funcionários', // Opcional: mude o título
-      fileName: 'ranking-funcionarios-top10.pdf',
+      title: 'Ranking de Funcionários',
+      fileName: 'ranking-funcionarios.pdf',
       columns: [
         { title: 'Funcionário', dataKey: 'nome_funcionario' },
         { title: 'Total Vendido (R$)', dataKey: 'total_vendido', format: 'currency' },
       ],
       data,
       filters: {
-        periodo: `${validacao.dataInicio.toLocaleDateString()} a ${validacao.dataFim.toLocaleDateString()}`,
+        periodo: `${validacao.dataInicio.toLocaleDateString('pt-BR')} a ${validacao.dataFim.toLocaleDateString('pt-BR')}`,
         loja: id_loja,
       },
     };
@@ -520,9 +523,20 @@ export default class RelatorioController {
     const validacao = validarPeriodo(filters.dataInicio, filters.dataFim);
     if (!validacao.isValid) throw new Error(validacao.message);
 
+    const { dataInicio, dataFim } = validacao;
     const data = await AppDataSource.getRepository(ItemVenda)
       .createQueryBuilder('item_venda')
-      // ... (consulta existente do getProdutosMaisVendidos)
+      .select('produto.nome', 'nome_produto')
+      .addSelect('produto.referencia', 'referencia_produto')
+      .addSelect('SUM(item_venda.quantidade)', 'total_unidades_vendidas')
+      .innerJoin('item_venda.venda', 'venda')
+      .innerJoin('item_venda.variacao', 'variacao')
+      .innerJoin('variacao.produto', 'produto')
+      .where('venda.id_loja = :id_loja', { id_loja })
+      .andWhere('venda.status = :status', { status: 'COMPLETADA' })
+      .andWhere('venda.data_hora BETWEEN :dataInicio AND :dataFim', { dataInicio, dataFim })
+      .groupBy('produto.referencia, produto.nome')
+      .orderBy('total_unidades_vendidas', 'DESC')
       .getRawMany();
 
     return {
@@ -535,7 +549,7 @@ export default class RelatorioController {
       ],
       data,
       filters: {
-        periodo: `${validacao.dataInicio.toLocaleDateString()} a ${validacao.dataFim.toLocaleDateString()}`,
+        periodo: `${validacao.dataInicio.toLocaleDateString('pt-BR')} a ${validacao.dataFim.toLocaleDateString('pt-BR')}`,
         loja: id_loja,
       },
     };
@@ -544,7 +558,6 @@ export default class RelatorioController {
   // ==============================================
   // Gerador de PDF genérico
   // ==============================================
-
   private async gerarPDF(config: {
     title: string;
     columns: { title: string; dataKey: string; format?: string }[];
@@ -556,43 +569,67 @@ export default class RelatorioController {
       unit: 'mm',
     });
 
-    // Cabeçalho
     doc.setFontSize(16);
     doc.text(config.title, 14, 20);
     doc.setFontSize(10);
-    doc.text(`Período: ${config.filters.periodo}`, 14, 30);
+
+    let filterText = '';
+    if (config.filters.periodo) {
+      filterText = `Período: ${config.filters.periodo}`;
+    } else if (config.filters.limite) {
+      filterText = `Listando produtos com estoque abaixo de: ${config.filters.limite} unidades`;
+    }
+
+    if (filterText) {
+      doc.text(filterText, 14, 30);
+    }
     doc.text(`Loja: ${config.filters.loja}`, 14, 35);
 
-    // Preparar dados da tabela
     const body = config.data.map((item) =>
       config.columns.map((col) => {
+        const value = item[col.dataKey];
+        if (value === null || value === undefined) return '';
+
         if (col.format === 'currency') {
-          return `R$ ${parseFloat(item[col.dataKey]).toFixed(2)}`;
+          return `R$ ${parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
-        return item[col.dataKey];
+        return value;
       }),
     );
 
-    // Gerar tabela
     (doc as any).autoTable({
       head: [config.columns.map((col) => col.title)],
       body: body,
-      startY: 40,
-      margin: { top: 40 },
+      startY: 45,
+      margin: { top: 45 },
       styles: {
         fontSize: 8,
         cellPadding: 2,
         overflow: 'linebreak',
       },
-      columnStyles: {
-        1: { cellWidth: 30 }, // Ajuste conforme necessário
+      headStyles: {
+        fillColor: [41, 128, 185], // Um tom de azul
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245], // Um cinza bem claro
       },
     });
 
-    // Rodapé
-    const date = new Date().toLocaleString();
-    doc.setFontSize(8);
-    doc.text(`Gerado em: ${date}`, 14, (doc as any).lastAutoTable.finalY + 10);
+    const date = new Date().toLocaleString('pt-BR');
+    const pageCount = (doc as any).internal.getNumberOfPages();
+
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(`Gerado em: ${date}`, 14, doc.internal.pageSize.height - 10);
+      doc.text(
+        `Página ${i} de ${pageCount}`,
+        doc.internal.pageSize.width - 35,
+        doc.internal.pageSize.height - 10,
+      );
+    }
 
     return doc.output('arraybuffer');
   }

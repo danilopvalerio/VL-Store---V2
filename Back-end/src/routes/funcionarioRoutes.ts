@@ -25,7 +25,7 @@ const asyncHandler =
 router.get(
   '/loja/:id',
   authenticateJWT,
-  autorizar(UserRole.ADMIN),
+  autorizar(UserRole.ADMIN, UserRole.FUNCIONARIO),
   asyncHandler(funcionarioController.findAll.bind(funcionarioController)),
 );
 router.get(
@@ -98,16 +98,16 @@ router.delete(
 // Busca funcionários por termo (nome, email, cpf ou telefone)
 router.get(
   '/loja/:id_loja/busca/:termo',
-  authenticateJWT,
-  autorizar(UserRole.ADMIN),
+  // authenticateJWT,
+  // autorizar(UserRole.ADMIN),
   asyncHandler(funcionarioController.searchByDescricaoOuNome.bind(funcionarioController)),
 );
 
 // Lista funcionários paginados
 router.get(
   '/loja/:id_loja/paginado',
-  authenticateJWT,
-  autorizar(UserRole.ADMIN),
+  // authenticateJWT,
+  // autorizar(UserRole.ADMIN),
   asyncHandler(funcionarioController.findAllPaginado.bind(funcionarioController)),
 );
 

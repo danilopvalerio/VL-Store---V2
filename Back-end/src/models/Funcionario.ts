@@ -1,8 +1,6 @@
-import { Entity, Column, ManyToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
-
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { UserRole } from '../types/user.types';
 import Loja from './Loja';
-
 @Entity('funcionario')
 export default class Funcionario {
   @PrimaryGeneratedColumn('uuid')
@@ -29,7 +27,8 @@ export default class Funcionario {
   @ManyToOne(() => Loja, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_loja' })
   loja!: Loja;
-  id_loja!: string;
+  @Column({ nullable: true })
+  id_loja: string; // guarda o id da loja, referência simples (sem relação explícita)
 
   @Column({
     type: 'enum',

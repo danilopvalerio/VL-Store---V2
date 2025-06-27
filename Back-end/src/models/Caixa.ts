@@ -32,7 +32,7 @@ export default class Caixa {
   @Column({ nullable: false })
   id_funcionario_responsavel!: string;
 
-  @ManyToOne(() => Funcionario)
+  @ManyToOne(() => Funcionario, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'id_funcionario_responsavel' })
   funcionario_responsavel!: Funcionario;
 

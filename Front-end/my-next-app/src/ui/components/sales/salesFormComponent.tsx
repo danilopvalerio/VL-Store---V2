@@ -354,7 +354,6 @@ const SalesForm: React.FC<SalesFormProps> = ({
       const idVendaCriada = responseVenda.data.data.id_venda;
       const valorTotalVenda = responseVenda.data.data.total; // Supondo que o backend retorna o valor total
 
-      alert(valorTotalVenda);
       console.log(valorTotalVenda);
       // Validação da resposta da primeira chamada
       if (!idVendaCriada) {

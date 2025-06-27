@@ -109,11 +109,6 @@ const REPORT_CONFIGS: { [key: string]: ReportConfig } = {
       { key: "nome", label: "Produto", type: "text" },
       { key: "estoque_total", label: "Estoque Total", type: "number" },
     ],
-    chartConfig: {
-      labelKey: "nome",
-      dataKey: "estoque_total",
-      datasetLabel: "Quantidade em Estoque",
-    },
   },
 };
 

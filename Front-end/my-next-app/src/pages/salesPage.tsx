@@ -19,6 +19,7 @@ interface ProductVariation {
 interface Seller {
   id_funcionario: string;
   nome: string;
+  id_loja: string;
   cargo?: string;
 }
 
@@ -32,6 +33,7 @@ export default function SalesPage() {
   );
   const [loading, setLoading] = useState(true);
   const [idloja, setIdloja] = useState("");
+  const [isAdmin, setisAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<"form" | "list">("list"); // Inicia com "list" ativo
 
@@ -52,6 +54,12 @@ export default function SalesPage() {
         setError(null);
 
         const parsedData = JSON.parse(userData);
+        if (parsedData.role == "admin") {
+          setisAdmin(true);
+        } else {
+          setisAdmin(false);
+        }
+
         const idLoja = parsedData.id_loja;
         setIdloja(idLoja);
         const config = {
@@ -179,7 +187,13 @@ export default function SalesPage() {
             {/* Lista de Vendas */}
             {activeView === "list" && (
               <div>
-                <SalesList idLoja={idloja} />
+                {isAdmin ? (
+                  <SalesList idLoja={idloja} />
+                ) : (
+                  <p className="text-center text-white">
+                    Sem permissão para acessar a lista de vendas
+                  </p>
+                )}
               </div>
             )}
           </div>
