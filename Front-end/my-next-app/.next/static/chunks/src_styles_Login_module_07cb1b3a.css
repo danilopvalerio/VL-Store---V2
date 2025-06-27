@@ -1,0 +1,62 @@
+/* [project]/src/styles/Login.module.css [client] (css) */
+.Login-module__nHqgcW__container {
+  background-color: #f8f9fa;
+  flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+}
+
+.Login-module__nHqgcW__headerPanel {
+  background-color: #343a40;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  display: flex;
+}
+
+.Login-module__nHqgcW__logo {
+  height: 40px;
+}
+
+.Login-module__nHqgcW__logoLogin {
+  height: 100px;
+}
+
+.Login-module__nHqgcW__loginBlock {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.Login-module__nHqgcW__column {
+  background: #343a40;
+  border-radius: 8px;
+  flex-direction: column;
+  width: 100%;
+  max-width: 500px;
+  padding: 1rem;
+  display: flex;
+  overflow: hidden;
+}
+
+.Login-module__nHqgcW__welcomePanel {
+  background-color: #343a40;
+}
+
+.Login-module__nHqgcW__formPanel {
+  background-color: #f8f9fa;
+  justify-content: center;
+  align-items: center;
+}
+
+.Login-module__nHqgcW__btnPrimary {
+  background-color: #184a71 !important;
+}
+
+.Login-module__nHqgcW__btnSecondary {
+  background-color: #53a89a !important;
+}
+
+
+/*# sourceMappingURL=src_styles_Login_module_07cb1b3a.css.map*/

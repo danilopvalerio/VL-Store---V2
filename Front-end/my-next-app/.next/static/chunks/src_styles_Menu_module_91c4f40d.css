@@ -1,0 +1,57 @@
+/* [project]/src/styles/Menu.module.css [client] (css) */
+.Menu-module__pLftKG__container {
+  background-color: #f8f9fa;
+  flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+}
+
+.Menu-module__pLftKG__header {
+  color: #fff;
+  background-color: #343a40;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  display: flex;
+}
+
+.Menu-module__pLftKG__logo {
+  width: 40px;
+  height: 40px;
+}
+
+.Menu-module__pLftKG__title {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.Menu-module__pLftKG__menu {
+  flex: 1;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 40px;
+  display: grid;
+}
+
+.Menu-module__pLftKG__card {
+  text-align: center;
+  cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  padding: 20px;
+  transition: box-shadow .2s;
+}
+
+.Menu-module__pLftKG__card:hover {
+  box-shadow: 0 4px 12px #0000001f;
+}
+
+.Menu-module__pLftKG__footer {
+  text-align: center;
+  border-top: 1px solid #dee2e6;
+  padding: 20px;
+}
+
+
+/*# sourceMappingURL=src_styles_Menu_module_91c4f40d.css.map*/

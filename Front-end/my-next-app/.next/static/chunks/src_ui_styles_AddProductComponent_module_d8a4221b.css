@@ -1,0 +1,72 @@
+/* [project]/src/ui/styles/AddProductComponent.module.css [client] (css) */
+.AddProductComponent-module__BnmCha__addProductContainer {
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+  display: flex;
+}
+
+.AddProductComponent-module__BnmCha__toggleFormButton {
+  min-width: 200px;
+}
+
+.AddProductComponent-module__BnmCha__variationsSection {
+  background-color: #ffffff08;
+  border: 1px solid #ffffff1a;
+  border-radius: 8px;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  display: flex;
+}
+
+.AddProductComponent-module__BnmCha__variationsTitle {
+  color: #fff;
+  text-align: left;
+  margin-bottom: .5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.AddProductComponent-module__BnmCha__variationGroup {
+  border-bottom: 1px solid #ffffff0d;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  padding-bottom: .75rem;
+  display: flex;
+}
+
+.AddProductComponent-module__BnmCha__variationGroup:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.AddProductComponent-module__BnmCha__variationGroup .AddProductComponent-module__BnmCha__searchInput {
+  flex: 150px;
+}
+
+.AddProductComponent-module__BnmCha__removeVariationButton {
+  flex-shrink: 0;
+  padding: .4rem .8rem !important;
+  font-size: .85rem !important;
+}
+
+.AddProductComponent-module__BnmCha__addVariationButton {
+  align-self: flex-start;
+  margin-top: .5rem;
+}
+
+.AddProductComponent-module__BnmCha__submitProductButton {
+  width: 100%;
+  padding-top: .9rem !important;
+  padding-bottom: .9rem !important;
+  font-size: 1.1rem !important;
+}
+
+
+/*# sourceMappingURL=src_ui_styles_AddProductComponent_module_d8a4221b.css.map*/

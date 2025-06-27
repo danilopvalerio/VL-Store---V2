@@ -1,0 +1,337 @@
+/* [project]/src/ui/styles/ReportDisplay.module.css [client] (css) */
+.ReportDisplay-module__aWHpXW__pageContainer {
+  color: #fff;
+  background: linear-gradient(45deg, #0c002c, #0c0041, #590016, #0c002c);
+  flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__reportHeader {
+  z-index: 1000;
+  -webkit-backdrop-filter: blur(10px);
+  background-color: #000000a8;
+  align-items: center;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  position: sticky;
+  top: 0;
+}
+
+.ReportDisplay-module__aWHpXW__headerContent {
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__btnBack {
+  color: #fff;
+  cursor: pointer;
+  background-color: #ffffff0f;
+  border: none;
+  border-radius: 20px;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem 1rem;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .2s ease-in-out;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__btnBack:hover {
+  color: #000;
+  background-color: #fff;
+  box-shadow: 0 0 7px #0008;
+}
+
+.ReportDisplay-module__aWHpXW__logoContainer {
+  flex: 1;
+  justify-content: center;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__logo {
+  opacity: .8;
+  width: 35px;
+  height: auto;
+}
+
+.ReportDisplay-module__aWHpXW__headerSpacer {
+  width: 100px;
+}
+
+.ReportDisplay-module__aWHpXW__reportMain {
+  flex: 1;
+  justify-content: center;
+  padding: 2rem;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__reportCard {
+  -webkit-backdrop-filter: blur(10px);
+  background-color: #0000009a;
+  border: 1px solid #ffffff35;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  box-shadow: 0 0 10px #00000048;
+}
+
+.ReportDisplay-module__aWHpXW__reportTitleSection {
+  border-bottom: 1px solid #ffffff35;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__reportIcon {
+  background-color: #ffffff0f;
+  border-radius: 20px;
+  justify-content: center;
+  align-items: center;
+  min-width: 60px;
+  height: 60px;
+  padding: 1rem;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__reportTitleInfo {
+  flex: 1;
+}
+
+.ReportDisplay-module__aWHpXW__reportTitle {
+  color: #fff;
+  margin: 0 0 .5rem;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.ReportDisplay-module__aWHpXW__reportDescription {
+  color: #ffffffb3;
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.ReportDisplay-module__aWHpXW__reportMeta {
+  color: #fff9;
+  gap: 2rem;
+  font-size: .9rem;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__reportActions {
+  justify-content: flex-end;
+  margin-bottom: 2rem;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__filterSection {
+  margin-bottom: 2rem;
+}
+
+.ReportDisplay-module__aWHpXW__filterLabel {
+  color: #ffffffb3;
+  margin-bottom: .5rem;
+  font-size: .9rem;
+  display: block;
+}
+
+.ReportDisplay-module__aWHpXW__filterInput {
+  color: #fff;
+  background-color: #ffffff0f;
+  border: 1px solid #ffffff1a;
+  border-radius: 10px;
+  width: 100%;
+  padding: .75rem;
+}
+
+.ReportDisplay-module__aWHpXW__filterInput:focus {
+  border-color: #ffffff4d;
+  outline: none;
+}
+
+.ReportDisplay-module__aWHpXW__btnPrimary {
+  color: #fff;
+  cursor: pointer;
+  background-color: #ffffff0f;
+  border: none;
+  border-radius: 20px;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem 1.5rem;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .2s ease-in-out;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__btnPrimary:hover {
+  color: #000;
+  background-color: #fff;
+  box-shadow: 0 0 7px #0008;
+}
+
+.ReportDisplay-module__aWHpXW__btnPrimary:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.ReportDisplay-module__aWHpXW__btnDownload {
+  justify-content: center;
+  min-width: 150px;
+}
+
+.ReportDisplay-module__aWHpXW__reportContent {
+  background-color: #0000001f;
+  border: 1px solid #ffffff1a;
+  border-radius: 15px;
+  padding: 1.5rem;
+}
+
+.ReportDisplay-module__aWHpXW__tableContainer {
+  background-color: #00000048;
+  border-radius: 15px;
+  overflow-x: auto;
+}
+
+.ReportDisplay-module__aWHpXW__reportTable {
+  border-collapse: collapse;
+  border-radius: 15px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.ReportDisplay-module__aWHpXW__reportTable th {
+  color: #fff;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  background-color: #ffffff0f;
+  padding: 1rem;
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.ReportDisplay-module__aWHpXW__reportTable td {
+  color: #ffffffe6;
+  border-bottom: 1px solid #ffffff1a;
+  padding: 1rem;
+}
+
+.ReportDisplay-module__aWHpXW__reportTable tr:last-child td {
+  border-bottom: none;
+}
+
+.ReportDisplay-module__aWHpXW__reportTable tr:hover {
+  background-color: #ffffff08;
+}
+
+.ReportDisplay-module__aWHpXW__loadingContainer, .ReportDisplay-module__aWHpXW__errorContainer {
+  text-align: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  min-height: 60vh;
+  display: flex;
+}
+
+.ReportDisplay-module__aWHpXW__loadingSpinner {
+  border: 3px solid #ffffff4d;
+  border-top-color: #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: 1s linear infinite ReportDisplay-module__aWHpXW__spin;
+}
+
+@keyframes ReportDisplay-module__aWHpXW__spin {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.ReportDisplay-module__aWHpXW__alertDanger {
+  color: #dc3545;
+  background-color: #dc354533;
+  border: 1px solid #dc35454d;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 600px;
+  padding: 1rem;
+}
+
+.ReportDisplay-module__aWHpXW__noData {
+  text-align: center;
+  color: #fff9;
+  padding: 3rem;
+}
+
+.ReportDisplay-module__aWHpXW__reportFooter {
+  color: #fff6;
+  background-color: #000000a8;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  font-size: .8rem;
+  display: flex;
+}
+
+@media (width <= 768px) {
+  .ReportDisplay-module__aWHpXW__headerContent {
+    padding: 0 1rem;
+  }
+
+  .ReportDisplay-module__aWHpXW__reportMain {
+    padding: 1rem;
+  }
+
+  .ReportDisplay-module__aWHpXW__reportCard {
+    padding: 1.5rem;
+  }
+
+  .ReportDisplay-module__aWHpXW__reportTitleSection {
+    text-align: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .ReportDisplay-module__aWHpXW__reportTitle {
+    font-size: 1.5rem;
+  }
+
+  .ReportDisplay-module__aWHpXW__reportMeta {
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .ReportDisplay-module__aWHpXW__reportTable {
+    font-size: .8rem;
+  }
+
+  .ReportDisplay-module__aWHpXW__reportTable th, .ReportDisplay-module__aWHpXW__reportTable td {
+    padding: .75rem .5rem;
+  }
+
+  .ReportDisplay-module__aWHpXW__headerSpacer {
+    display: none;
+  }
+}
+
+/*# sourceMappingURL=src_ui_styles_ReportDisplay_module_css_2bef753f._.single.css.map*/

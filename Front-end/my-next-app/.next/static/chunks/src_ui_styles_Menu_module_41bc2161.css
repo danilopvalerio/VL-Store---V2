@@ -1,0 +1,102 @@
+/* [project]/src/ui/styles/Menu.module.css [client] (css) */
+.Menu-module__nKTADq__container {
+  box-sizing: border-box;
+  background: radial-gradient(circle, #2e003a 0%, #00011a 100%);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 80px 20px 20px;
+  display: flex;
+}
+
+.Menu-module__nKTADq__header {
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  background-color: #0006;
+  border-bottom: 1px solid #ffffff1a;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.Menu-module__nKTADq__logo {
+  color: #fffffff2;
+  width: 40px;
+  top: 20px;
+}
+
+.Menu-module__nKTADq__title {
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.Menu-module__nKTADq__menuWrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.Menu-module__nKTADq__menu {
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 300px;
+  margin-top: 80px;
+  display: flex;
+}
+
+.Menu-module__nKTADq__button {
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  background: #ffffff0d;
+  border: 1px solid #ffffff26;
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 1.2rem;
+  transition: all .3s;
+  box-shadow: 0 0 10px #8e2de280;
+}
+
+.Menu-module__nKTADq__button:hover {
+  background: #ffffff1f;
+  transform: scale(1.03);
+  box-shadow: 0 0 20px #8e2de2;
+}
+
+.Menu-module__nKTADq__footer {
+  justify-content: center;
+  width: 100%;
+  display: flex;
+  position: absolute;
+  bottom: 20px;
+}
+
+.Menu-module__nKTADq__btn-secondary {
+  color: #fff;
+  cursor: pointer;
+  background-color: #36013f;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: bold;
+  transition: background-color .3s;
+  box-shadow: 0 0 10px #8e2de2;
+}
+
+.Menu-module__nKTADq__btn-secondary:hover {
+  background-color: #4d1663;
+}
+
+
+/*# sourceMappingURL=src_ui_styles_Menu_module_41bc2161.css.map*/

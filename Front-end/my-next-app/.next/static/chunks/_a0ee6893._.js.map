@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/danil/OneDrive/Documentos/2025/P6/web/PROJETOS/VL-Store---V2-develop/Front-end/my-next-app/src/app/page.tsx"],"sourcesContent":["\"use client\";\nimport { useEffect } from \"react\";\nimport { useRouter } from \"next/navigation\";\n\nexport default function Home() {\n  const router = useRouter();\n\n  useEffect(() => {\n    router.push(\"/initialPage\");\n  }, [router]); // Adicione router como dependência\n\n  return null;\n}\n"],"names":[],"mappings":";;;AACA;AACA;;AAFA;;;AAIe,SAAS;;IACtB,MAAM,SAAS,CAAA,GAAA,qIAAA,CAAA,YAAS,AAAD;IAEvB,CAAA,GAAA,6JAAA,CAAA,YAAS,AAAD;0BAAE;YACR,OAAO,IAAI,CAAC;QACd;yBAAG;QAAC;KAAO,GAAG,mCAAmC;IAEjD,OAAO;AACT;GARwB;;QACP,qIAAA,CAAA,YAAS;;;KADF","debugId":null}},
+    {"offset": {"line": 44, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/danil/OneDrive/Documentos/2025/P6/web/PROJETOS/VL-Store---V2-develop/Front-end/my-next-app/node_modules/next/navigation.js"],"sourcesContent":["module.exports = require('./dist/client/components/navigation')\n"],"names":[],"mappings":"AAAA,OAAO,OAAO","ignoreList":[0],"debugId":null}}]
+}

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["turbopack:///[project]/public/css/menu.css"],"sourcesContent":["@keyframes fadeInUp {\n  from {\n    opacity: 0;\n    transform: translateY(20px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n\n.menu {\n  min-height: 400px;\n  border-radius: 20px;\n  max-height: 550px;\n  max-width: 700px;\n  margin: 20px;\n  animation: fadeInUp 0.5s ease forwards;\n}\n\nbody {\n  min-height: 100vh;\n}\n"],"names":[],"mappings":"AAAA;;;;;;;;;;;;AAWA;;;;;;;;;AASA"}}]
+}

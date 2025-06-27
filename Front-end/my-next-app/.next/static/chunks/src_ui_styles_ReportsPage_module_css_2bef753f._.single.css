@@ -1,0 +1,147 @@
+/* [project]/src/ui/styles/ReportsPage.module.css [client] (css) */
+.ReportsPage-module__BeWnjG__pageContainer {
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  display: flex;
+}
+
+.ReportsPage-module__BeWnjG__header {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2rem;
+  display: flex;
+}
+
+.ReportsPage-module__BeWnjG__logo {
+  opacity: .8;
+  width: 45px;
+  height: auto;
+}
+
+.ReportsPage-module__BeWnjG__reportsCard {
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  text-align: center;
+  background-color: #0000009a;
+  border: 1px solid #ffffff35;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 900px;
+  padding: 3rem 4rem;
+  box-shadow: 0 0 10px #00000048;
+}
+
+.ReportsPage-module__BeWnjG__titleSection {
+  margin-bottom: 3rem;
+}
+
+.ReportsPage-module__BeWnjG__title {
+  letter-spacing: 1px;
+  color: #fff;
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.ReportsPage-module__BeWnjG__subtitle {
+  color: #ffffffb3;
+  font-size: 1.2rem;
+  font-weight: 300;
+}
+
+.ReportsPage-module__BeWnjG__buttonGrid {
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  display: grid;
+}
+
+.ReportsPage-module__BeWnjG__reportButton {
+  color: #fff;
+  cursor: pointer;
+  background-color: #ffffff0f;
+  border: none;
+  border-radius: 20px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 1rem;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all .2s ease-in-out;
+  display: flex;
+}
+
+.ReportsPage-module__BeWnjG__reportButton:hover:not(:disabled) {
+  color: #000;
+  background-color: #fff;
+  transform: none;
+  box-shadow: 0 0 7px #0008;
+}
+
+.ReportsPage-module__BeWnjG__reportButton:active {
+  box-shadow: none !important;
+  color: #fff !important;
+  background-color: #0000 !important;
+  border: 1px solid #fff !important;
+}
+
+.ReportsPage-module__BeWnjG__reportButton:disabled {
+  color: #fff6;
+  cursor: not-allowed;
+  background-color: #ffffff08;
+}
+
+.ReportsPage-module__BeWnjG__reportButton:disabled:hover {
+  color: #fff6;
+  box-shadow: none;
+  background-color: #ffffff08;
+  transform: none;
+}
+
+.ReportsPage-module__BeWnjG__secondaryButton {
+  background-color: #ffffff0f;
+  border: none;
+}
+
+.ReportsPage-module__BeWnjG__secondaryButton:hover:not(:disabled) {
+  color: #000;
+  background-color: #fff;
+  box-shadow: 0 0 7px #0008;
+}
+
+.ReportsPage-module__BeWnjG__secondaryButton:active {
+  box-shadow: none !important;
+  color: #fff !important;
+  background-color: #0000 !important;
+  border: 1px solid #fff !important;
+}
+
+.ReportsPage-module__BeWnjG__footer {
+  text-align: center;
+  color: #fff6;
+  width: 100%;
+  margin-top: 2rem;
+  font-size: .8rem;
+}
+
+@media (width <= 768px) {
+  .ReportsPage-module__BeWnjG__reportsCard {
+    padding: 2rem;
+  }
+
+  .ReportsPage-module__BeWnjG__buttonGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ReportsPage-module__BeWnjG__title {
+    font-size: 2rem;
+  }
+}
+
+/*# sourceMappingURL=src_ui_styles_ReportsPage_module_css_2bef753f._.single.css.map*/

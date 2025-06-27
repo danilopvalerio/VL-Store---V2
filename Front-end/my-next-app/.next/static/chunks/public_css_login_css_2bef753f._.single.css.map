@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["turbopack:///[project]/public/css/login.css"],"sourcesContent":["body {\r\n  min-height: 100vh;\r\n}\r\na {\r\n  color: #ffffff; /* ou a cor clara que combina com o fundo */\r\n  text-decoration: underline;\r\n  font-weight: 500;\r\n  transition: color 0.3s ease;\r\n  text-decoration: none;\r\n  padding-left: 5px;\r\n}\r\n\r\na:hover {\r\n  color: #ffffff; /* um tom mais claro ou com contraste suave */\r\n  text-decoration: none;\r\n}\r\n.login-register-block {\r\n  border-radius: 20px;\r\n  max-height: 500px;\r\n  max-width: 700px;\r\n  margin: 50px;\r\n}\r\n\r\np {\r\n  font-size: 14px;\r\n  margin: 0;\r\n}\r\nh1 {\r\n  margin: 0;\r\n}\r\n\r\n.register-container {\r\n}\r\n"],"names":[],"mappings":"AAAA;;;;AAGA;;;;;;;;AASA;;;;;AAIA;;;;;;;AAOA;;;;;AAIA"}}]
+}

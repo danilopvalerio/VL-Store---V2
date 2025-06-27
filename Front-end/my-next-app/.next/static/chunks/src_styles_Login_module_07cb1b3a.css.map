@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/danil/OneDrive/Documentos/2025/P6/web/Projeto/Front-end/my-next-app/src/styles/Login.module.css"],"sourcesContent":[".container {\r\n  min-height: 100vh;\r\n    display: flex;\r\n    flex-direction: column;\r\n    background-color: #f8f9fa;\r\n}\r\n.headerPanel {\r\n  background-color: #343a40;\r\n  padding: 1rem;\r\n  display: flex;\r\n  justify-content: center;\r\n  align-items: center;\r\n}\r\n.logo {\r\n  height: 40px;\r\n}\r\n.logoLogin {\r\n  height: 100px;\r\n}\r\n.loginBlock {\r\n  flex: 1;\r\n  display: flex;\r\n  justify-content: center;\r\n  align-items: center;\r\n}\r\n.column {\r\n  display: flex;\r\n  flex-direction: column;\r\n  padding: 1rem;\r\n  width: 100%;\r\n  max-width: 500px;\r\n  background:  #343a40;\r\n  border-radius: 8px;\r\n  overflow: hidden;\r\n}\r\n.welcomePanel {\r\n  background-color: #343a40;\r\n}\r\n.formPanel {\r\n  background-color: #f8f9fa;\r\n  justify-content: center;\r\n  align-items: center;\r\n}\r\n.btnPrimary {\r\n  background-color: #184A71 !important;\r\n\r\n}\r\n.btnSecondary {\r\n  background-color: #53A89A !important;\r\n\r\n}"],"names":[],"mappings":"AAAA;;;;;;;AAMA;;;;;;;;AAOA;;;;AAGA;;;;AAGA;;;;;;;AAMA;;;;;;;;;;;AAUA;;;;AAGA;;;;;;AAKA;;;;AAIA","debugId":null}}]
+}

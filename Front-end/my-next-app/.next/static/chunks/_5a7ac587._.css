@@ -1,0 +1,164 @@
+/* [project]/src/ui/styles/AddProductComponent.module.css [client] (css) */
+.AddProductComponent-module__BnmCha__addProductContainer {
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+  display: flex;
+}
+
+.AddProductComponent-module__BnmCha__toggleFormButton {
+  min-width: 200px;
+}
+
+.AddProductComponent-module__BnmCha__variationsSection {
+  background-color: #ffffff08;
+  border: 1px solid #ffffff1a;
+  border-radius: 8px;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  display: flex;
+}
+
+.AddProductComponent-module__BnmCha__variationsTitle {
+  color: #fff;
+  text-align: left;
+  margin-bottom: .5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.AddProductComponent-module__BnmCha__variationGroup {
+  border-bottom: 1px solid #ffffff0d;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  padding-bottom: .75rem;
+  display: flex;
+}
+
+.AddProductComponent-module__BnmCha__variationGroup:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.AddProductComponent-module__BnmCha__variationGroup .AddProductComponent-module__BnmCha__searchInput {
+  flex: 150px;
+}
+
+.AddProductComponent-module__BnmCha__removeVariationButton {
+  flex-shrink: 0;
+  padding: .4rem .8rem !important;
+  font-size: .85rem !important;
+}
+
+.AddProductComponent-module__BnmCha__addVariationButton {
+  align-self: flex-start;
+  margin-top: .5rem;
+}
+
+.AddProductComponent-module__BnmCha__submitProductButton {
+  width: 100%;
+  padding-top: .9rem !important;
+  padding-bottom: .9rem !important;
+  font-size: 1.1rem !important;
+}
+
+
+/* [project]/public/css/products.css [client] (css) */
+.product-page {
+  max-width: 950px;
+  margin-top: 100px;
+  margin-bottom: 40px;
+  overflow: hidden;
+  width: 90% !important;
+}
+
+.product-label {
+  margin-bottom: 5px;
+  padding-left: 15px;
+}
+
+.product-info {
+  max-height: 400px;
+  margin: 10px 0;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-y: auto;
+}
+
+.product-info::-webkit-scrollbar {
+  width: 6px;
+}
+
+.product-info::-webkit-scrollbar-track {
+  background: none;
+}
+
+.product-info::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  background-clip: content-box;
+  border: 2px solid #0000;
+  border-radius: 10px;
+}
+
+.product-card {
+  background-color: #ffffff16;
+  min-width: 200px;
+  max-width: 350px;
+  height: 350px;
+  overflow: hidden;
+}
+
+.product-card img {
+  object-fit: contain;
+  border: 2px solid #fff;
+  width: auto;
+  height: auto;
+  max-height: 200px;
+  margin: 0 auto;
+  display: block;
+}
+
+.card-title {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
+  font-size: 13px;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.variacao {
+  background-color: #ffffff10;
+  border-radius: 20px;
+  padding: 10px;
+}
+
+.produto-input {
+  color: #fff;
+  border: 1px solid #ffffff1b;
+  border-radius: 10px;
+  padding: 5px 5px 5px 10px;
+  background: #ffffff0d !important;
+}
+
+.produto-input:focus {
+  border: none !important;
+}
+
+.button {
+  border: none;
+  height: 30px;
+}
+
+.down-btn {
+  min-width: 200px !important;
+}
+
+
+/*# sourceMappingURL=_5a7ac587._.css.map*/

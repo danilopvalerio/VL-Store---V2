@@ -1,0 +1,192 @@
+/* [project]/src/ui/styles/InitialPage.module.css [client] (css) */
+.InitialPage-module__KCOsDq__pageContainer {
+  box-sizing: border-box;
+  background: radial-gradient(circle, #36013f 0%, #0b0522 100%);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding-bottom: 40px;
+  display: flex;
+  overflow-x: hidden;
+}
+
+.InitialPage-module__KCOsDq__header {
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  background-color: #0006;
+  border-bottom: 1px solid #ffffff1a;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.InitialPage-module__KCOsDq__logo {
+  color: #fffffff2;
+  width: 40px;
+  top: 20px;
+}
+
+.InitialPage-module__KCOsDq__contentBox {
+  -webkit-backdrop-filter: blur(12px);
+  background: #0000004d;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 850px;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 0 80px #ff00804d, 0 0 60px #0080ff33;
+}
+
+.InitialPage-module__KCOsDq__infoPanel {
+  color: #e0e0e0;
+  text-align: center;
+  background: #0a0a1e66;
+  flex-direction: column;
+  flex-basis: 50%;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  display: flex;
+}
+
+.InitialPage-module__KCOsDq__infoPanel h2 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.InitialPage-module__KCOsDq__infoPanel p {
+  color: silver;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.InitialPage-module__KCOsDq__actionsPanel {
+  color: #e0e0e0;
+  background-color: #0a0a1473;
+  flex-direction: column;
+  flex-basis: 50%;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 40px;
+  display: flex;
+}
+
+.InitialPage-module__KCOsDq__logoInternal {
+  width: 120px;
+  height: auto;
+  margin-bottom: 40px;
+}
+
+.InitialPage-module__KCOsDq__actionButton {
+  cursor: pointer;
+  text-align: center;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 20px;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color .3s, border-color .3s, color .3s;
+}
+
+.InitialPage-module__KCOsDq__primaryButton {
+  color: #e0e0e0;
+  background-color: #0000;
+  border: 2px solid #8a63d2;
+}
+
+.InitialPage-module__KCOsDq__primaryButton:hover {
+  color: #fff;
+  background-color: #8a63d226;
+  border-color: #a47fe0;
+}
+
+.InitialPage-module__KCOsDq__secondaryButton {
+  color: #fff;
+  background-color: #6d29a1;
+  border: none;
+}
+
+.InitialPage-module__KCOsDq__secondaryButton:hover {
+  background-color: #5a2085;
+}
+
+@media (width <= 800px) {
+  .InitialPage-module__KCOsDq__contentBox {
+    flex-direction: column;
+    max-width: 500px;
+  }
+
+  .InitialPage-module__KCOsDq__infoPanel, .InitialPage-module__KCOsDq__actionsPanel {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .InitialPage-module__KCOsDq__infoPanel {
+    padding: 40px 30px;
+  }
+
+  .InitialPage-module__KCOsDq__infoPanel h4 {
+    font-size: 1.8rem;
+  }
+
+  .InitialPage-module__KCOsDq__infoPanel p {
+    font-size: 1rem;
+  }
+
+  .InitialPage-module__KCOsDq__actionsPanel {
+    padding: 40px 30px;
+  }
+
+  .InitialPage-module__KCOsDq__logoInternal {
+    width: 100px;
+    margin-bottom: 30px;
+  }
+}
+
+@media (width <= 480px) {
+  .InitialPage-module__KCOsDq__header {
+    margin-bottom: 30px;
+    padding: 15px 20px;
+  }
+
+  .InitialPage-module__KCOsDq__logoHeader {
+    height: 30px;
+  }
+
+  .InitialPage-module__KCOsDq__contentBox {
+    width: calc(100% - 30px);
+    margin-left: 15px;
+    margin-right: 15px;
+  }
+
+  .InitialPage-module__KCOsDq__infoPanel h4 {
+    font-size: 1.6rem;
+  }
+
+  .InitialPage-module__KCOsDq__infoPanel p {
+    font-size: .9rem;
+  }
+
+  .InitialPage-module__KCOsDq__actionsPanel {
+    padding: 30px 20px;
+  }
+
+  .InitialPage-module__KCOsDq__actionButton {
+    padding: 12px 15px;
+    font-size: .9rem;
+  }
+}
+
+
+/*# sourceMappingURL=src_ui_styles_InitialPage_module_6c334a29.css.map*/

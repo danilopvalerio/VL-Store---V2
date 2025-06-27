@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/danil/OneDrive/Documentos/2025/P6/web/PROJETOS/VL-Store---V2-develop/Front-end/my-next-app/public/css/login.css"],"sourcesContent":["body {\n  min-height: 100vh;\n}\na {\n  color: #ffffff; /* ou a cor clara que combina com o fundo */\n  text-decoration: underline;\n  font-weight: 500;\n  transition: color 0.3s ease;\n  text-decoration: none;\n  padding-left: 5px;\n}\n\na:hover {\n  color: #ffffff; /* um tom mais claro ou com contraste suave */\n  text-decoration: none;\n}\n@keyframes fadeInUp {\n  from {\n    opacity: 0;\n    transform: translateY(20px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n\n.login-register-block {\n  border-radius: 20px;\n  max-height: 500px;\n  max-width: 700px;\n  margin: 50px;\n  animation: fadeInUp 0.5s ease forwards;\n}\n\np {\n  font-size: 14px;\n  margin: 0;\n}\nh1 {\n  margin: 0;\n}\n\n.register-container {\n}\n"],"names":[],"mappings":"AAAA;;;;AAGA;;;;;;;;AASA;;;;;AAIA;;;;;;;;;;;;AAWA;;;;;;;;AAQA;;;;;AAIA","debugId":null}}]
+}

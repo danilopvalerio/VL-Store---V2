@@ -1,0 +1,98 @@
+/* [project]/src/ui/styles/RegisterPage.module.css [client] (css) */
+.RegisterPage-module__vvAkia__container {
+  box-sizing: border-box;
+  background: radial-gradient(circle, #36013f 0%, #0b0522 100%);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.RegisterPage-module__vvAkia__headerPanel {
+  z-index: 10;
+  margin-bottom: 30px;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.RegisterPage-module__vvAkia__logo {
+  height: 40px;
+}
+
+.RegisterPage-module__vvAkia__loginBlock {
+  color: #fff;
+  background: #0f001ecc;
+  border-radius: 12px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  padding: 40px;
+  display: flex;
+  box-shadow: 0 0 30px #6c1d8e;
+}
+
+.RegisterPage-module__vvAkia__welcomePanel h1 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+
+.RegisterPage-module__vvAkia__formPanel {
+  margin-top: 20px;
+}
+
+.RegisterPage-module__vvAkia__form-group {
+  margin-bottom: 15px;
+}
+
+.RegisterPage-module__vvAkia__form-control {
+  color: #fff;
+  background: #1e112f;
+  border: none;
+  border-radius: 6px;
+  width: 100%;
+  padding: 10px;
+}
+
+.RegisterPage-module__vvAkia__form-control:disabled {
+  opacity: .6;
+}
+
+.RegisterPage-module__vvAkia__btnPrimary {
+  color: #fff;
+  cursor: pointer;
+  background-color: #8e2de2;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+}
+
+.RegisterPage-module__vvAkia__btnPrimary:hover {
+  background-color: #7a1bd6;
+}
+
+.RegisterPage-module__vvAkia__success-message, .RegisterPage-module__vvAkia__error-message {
+  color: #fff;
+  background-color: #2a0033;
+  border-left: 4px solid #8e2de2;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  padding: 10px;
+}
+
+.RegisterPage-module__vvAkia__login-link {
+  text-align: center;
+  margin-top: 20px;
+}
+
+
+/*# sourceMappingURL=src_ui_styles_RegisterPage_module_f32d34cc.css.map*/
