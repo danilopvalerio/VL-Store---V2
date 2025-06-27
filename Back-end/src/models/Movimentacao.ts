@@ -24,18 +24,18 @@ export default class Movimentacao {
   @Column({ nullable: false })
   id_caixa!: string;
 
-  @ManyToOne(() => Caixa)
+  @ManyToOne(() => Caixa, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_caixa' })
   caixa!: Caixa;
 
   @Column({ nullable: true })
   id_venda!: string | null;
 
-  @ManyToOne(() => Venda)
+  @ManyToOne(() => Venda, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_venda' })
   venda!: Venda | null;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   criado_em!: Date;
 
   constructor(

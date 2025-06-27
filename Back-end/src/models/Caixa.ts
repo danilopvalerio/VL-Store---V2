@@ -39,7 +39,7 @@ export default class Caixa {
   @Column({ nullable: false })
   id_loja!: string;
 
-  @ManyToOne(() => Loja)
+  @ManyToOne(() => Loja, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_loja' })
   loja!: Loja;
 

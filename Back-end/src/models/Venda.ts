@@ -15,7 +15,7 @@ export default class Venda {
   @PrimaryGeneratedColumn('uuid')
   id_venda!: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   data_hora!: Date;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
@@ -43,7 +43,7 @@ export default class Venda {
   @Column({ nullable: false })
   id_loja!: string;
 
-  @ManyToOne(() => Loja)
+  @ManyToOne(() => Loja, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_loja' })
   loja!: Loja;
 
@@ -54,11 +54,11 @@ export default class Venda {
   })
   status!: StatusVenda;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   criado_em!: Date;
 
   @Column({
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',
   })

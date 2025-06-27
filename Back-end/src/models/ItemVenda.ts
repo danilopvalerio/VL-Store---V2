@@ -15,11 +15,11 @@ export default class ItemVenda {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   preco_unitario!: number;
-  
+
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   subtotal!: number;
-  
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   criado_em!: Date;
 
   @ManyToOne(() => Venda, (venda) => venda.itens, { onDelete: 'CASCADE' })
