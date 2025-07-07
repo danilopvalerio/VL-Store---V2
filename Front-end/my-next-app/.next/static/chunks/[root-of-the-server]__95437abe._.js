@@ -787,7 +787,7 @@ const EmployeeDetail = ()=>{
         columnNumber: 5
     }, this);
 };
-_s(EmployeeDetail, "/Og/wtOwEVBvPKIdndZxFjOb2tI=", false, function() {
+_s(EmployeeDetail, "Ged1gf0IlqUOxyRVbNBbJYGGS4A=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];

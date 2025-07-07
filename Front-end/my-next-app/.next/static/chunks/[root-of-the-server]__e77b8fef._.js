@@ -1044,7 +1044,7 @@ const ProductDetail = ()=>{
         columnNumber: 5
     }, this);
 };
-_s(ProductDetail, "e8xygS7dHlR/Ct04Fe8nBPhQ0u0=", false, function() {
+_s(ProductDetail, "KP2IGCicLW9ECfuG+BmX4f4LpUg=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];

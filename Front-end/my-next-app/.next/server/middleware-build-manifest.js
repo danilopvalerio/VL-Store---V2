@@ -1,5 +1,15 @@
 globalThis.__BUILD_MANIFEST = {
   "pages": {
+    "/AddProductPage": [
+      "static/chunks/node_modules_next_9e036572._.js",
+      "static/chunks/node_modules_react-dom_82bb97c6._.js",
+      "static/chunks/node_modules_axios_lib_9aa2336a._.js",
+      "static/chunks/node_modules_2a5cf4bb._.js",
+      "static/chunks/[root-of-the-server]__1991365a._.js",
+      "static/chunks/public_css_912348c3._.css",
+      "static/chunks/src_pages_AddProductPage_5771e187._.js",
+      "static/chunks/src_pages_AddProductPage_68016f86._.js"
+    ],
     "/_app": [
       "static/chunks/node_modules_next_3e2414c2._.js",
       "static/chunks/node_modules_react-dom_82bb97c6._.js",
@@ -28,6 +38,16 @@ globalThis.__BUILD_MANIFEST = {
       "static/chunks/src_ui_styles_cashierPage_module_f945145f.css",
       "static/chunks/src_pages_cashierPage_5771e187._.js",
       "static/chunks/src_pages_cashierPage_25ce85fa._.js"
+    ],
+    "/employeesDetail": [
+      "static/chunks/node_modules_next_9e036572._.js",
+      "static/chunks/node_modules_react-dom_82bb97c6._.js",
+      "static/chunks/node_modules_axios_lib_9aa2336a._.js",
+      "static/chunks/node_modules_2a5cf4bb._.js",
+      "static/chunks/[root-of-the-server]__95437abe._.js",
+      "static/chunks/public_css_912348c3._.css",
+      "static/chunks/src_pages_employeesDetail_5771e187._.js",
+      "static/chunks/src_pages_employeesDetail_2b922d1a._.js"
     ],
     "/employeesPage": [
       "static/chunks/node_modules_next_ba77cfea._.js",
@@ -68,6 +88,16 @@ globalThis.__BUILD_MANIFEST = {
       "static/chunks/public_css_b2276d62._.css",
       "static/chunks/src_pages_menuPage_5771e187._.js",
       "static/chunks/src_pages_menuPage_7b72520f._.js"
+    ],
+    "/productDetail": [
+      "static/chunks/node_modules_next_9e036572._.js",
+      "static/chunks/node_modules_react-dom_82bb97c6._.js",
+      "static/chunks/node_modules_axios_lib_9aa2336a._.js",
+      "static/chunks/node_modules_2a5cf4bb._.js",
+      "static/chunks/[root-of-the-server]__e77b8fef._.js",
+      "static/chunks/public_css_912348c3._.css",
+      "static/chunks/src_pages_productDetail_5771e187._.js",
+      "static/chunks/src_pages_productDetail_a193fbaf._.js"
     ],
     "/productsPage": [
       "static/chunks/node_modules_next_ba77cfea._.js",

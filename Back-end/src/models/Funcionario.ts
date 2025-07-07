@@ -28,7 +28,7 @@ export default class Funcionario {
   @JoinColumn({ name: 'id_loja' })
   loja!: Loja;
   @Column({ nullable: true })
-  id_loja: string; // guarda o id da loja, referência simples (sem relação explícita)
+  id_loja: string;
 
   @Column({
     type: 'enum',
