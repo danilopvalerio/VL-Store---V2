@@ -89,7 +89,7 @@ const ProductDetail = () => {
 
     try {
       await axios.patch(
-        `http://localhost:9700/api/produtos/loja/${newData.id_loja}/referencia/${newData.referencia}`,
+        `https://vl-store-v2.onrender.com/api/produtos/loja/${newData.id_loja}/referencia/${newData.referencia}`,
         { [name]: value },
         { headers: getAuthHeaders() }
       );
@@ -111,7 +111,7 @@ const ProductDetail = () => {
     if (variation.id_variacao) {
       try {
         await axios.patch(
-          `http://localhost:9700/api/produtos/variacoes/${variation.id_variacao}`,
+          `https://vl-store-v2.onrender.com/api/produtos/variacoes/${variation.id_variacao}`,
           { valor: valorNumerico },
           { headers: getAuthHeaders() }
         );
@@ -127,7 +127,7 @@ const ProductDetail = () => {
     } else if (hasValidData) {
       try {
         const response = await axios.post(
-          `http://localhost:9700/api/produtos/referencia/${productData.referencia}/loja/${productData.id_loja}/variacoes`,
+          `https://vl-store-v2.onrender.com/api/produtos/referencia/${productData.referencia}/loja/${productData.id_loja}/variacoes`,
           {
             descricao_variacao: variation.descricao_variacao,
             quant_variacao: variation.quant_variacao,
@@ -162,7 +162,7 @@ const ProductDetail = () => {
       ...updated[index],
       [name]:
         name === "valor"
-          ? value 
+          ? value
           : name === "descricao_variacao"
           ? value
           : parseFloat(value) || 0,
@@ -173,7 +173,7 @@ const ProductDetail = () => {
     if (name !== "valor") {
       const variation = updated[index];
       if (variation.id_variacao) {
-        const url = `http://localhost:9700/api/produtos/variacoes/${variation.id_variacao}`;
+        const url = `https://vl-store-v2.onrender.com/api/produtos/variacoes/${variation.id_variacao}`;
         axios
           .patch(
             url,
@@ -206,7 +206,7 @@ const ProductDetail = () => {
     if (variation.id_variacao) {
       try {
         await axios.delete(
-          `http://localhost:9700/api/produtos/variacoes/${variation.id_variacao}`,
+          `https://vl-store-v2.onrender.com/api/produtos/variacoes/${variation.id_variacao}`,
           { headers: getAuthHeaders() }
         );
       } catch (err) {
@@ -225,7 +225,7 @@ const ProductDetail = () => {
   const deleteProduct = async () => {
     try {
       await axios.delete(
-        `http://localhost:9700/api/produtos/loja/${productData.id_loja}/referencia/${productData.referencia}`,
+        `https://vl-store-v2.onrender.com/api/produtos/loja/${productData.id_loja}/referencia/${productData.referencia}`,
         { headers: getAuthHeaders() }
       );
       router.push("/productsPage");

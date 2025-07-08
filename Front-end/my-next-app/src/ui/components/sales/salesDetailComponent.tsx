@@ -89,7 +89,7 @@ const ProductsTable = ({ products }: ProductsTableProps) => {
       const jwtToken = localStorage.getItem("jwtToken");
       if (!jwtToken) return "Token não encontrado";
       const response = await axios.get(
-        `http://localhost:9700/api/produtos/loja/${id_loja}/referencia/${referencia}`,
+        `https://vl-store-v2.onrender.com/api/produtos/loja/${id_loja}/referencia/${referencia}`,
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,

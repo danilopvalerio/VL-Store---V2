@@ -39,7 +39,7 @@ const ProductPage = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:9700/api/produtos/loja/${idLoja}/busca/${encodeURIComponent(
+        `https://vl-store-v2.onrender.com/api/produtos/loja/${idLoja}/busca/${encodeURIComponent(
           searchTerm
         )}?page=${page}`,
         {
@@ -72,7 +72,7 @@ const ProductPage = () => {
       const idLoja = parsedData.id_loja;
 
       const response = await axios.get(
-        `http://localhost:9700/api/produtos/loja/${idLoja}/paginado?page=${page}&limit=${LIMIT}`,
+        `https://vl-store-v2.onrender.com/api/produtos/loja/${idLoja}/paginado?page=${page}&limit=${LIMIT}`,
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,

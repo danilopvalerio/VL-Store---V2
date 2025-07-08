@@ -16,7 +16,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee }) => {
       }
 
       const response = await axios.get(
-        `http://localhost:9700/api/funcionarios/${id_funcionario}`,
+        `https://vl-store-v2.onrender.com/api/funcionarios/${id_funcionario}`,
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
