@@ -156,7 +156,7 @@ const StoreRegistration = ()=>{
         };
         try {
             setLoading(true);
-            await __TURBOPACK__imported__module__$5b$externals$5d2f$axios__$5b$external$5d$__$28$axios$2c$__esm_import$29$__["default"].post("http://localhost:9700/api/lojas", storeData);
+            await __TURBOPACK__imported__module__$5b$externals$5d2f$axios__$5b$external$5d$__$28$axios$2c$__esm_import$29$__["default"].post("https://vl-store-v2.onrender.com/api/lojas", storeData);
             setSuccess(true);
             setLoading(false);
             setTimeout(()=>{

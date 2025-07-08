@@ -1,11 +1,11 @@
-/* Seletores globais envolvidos com :global() */
-:global(*) {
+/* Seletores globais, agora sem a sintaxe :global() */
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
- 
-:global(html) {
+
+html {
   min-height: 100vh;
   background: linear-gradient(
     45deg,
@@ -16,17 +16,17 @@
   );
 }
 
-:global(body) {
+body {
   background-color: transparent;
   overflow-y: auto;
   min-height: 600px;
 }
 
-:global(header) {
+header {
   width: 100%;
 }
 
-:global(footer) {
+footer {
   width: 100%;
 }
 
@@ -173,7 +173,6 @@
   border-radius: 20px;
 }
 
-/* Correção: removido o seletor de tag 'button' */
 .primaria:hover {
   background-color: rgb(255, 255, 255);
   box-shadow: 0 0 7px rgba(0, 0, 0, 0.532);
@@ -243,7 +242,7 @@
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  animation: fadeIn 1s ease-out; /* A animação 'fadeIn' agora é global */
+  animation: fadeIn 1s ease-out;
 }
 
 .alert-success {
