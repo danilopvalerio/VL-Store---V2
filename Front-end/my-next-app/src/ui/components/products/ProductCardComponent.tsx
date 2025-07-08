@@ -18,7 +18,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       const { id_loja } = JSON.parse(userData);
 
       const response = await axios.get(
-        `http://localhost:9700/api/produtos/loja/${id_loja}/referencia/${referencia}`,
+        `https://vl-store-v2.onrender.com/api/produtos/loja/${id_loja}/referencia/${referencia}`,
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,

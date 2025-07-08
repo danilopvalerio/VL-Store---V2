@@ -53,14 +53,14 @@ const Variations = ({
       if (variation.id_variacao) {
         // Atualizar variação existente
         await axios.patch(
-          `http://localhost:9700/api/produtos/variacao/${variation.id_variacao}`,
+          `https://vl-store-v2.onrender.com/api/produtos/variacao/${variation.id_variacao}`,
           { [name]: newValue },
           { headers: getAuthHeaders() }
         );
       } else {
         // Criar nova variação
         const response = await axios.post(
-          `http://localhost:9700/api/produtos/variacao/loja/${id_loja}/referencia/${referencia}`,
+          `https://vl-store-v2.onrender.com/api/produtos/variacao/loja/${id_loja}/referencia/${referencia}`,
           variation,
           { headers: getAuthHeaders() }
         );
@@ -94,7 +94,7 @@ const Variations = ({
     if (variationToRemove.id_variacao) {
       try {
         await axios.delete(
-          `http://localhost:9700/api/produtos/variacao/${variationToRemove.id_variacao}`,
+          `https://vl-store-v2.onrender.com/api/produtos/variacao/${variationToRemove.id_variacao}`,
           { headers: getAuthHeaders() }
         );
       } catch (err) {

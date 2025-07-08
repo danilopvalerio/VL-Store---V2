@@ -149,7 +149,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
 
       try {
         const response = await axios.get(
-          `http://localhost:9700/api/caixas/loja/${id_loja}`,
+          `https://vl-store-v2.onrender.com/api/caixas/loja/${id_loja}`,
           { headers: { Authorization: `Bearer ${jwtToken}` } }
         ); // --- MUDANÇA PRINCIPAL AQUI --- // Filtra apenas por caixas com status "ABERTO", independente do funcionário.
 
@@ -342,7 +342,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
 
       // --- ETAPA 1: Registrar a Venda ---
       const responseVenda = await axios.post(
-        "http://localhost:9700/api/vendas",
+        "https://vl-store-v2.onrender.com/api/vendas",
         salePayload,
         config
       );
@@ -373,7 +373,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
       };
 
       await axios.post(
-        `http://localhost:9700/api/caixas/${caixaSelecionadoId}/movimentacoes`,
+        `https://vl-store-v2.onrender.com/api/caixas/${caixaSelecionadoId}/movimentacoes`,
         movimentacaoPayload,
         config
       );

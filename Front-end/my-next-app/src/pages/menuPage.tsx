@@ -33,7 +33,7 @@ const MenuPage: React.FC = () => {
         ) => {
           if (role === "funcionario") {
             const response = await axios.get(
-              `http://localhost:9700/api/funcionarios/${id}`,
+              `https://vl-store-v2.onrender.com/api/funcionarios/${id}`,
               {
                 headers: {
                   Authorization: `Bearer ${jwtToken}`,

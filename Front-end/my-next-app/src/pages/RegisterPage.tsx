@@ -86,7 +86,7 @@ const StoreRegistration: React.FC = () => {
 
     try {
       setLoading(true);
-      await axios.post("http://localhost:9700/api/lojas", storeData);
+      await axios.post("https://vl-store-v2.onrender.com/api/lojas", storeData);
 
       setSuccess(true);
       setLoading(false);

@@ -97,7 +97,7 @@ const AddEmployee = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:9700/api/funcionarios",
+        "https://vl-store-v2.onrender.com/api/funcionarios",
         payload,
         {
           headers: {

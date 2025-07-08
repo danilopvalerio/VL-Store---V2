@@ -167,7 +167,7 @@ const CashierList: React.FC<CashierListProps> = ({
 
     try {
       const response = await fetch(
-        `http://localhost:9700/api/caixas/${id_caixa}`,
+        `https://vl-store-v2.onrender.com/api/caixas/${id_caixa}`,
         {
           method: "DELETE",
           headers: {

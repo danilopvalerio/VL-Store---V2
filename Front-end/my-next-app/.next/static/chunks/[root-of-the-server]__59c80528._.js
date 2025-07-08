@@ -522,7 +522,7 @@ const AuthPage = ()=>{
                 email: email.toLowerCase(),
                 senha: password
             };
-            const response = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"].post(`http://localhost:9700/api/${targetRoute}`, payload, {
+            const response = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"].post(`https://vl-store-v2.onrender.com/api/${targetRoute}`, payload, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -708,7 +708,7 @@ const AuthPage = ()=>{
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             className: "position-absolute top-50 end-0 translate-middle-y me-4",
                                                             style: {
-                                                                cursor: 'pointer',
+                                                                cursor: "pointer",
                                                                 zIndex: 100
                                                             },
                                                             onClick: togglePasswordVisibility,
@@ -754,7 +754,7 @@ const AuthPage = ()=>{
                                                                     disabled: loading
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/pages/loginPage.tsx",
-                                                                    lineNumber: 165,
+                                                                    lineNumber: 166,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -763,18 +763,18 @@ const AuthPage = ()=>{
                                                                     children: "Administrador"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/pages/loginPage.tsx",
-                                                                    lineNumber: 175,
+                                                                    lineNumber: 176,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/pages/loginPage.tsx",
-                                                            lineNumber: 164,
+                                                            lineNumber: 165,
                                                             columnNumber: 21
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/pages/loginPage.tsx",
-                                                        lineNumber: 163,
+                                                        lineNumber: 164,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -793,7 +793,7 @@ const AuthPage = ()=>{
                                                                     disabled: loading
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/pages/loginPage.tsx",
-                                                                    lineNumber: 183,
+                                                                    lineNumber: 184,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -802,24 +802,24 @@ const AuthPage = ()=>{
                                                                     children: "Funcionário"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/pages/loginPage.tsx",
-                                                                    lineNumber: 193,
+                                                                    lineNumber: 194,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/pages/loginPage.tsx",
-                                                            lineNumber: 182,
+                                                            lineNumber: 183,
                                                             columnNumber: 21
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/pages/loginPage.tsx",
-                                                        lineNumber: 181,
+                                                        lineNumber: 182,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/pages/loginPage.tsx",
-                                                lineNumber: 162,
+                                                lineNumber: 163,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -831,12 +831,12 @@ const AuthPage = ()=>{
                                                     children: loading ? "Entrando..." : "Entrar"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/pages/loginPage.tsx",
-                                                    lineNumber: 204,
+                                                    lineNumber: 205,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/pages/loginPage.tsx",
-                                                lineNumber: 203,
+                                                lineNumber: 204,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -848,13 +848,13 @@ const AuthPage = ()=>{
                                                         children: "Cadastrar"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/pages/loginPage.tsx",
-                                                        lineNumber: 214,
+                                                        lineNumber: 215,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/pages/loginPage.tsx",
-                                                lineNumber: 213,
+                                                lineNumber: 214,
                                                 columnNumber: 17
                                             }, this)
                                         ]
@@ -891,12 +891,12 @@ const AuthPage = ()=>{
                     className: "footer-panel"
                 }, void 0, false, {
                     fileName: "[project]/src/pages/loginPage.tsx",
-                    lineNumber: 223,
+                    lineNumber: 224,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/pages/loginPage.tsx",
-                lineNumber: 222,
+                lineNumber: 223,
                 columnNumber: 7
             }, this)
         ]

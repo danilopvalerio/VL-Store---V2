@@ -41,7 +41,7 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
     const fetchVendedores = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:9700/api/funcionarios/loja/${idLoja}`,
+          `https://vl-store-v2.onrender.com/api/funcionarios/loja/${idLoja}`,
           {
             headers: { Authorization: `Bearer ${jwtToken}` },
           }
@@ -64,7 +64,7 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
       setLoading(true);
       setError(null);
 
-      let url = `http://localhost:9700/api/vendas/loja/${idLoja}/paginado?page=${page}&limit=${ITEMS_PER_PAGE}`;
+      let url = `https://vl-store-v2.onrender.com/api/vendas/loja/${idLoja}/paginado?page=${page}&limit=${ITEMS_PER_PAGE}`;
 
       const params = new URLSearchParams();
       if (dataFiltro) {
@@ -149,11 +149,14 @@ const SalesList: React.FC<SalesListProps> = ({ salesData = [], idLoja }) => {
 
   const deleteSale = async (saleId: string) => {
     try {
-      await axios.delete(`http://localhost:9700/api/vendas/${saleId}`, {
-        headers: {
-          Authorization: `Bearer ${jwtToken}`,
-        },
-      });
+      await axios.delete(
+        `https://vl-store-v2.onrender.com/api/vendas/${saleId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
+      );
       setAllSales((prevSales) =>
         prevSales.filter((sale) => sale.id_venda !== saleId)
       );

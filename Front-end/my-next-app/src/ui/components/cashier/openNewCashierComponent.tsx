@@ -20,9 +20,15 @@ interface Props {
   id_loja: string;
 }
 
-const NewCashier: React.FC<Props> = ({ onCancel, onSave, vendedoresDisponiveis, id_loja }) => {
+const NewCashier: React.FC<Props> = ({
+  onCancel,
+  onSave,
+  vendedoresDisponiveis,
+  id_loja,
+}) => {
   const [vendedorSearchTerm, setVendedorSearchTerm] = useState<string>("");
-  const [showVendedorDropdown, setShowVendedorDropdown] = useState<boolean>(false);
+  const [showVendedorDropdown, setShowVendedorDropdown] =
+    useState<boolean>(false);
   const [id_funcionario_responsavel, setId_funcionario] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -45,24 +51,29 @@ const NewCashier: React.FC<Props> = ({ onCancel, onSave, vendedoresDisponiveis, 
     setIsLoading(true);
     try {
       const payload = { id_funcionario_responsavel, id_loja };
-      const response = await axios.post("http://localhost:9700/api/caixas", payload);
-      
+      const response = await axios.post(
+        "https://vl-store-v2.onrender.com/api/caixas",
+        payload
+      );
+
       onSave(response.data);
     } catch (error) {
       alert("Erro ao abrir o caixa. Verifique os dados e tente novamente.");
       if (axios.isAxiosError(error)) {
-        console.error("Erro na requisição:", error.response?.data || error.message);
+        console.error(
+          "Erro na requisição:",
+          error.response?.data || error.message
+        );
       } else {
         console.error("Erro inesperado:", error);
       }
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <div className={styles.modalOverlay} onClick={onCancel}>
-      
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.cardTitle}>Abrir Novo Caixa</div>
 
@@ -84,7 +95,9 @@ const NewCashier: React.FC<Props> = ({ onCancel, onSave, vendedoresDisponiveis, 
                 setShowVendedorDropdown(true);
               }}
               onFocus={() => setShowVendedorDropdown(true)}
-              onBlur={() => setTimeout(() => setShowVendedorDropdown(false), 200)}
+              onBlur={() =>
+                setTimeout(() => setShowVendedorDropdown(false), 200)
+              }
             />
             {showVendedorDropdown && (
               <ul
@@ -105,7 +118,9 @@ const NewCashier: React.FC<Props> = ({ onCancel, onSave, vendedoresDisponiveis, 
                       className="list-group-item bg-dark text-white cursor-pointer hover-light"
                       onClick={() => {
                         setId_funcionario(v.id_funcionario);
-                        setVendedorSearchTerm(`${v.nome}${v.cargo ? ` (${v.cargo})` : ""}`);
+                        setVendedorSearchTerm(
+                          `${v.nome}${v.cargo ? ` (${v.cargo})` : ""}`
+                        );
                         setShowVendedorDropdown(false);
                       }}
                     >
@@ -124,7 +139,11 @@ const NewCashier: React.FC<Props> = ({ onCancel, onSave, vendedoresDisponiveis, 
         </div>
 
         <div className="d-flex justify-content-center mt-4">
-          <button className="btn primaria mx-2 footerButton" onClick={onCancel} disabled={isLoading}>
+          <button
+            className="btn primaria mx-2 footerButton"
+            onClick={onCancel}
+            disabled={isLoading}
+          >
             Cancelar
           </button>
           <button
@@ -132,7 +151,7 @@ const NewCashier: React.FC<Props> = ({ onCancel, onSave, vendedoresDisponiveis, 
             onClick={handleCreateCashier}
             disabled={isLoading || !id_funcionario_responsavel}
           >
-            {isLoading ? 'Salvando...' : 'Salvar'}
+            {isLoading ? "Salvando..." : "Salvar"}
           </button>
         </div>
       </div>

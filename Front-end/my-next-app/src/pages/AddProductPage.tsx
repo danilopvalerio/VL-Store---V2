@@ -115,7 +115,7 @@ const AddProduct = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:9700/api/produtos",
+        "https://vl-store-v2.onrender.com/api/produtos",
         payload,
         {
           headers: {

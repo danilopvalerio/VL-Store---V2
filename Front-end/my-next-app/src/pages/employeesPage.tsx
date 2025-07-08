@@ -38,7 +38,7 @@ const EmployeesPage = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:9700/api/funcionarios/loja/${idLoja}/busca/${encodeURIComponent(
+        `https://vl-store-v2.onrender.com/api/funcionarios/loja/${idLoja}/busca/${encodeURIComponent(
           searchTerm
         )}?page=${page}&limit=${LIMIT}`,
         {
@@ -71,7 +71,7 @@ const EmployeesPage = () => {
       const idLoja = parsedData.id_loja;
 
       const response = await axios.get(
-        `http://localhost:9700/api/funcionarios/loja/${idLoja}/paginado?page=${page}&limit=${LIMIT}`,
+        `https://vl-store-v2.onrender.com/api/funcionarios/loja/${idLoja}/paginado?page=${page}&limit=${LIMIT}`,
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,

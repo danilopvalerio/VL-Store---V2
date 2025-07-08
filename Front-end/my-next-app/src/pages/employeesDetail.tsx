@@ -100,7 +100,7 @@ const EmployeeDetail = () => {
       }
 
       await axios.patch(
-        `http://localhost:9700/api/funcionarios/loja/${newData.id_loja}/funcionario/${newData.id_funcionario}`,
+        `https://vl-store-v2.onrender.com/api/funcionarios/loja/${newData.id_loja}/funcionario/${newData.id_funcionario}`,
         { [name]: formattedValue },
         { headers: getAuthHeaders() }
       );
@@ -114,7 +114,7 @@ const EmployeeDetail = () => {
   const deleteEmployee = async () => {
     try {
       await axios.delete(
-        `http://localhost:9700/api/funcionarios/loja/${employeeData.id_loja}/funcionario/${employeeData.id_funcionario}`,
+        `https://vl-store-v2.onrender.com/api/funcionarios/loja/${employeeData.id_loja}/funcionario/${employeeData.id_funcionario}`,
         { headers: getAuthHeaders() }
       );
       router.push("/employeesPage");

@@ -124,17 +124,17 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
     };
   };
 
-    const loadMovimentacoes = async () => {
+  const loadMovimentacoes = async () => {
     setIsLoading(true);
     try {
       const response = await axios.get<PaginatedResponse<Movimentacao>>(
-        `http://localhost:9700/api/caixas/${caixa?.id_caixa}/movimentacoes?page=${pagination.page}&limit=${pagination.limit}`,
+        `https://vl-store-v2.onrender.com/api/caixas/${caixa?.id_caixa}/movimentacoes?page=${pagination.page}&limit=${pagination.limit}`,
         { headers: getAuthHeaders() }
       );
       const movimentacoes = response.data.data;
       const movimentacoesParaExibir = movimentacoes.map((mov: any) => ({
         ...mov,
-        valor: parseFloat(mov.valor)
+        valor: parseFloat(mov.valor),
       }));
       setMovimentacoes(movimentacoesParaExibir);
 
@@ -146,14 +146,14 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
     } finally {
       setIsLoading(false);
     }
-    };
+  };
 
   const atualizarTotais = async () => {
     if (!caixa?.id_caixa) return;
 
     try {
       const response = await axios.get<MovimentacaoAllResponse>(
-        `http://localhost:9700/api/caixas/${caixa.id_caixa}/movimentacoes/all`,
+        `https://vl-store-v2.onrender.com/api/caixas/${caixa.id_caixa}/movimentacoes/all`,
         { headers: getAuthHeaders() }
       );
 
@@ -195,7 +195,7 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
     setIsLoading(true);
     try {
       await axios.post(
-        `http://localhost:9700/api/caixas/${caixa.id_caixa}/movimentacoes`,
+        `https://vl-store-v2.onrender.com/api/caixas/${caixa.id_caixa}/movimentacoes`,
         { ...movimentacao, valor: valorFloat },
         { headers: getAuthHeaders() }
       );
@@ -221,8 +221,8 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
       setIsLoading(true);
       try {
         const response = await axios.patch<Caixa>(
-          `http://localhost:9700/api/caixas/${caixa.id_caixa}/fechar`,
-          { hora_fechamento: new Date().toTimeString().split(' ')[0] },
+          `https://vl-store-v2.onrender.com/api/caixas/${caixa.id_caixa}/fechar`,
+          { hora_fechamento: new Date().toTimeString().split(" ")[0] },
           { headers: getAuthHeaders() }
         );
         onCloseCaixa(response.data);
@@ -247,10 +247,10 @@ const CashierDetails: React.FC<CashierDetailsProps> = ({
 
   const saldo = caixa?.saldo ?? 0;
 
-const hasNextPage = pagination.page * pagination.limit < pagination.total;
-const hasPreviousPage = pagination.page > 1;
+  const hasNextPage = pagination.page * pagination.limit < pagination.total;
+  const hasPreviousPage = pagination.page > 1;
 
-if (!caixa) return <div>Carregando detalhes do caixa...</div>;
+  if (!caixa) return <div>Carregando detalhes do caixa...</div>;
 
   const handlePageChange = (newPage: number) =>
     setPagination({ ...pagination, page: newPage });

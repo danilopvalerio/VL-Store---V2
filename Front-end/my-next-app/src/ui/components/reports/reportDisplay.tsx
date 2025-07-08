@@ -178,7 +178,7 @@ const ReportDisplay: React.FC<{ reportType: string }> = ({ reportType }) => {
       if (config.requiresLimit && filters.limite) {
         params.append("limite", filters.limite);
       }
-      const url = `http://localhost:9700/api/relatorios/loja/${
+      const url = `https://vl-store-v2.onrender.com/api/relatorios/loja/${
         filters.id_loja
       }/${config.endpoint}?${params.toString()}`;
       const response = await fetch(url, {

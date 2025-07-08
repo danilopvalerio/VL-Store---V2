@@ -5,8 +5,8 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import axios from "axios";
 import "../../public/css/login.css";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 const AuthPage: React.FC = () => {
   const router = useRouter();
@@ -26,7 +26,7 @@ const AuthPage: React.FC = () => {
   };
 
   const togglePasswordVisibility = () => {
-    setPasswordVisible(prev => !prev);
+    setPasswordVisible((prev) => !prev);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -50,7 +50,7 @@ const AuthPage: React.FC = () => {
       };
 
       const response = await axios.post(
-        `http://localhost:9700/api/${targetRoute}`,
+        `https://vl-store-v2.onrender.com/api/${targetRoute}`,
         payload,
         {
           headers: { "Content-Type": "application/json" },
@@ -150,13 +150,14 @@ const AuthPage: React.FC = () => {
                     />
                     <span
                       className="position-absolute top-50 end-0 translate-middle-y me-4"
-                      style={{ cursor: 'pointer', zIndex: 100 }}
+                      style={{ cursor: "pointer", zIndex: 100 }}
                       onClick={togglePasswordVisibility}
                     >
-                      <FontAwesomeIcon icon={passwordVisible ? faEyeSlash : faEye} />
-                   </span>
+                      <FontAwesomeIcon
+                        icon={passwordVisible ? faEyeSlash : faEye}
+                      />
+                    </span>
                   </div>
-                   
                 </div>
 
                 <div className="row justify-content-center mb-3">

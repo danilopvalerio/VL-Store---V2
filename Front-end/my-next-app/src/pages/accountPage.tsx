@@ -58,7 +58,7 @@ const AccountPage = () => {
       const { id_loja } = JSON.parse(userData);
 
       const response = await axios.get(
-        `http://localhost:9700/api/lojas/${id_loja}`,
+        `https://vl-store-v2.onrender.com/api/lojas/${id_loja}`,
         {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
@@ -143,7 +143,7 @@ const AccountPage = () => {
       const { senha, ...dataWithoutPassword } = storeData;
 
       await axios.patch(
-        `http://localhost:9700/api/lojas/${storeData.id_loja}`,
+        `https://vl-store-v2.onrender.com/api/lojas/${storeData.id_loja}`,
         dataWithoutPassword, // envia sem a senha
         { headers: getAuthHeaders() }
       );
@@ -172,7 +172,7 @@ const AccountPage = () => {
     try {
       setIsDeleting(true);
       await axios.delete(
-        `http://localhost:9700/api/lojas/${storeData.id_loja}`,
+        `https://vl-store-v2.onrender.com/api/lojas/${storeData.id_loja}`,
         { headers: getAuthHeaders() }
       );
       // Limpa o localStorage ao deletar a conta

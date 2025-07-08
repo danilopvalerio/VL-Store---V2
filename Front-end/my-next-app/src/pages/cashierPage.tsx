@@ -98,7 +98,7 @@ const CashierPage = () => {
         params.append("limit", String(LIMIT));
 
         const response = await axios.get(
-          `http://localhost:9700/api/caixas/loja/${id_loja}?${params.toString()}`,
+          `https://vl-store-v2.onrender.com/api/caixas/loja/${id_loja}?${params.toString()}`,
           {
             headers: { Authorization: `Bearer ${token}` },
             timeout: 10000,
@@ -136,7 +136,7 @@ const CashierPage = () => {
           async (caixaOriginal: Caixa) => {
             try {
               const totaisResponse = await axios.get(
-                `http://localhost:9700/api/caixas/${caixaOriginal.id_caixa}/movimentacoes/all`,
+                `https://vl-store-v2.onrender.com/api/caixas/${caixaOriginal.id_caixa}/movimentacoes/all`,
                 {
                   headers: { Authorization: `Bearer ${token}` },
                   timeout: 10000,
@@ -169,7 +169,7 @@ const CashierPage = () => {
         setIdloja(idLoja);
 
         const vendedoresRes = await axios.get(
-          `http://localhost:9700/api/funcionarios/loja/${idLoja}`,
+          `https://vl-store-v2.onrender.com/api/funcionarios/loja/${idLoja}`,
           {
             headers: { Authorization: `Bearer ${token}` },
             timeout: 10000,

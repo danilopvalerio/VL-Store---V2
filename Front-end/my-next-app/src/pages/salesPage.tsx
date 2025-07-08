@@ -68,11 +68,11 @@ export default function SalesPage() {
 
         const [vendedoresRes, produtosRes] = await Promise.all([
           axios.get(
-            `http://localhost:9700/api/funcionarios/loja/${idLoja}`,
+            `https://vl-store-v2.onrender.com/api/funcionarios/loja/${idLoja}`,
             config
           ),
           axios.get(
-            `http://localhost:9700/api/produtos/loja/${idLoja}`,
+            `https://vl-store-v2.onrender.com/api/produtos/loja/${idLoja}`,
             config
           ),
         ]);
